@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import korvenLogo from '../assets/Korven_logo.png'
 import '../Styles/Authentication.css'
+import { AuthService } from '../services/loginService'
 
 interface AuthenticationProps {
   onLoginSuccess: () => void
@@ -15,14 +16,24 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
   const [lastName, setLastName] = useState('')
 
   const [isLoginMode, setIsLoginMode] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError('')
     
-    console.log('Login attempt:', { email, password })
-
-    if (email && password) {
+    try {
+      const response = await AuthService.login({ email, password })
+      console.log('Login exitoso:', response)
       onLoginSuccess()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      setError(errorMessage)
+      console.error('Error en login:', err)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -79,6 +90,19 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
           
           {isLoginMode ? (
             <form onSubmit={handleLogin} className="login-form">
+              {error && (
+                <div className="error-message" style={{
+                  color: '#ff4444',
+                  backgroundColor: '#ffe6e6',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  marginBottom: '15px',
+                  border: '1px solid #ff4444'
+                }}>
+                  {error}
+                </div>
+              )}
+              
               <div className="form-group">
                 <label htmlFor="email">Correo electrónico</label>
                 <input
@@ -88,6 +112,7 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Ingresa tu correo electrónico"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -100,11 +125,12 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Ingresa tu contraseña"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
-              <button type="submit" className="login-button">
-                Iniciar Sesión
+              <button type="submit" className="login-button" disabled={isLoading}>
+                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </button>
             </form>
           ) : (
