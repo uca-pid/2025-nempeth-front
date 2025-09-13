@@ -14,6 +14,7 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [role, setRole] = useState<'OWNER' | 'USER'>('OWNER')
 
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
@@ -37,22 +38,56 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
     }
   }
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError('')
     
-    
+    // Validación de contraseñas
     if (password !== confirmPassword) {
-      alert('Las contraseñas no coinciden')
+      setError('Las contraseñas no coinciden')
+      setIsLoading(false)
+      return
+    }
+
+    // Validación de longitud de contraseña
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres')
+      setIsLoading(false)
       return
     }
     
-    console.log('Register attempt:', { 
-      firstName, 
-      email, 
-      lastName, 
-      password 
-    })
+    try {
+      const response = await AuthService.register({
+        name: firstName,
+        lastName,
+        email,
+        password,
+        role,
+      })
+      console.log('Registro exitoso:', response)
+      
+      // Después del registro exitoso, cambiar a modo login
+      alert('Cuenta creada exitosamente. Ahora puedes iniciar sesión.')
+      setIsLoginMode(true)
+      
+      // Limpiar campos
+      setEmail('')
+      setPassword('')
+      setConfirmPassword('')
+      setFirstName('')
+      setLastName('')
+      setRole('OWNER')
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      setError(errorMessage)
+      console.error('Error en registro:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
+
 
   const handleForgotPassword = () => {
     
@@ -61,12 +96,16 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
 
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode)
-
+    
+    // Limpiar todos los campos y estados
     setEmail('')
     setPassword('')
     setConfirmPassword('')
     setFirstName('')
     setLastName('')
+    setRole('OWNER')
+    setError('')
+    setIsLoading(false)
   }
 
   return (
@@ -135,6 +174,19 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
             </form>
           ) : (
             <form onSubmit={handleRegister} className="login-form">
+              {error && (
+                <div className="error-message" style={{
+                  color: '#ff4444',
+                  backgroundColor: '#ffe6e6',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  marginBottom: '15px',
+                  border: '1px solid #ff4444'
+                }}>
+                  {error}
+                </div>
+              )}
+
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="firstName">Nombre</label>
@@ -145,6 +197,7 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="El nombre de tu negocio"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -158,6 +211,7 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Tu apellido"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -170,6 +224,7 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Ingresa tu correo electrónico"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -180,8 +235,10 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Crea una contraseña"
+                  placeholder="Crea una contraseña (mín. 6 caracteres)"
                   required
+                  disabled={isLoading}
+                  minLength={6}
                 />
               </div>
 
@@ -194,11 +251,28 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirma tu contraseña"
                   required
+                  disabled={isLoading}
+                  minLength={6}
                 />
               </div>
 
-              <button type="submit" className="login-button">
-                Crear Cuenta
+              <div className="form-group">
+                <label htmlFor="role">Tipo de usuario</label>
+                <select
+                  id="role"
+                  className="toggle-list-selection"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as 'OWNER' | 'USER')}
+                  required
+                  disabled={isLoading}
+                >
+                  <option value="OWNER">Propietario del negocio</option>
+                  <option value="USER">Empleado</option>
+                </select>
+              </div>
+
+              <button type="submit" className="login-button" disabled={isLoading}>
+                {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
               </button>
             </form>
           )}
