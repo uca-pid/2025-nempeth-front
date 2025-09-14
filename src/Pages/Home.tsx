@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import korvenLogo from '../assets/Korven_logo.png'
-import LoadingScreen from '../components/LoadingScreen'
+import { useState, useEffect, useRef } from 'react'
+import korvenLogo from '../assets/bee.jpeg'
 import '../Styles/Home.css'
+import EditProfile from './EditProfile'
 
 interface HomeProps {
   onLogout: () => void
@@ -9,79 +9,142 @@ interface HomeProps {
 
 function Home({ onLogout }: HomeProps) {
   const [userName] = useState('Usuario')
-  const [isLoading, setIsLoading] = useState(true)
-  const [isLoadingAction, setIsLoadingAction] = useState(false)
-  const [loadingMessage, setLoadingMessage] = useState('Cargando dashboard de tu restaurante...')
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [currentView, setCurrentView] = useState<'home' | 'editProfile'>('home')
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
-  // Load screen simulation (change)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 3000)
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
 
-    return () => clearTimeout(timer)
-  }, [])
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showUserMenu])
 
   const handleLogout = () => {
     console.log('Logout')
+    setShowUserMenu(false)
     onLogout()
   }
 
-  // Load simulation for card actions (delete)
-  const handleCardAction = (action: string) => {
-    setLoadingMessage(`Cargando ${action}...`)
-    setIsLoadingAction(true)
-    
-    setTimeout(() => {
-      setIsLoadingAction(false)
-      console.log(`Navegando a: ${action}`)
-    }, 2000)
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu)
   }
 
-  if (isLoading || isLoadingAction) {
-    return <LoadingScreen message={loadingMessage} />
+  const handleProductsClick = () => {
+    console.log('Navegando a productos')
+  }
+
+  const handleProfileClick = () => {
+    setShowUserMenu(false)
+    setCurrentView('editProfile')
+  }
+
+  const handleBackToHome = () => {
+    setCurrentView('home')
+  }
+
+  const handleSettingsClick = () => {
+    console.log('Navegando a configuración')
+  }
+
+
+  if (currentView === 'editProfile') {
+    return <EditProfile onBack={handleBackToHome} />
   }
 
   return (
-    <div className="home-container">
-      <header className="header">
-        <div className="header-left">
-          <img src={korvenLogo} className="header-logo" alt="Korven Logo" />
-          <h2 className="app-title">Korven</h2>
-        </div>
-        <div className="header-right">
-          <span className="welcome-user">Bienvenido, {userName}</span>
-          <button onClick={handleLogout} className="logout-button">
-            Cerrar Sesión
-          </button>
+    <div className="erp-container">
+      {/* Header Principal */}
+      <header className="erp-header">
+        <div className="header-content">
+          <div className="header-left">
+            <img src={korvenLogo} className="header-logo" alt="Korven Logo" />
+            <div className="brand-info">
+              <h1 className="app-title">Korven</h1>
+              <span className="app-subtitle">Sistema de Gestión</span>
+            </div>
+          </div>
+          
+          <div className="header-right">
+            <div className="user-section" ref={userMenuRef}>
+              <div className="user-info" onClick={toggleUserMenu}>
+                <div className="user-avatar">
+                  <span>{userName.charAt(0).toUpperCase()}</span>
+                </div>
+                <div className="user-details">
+                  <span className="user-name">{userName}</span>
+                  <span className="user-role">Administrador</span>
+                </div>
+                <svg className={`dropdown-arrow ${showUserMenu ? 'rotated' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </div>
+              
+              {showUserMenu && (
+                <div className="user-dropdown">
+                  <button onClick={handleProfileClick} className="dropdown-item">
+                    <span className="dropdown-icon">👤</span>
+                    Mi Perfil
+                  </button>
+                  <button onClick={handleSettingsClick} className="dropdown-item">
+                    <span className="dropdown-icon">⚙️</span>
+                    Configuración
+                  </button>
+                  <div className="dropdown-divider"></div>
+                  <button onClick={handleLogout} className="dropdown-item logout-item">
+                    <span className="dropdown-icon">🚪</span>
+                    Cerrar Sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
+      {/* Contenido Principal */}
       <main className="main-content">
-        <div className="hero-section">
-          <h1 className="hero-title">¡Bienvenido a Korven!</h1>
-          <p className="hero-subtitle">
-            Tu aplicación para la gestión eficiente de bares y restaurantes
+        <div className="welcome-section">
+          <h2 className="welcome-title">¡Bienvenido a Korven!</h2>
+          <p className="welcome-description">
+            Sistema integral de gestión para bares y restaurantes
           </p>
         </div>
 
         <div className="dashboard-grid">
-        
+          <div className="dashboard-card available" onClick={handleProductsClick}>
+            <div className="">
+              <div className="card-icon products">🍽️</div>
 
-          <div className="dashboard-card">
-            <div className="card-icon">🍽️</div>
-            <h3>Productos</h3>
-            <p>Administra tu carta y precios de manera sencilla</p>
-            <button 
-              className="card-button"
-              onClick={() => handleCardAction('Gestión de Productos')}
-            >
-              Gestionar Productos
-            </button>
+            </div>
+            <div className="card-content">
+              <h3 className="card-title">Gestión de Productos</h3>
+              <p className="card-description">
+                Administra tu carta, precios, categorías y stock de productos
+              </p>
+              <ul className="card-features">
+                <li>• Crear y editar productos</li>
+                <li>• Gestionar categorías</li>
+                <li>• Control de precios</li>
+                <li>• Seguimiento de stock</li>
+              </ul>
+            </div>
+            <div className="card-footer">
+              <button className="card-button primary">
+                Acceder a Productos
+              </button>
+            </div>
           </div>
-
         </div>
-
       </main>
     </div>
   )

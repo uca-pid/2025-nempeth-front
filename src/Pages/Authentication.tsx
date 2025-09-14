@@ -41,6 +41,7 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     setError('')
     
     // Validaciones del lado del cliente
@@ -59,11 +60,12 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
       return
     }
 
+    setIsLoading(true)
+
     try {
       const response = await AuthService.login({ email, password })
       console.log('Login exitoso:', response) //ELIMINAR ESTO 
-      setIsLoading(true)
-      
+
       // Mostrar mensaje de éxito antes de ir al Home
       setShowLoginSuccess(true)
     } catch (err) {

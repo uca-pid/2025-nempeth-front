@@ -14,7 +14,7 @@ function LoadingScreen({ message = "Cargando datos..." }: LoadingScreenProps) {
           <Lottie
             animationData={loadingAnimation}
             loop={true}
-            style={{ width: 200, height: 200 }}
+            style={{ width: 300, height: 300 }}
           />
         </div>
         <h2 className="loading-title">Korven</h2>
