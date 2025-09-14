@@ -2,6 +2,9 @@ import { useState } from 'react'
 import korvenLogo from '../assets/Korven_logo.png'
 import '../Styles/Authentication.css'
 import { AuthService } from '../services/loginService'
+import LoadingScreen from '../components/LoadingScreen'
+import SuccesOperation from '../components/SuccesOperation'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
 
 interface AuthenticationProps {
   onLoginSuccess: () => void
@@ -19,19 +22,56 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [showLoginSuccess, setShowLoginSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  const clearFormFields = () => {
+    setEmail('')
+    setPassword('')
+    setConfirmPassword('')
+    setFirstName('')
+    setLastName('')
+    setRole('OWNER')
+    setError('')
+    setShowPassword(false)
+    setShowConfirmPassword(false)
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     setError('')
     
+    // Validaciones del lado del cliente
+    if (!email.trim()) {
+      setError('El correo electrónico es obligatorio')
+      return
+    }
+    
+    if (!password.trim()) {
+      setError('La contraseña es obligatoria')
+      return
+    }
+    
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Por favor ingresa un correo electrónico válido')
+      return
+    }
+
     try {
       const response = await AuthService.login({ email, password })
-      console.log('Login exitoso:', response)
-      onLoginSuccess()
+      console.log('Login exitoso:', response) //ELIMINAR ESTO 
+      setIsLoading(true)
+      
+      // Mostrar mensaje de éxito antes de ir al Home
+      setShowLoginSuccess(true)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-      setError(errorMessage)
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Error inesperado. Intenta nuevamente.')
+      }
       console.error('Error en login:', err)
     } finally {
       setIsLoading(false)
@@ -40,20 +80,38 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     setError('')
+    
+    // Validaciones mejoradas del lado del cliente
+    if (!firstName.trim()) {
+      setError('El nombre es obligatorio')
+      return
+    }
+    
+    if (!lastName.trim()) {
+      setError('El apellido es obligatorio')
+      return
+    }
+    
+    if (!email.trim()) {
+      setError('El correo electrónico es obligatorio')
+      return
+    }
+    
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Por favor ingresa un correo electrónico válido')
+      return
+    }
     
     // Validación de contraseñas
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden')
-      setIsLoading(false)
       return
     }
 
     // Validación de longitud de contraseña
     if (password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres')
-      setIsLoading(false)
       return
     }
     
@@ -66,28 +124,29 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
         role,
       })
       console.log('Registro exitoso:', response)
+      setIsLoading(true)
       
-      // Después del registro exitoso, cambiar a modo login
-      alert('Cuenta creada exitosamente. Ahora puedes iniciar sesión.')
+      clearFormFields()
       setIsLoginMode(true)
-      
-      // Limpiar campos
-      setEmail('')
-      setPassword('')
-      setConfirmPassword('')
-      setFirstName('')
-      setLastName('')
-      setRole('OWNER')
-      
+      setShowSuccessMessage(true)
+
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-      setError(errorMessage)
+      // Mejorar el manejo de errores para registro
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Error inesperado durante el registro. Intenta nuevamente.')
+      }
       console.error('Error en registro:', err)
     } finally {
       setIsLoading(false)
     }
   }
 
+  if (isLoading) {
+    const message = isLoginMode ? 'Iniciando sesión...' : 'Creando tu cuenta...'
+    return <LoadingScreen message={message} />
+  }
 
   const handleForgotPassword = () => {
     
@@ -96,20 +155,31 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
 
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode)
-    
-    // Limpiar todos los campos y estados
-    setEmail('')
-    setPassword('')
-    setConfirmPassword('')
-    setFirstName('')
-    setLastName('')
-    setRole('OWNER')
-    setError('')
+    clearFormFields()
     setIsLoading(false)
+    setError('') 
   }
 
   return (
     <div className="login-container">
+      
+      {showSuccessMessage && (
+        <SuccesOperation 
+          message="Cuenta creada exitosamente. Ahora ya puede iniciar sesión..." 
+          onClose={() => setShowSuccessMessage(false)}
+        />
+      )}
+
+      {showLoginSuccess && (
+        <SuccesOperation 
+          message="¡Bienvenido! Sesión exitosa, redirigiendo..." 
+          onClose={() => {
+            setShowLoginSuccess(false)
+            onLoginSuccess()
+          }}
+        />
+      )}
+
       {/* Lado izquierdo - 60% */}
       <div className="left-section">
         <div className="welcome-content">
@@ -131,21 +201,26 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
             <form onSubmit={handleLogin} className="login-form">
               {error && (
                 <div className="error-message" style={{
-                  color: '#ff4444',
-                  backgroundColor: '#ffe6e6',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  marginBottom: '15px',
-                  border: '1px solid #ff4444'
+                  color: '#d32f2f',
+                  backgroundColor: '#ffebee',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  border: '1px solid #ffcdd2',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}>
-                  {error}
+                  ⚠️ {error}
                 </div>
               )}
               
               <div className="form-group">
                 <label htmlFor="email">Correo electrónico</label>
                 <input
-                  type="email"
+                  //type="email"
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -157,15 +232,26 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
               
               <div className="form-group">
                 <label htmlFor="password">Contraseña</label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Ingresa tu contraseña"
-                  required
-                  disabled={isLoading}
-                />
+                <div className="password-input-container">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Ingresa tu contraseña"
+                    required
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  >
+                    {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                  </button>
+                </div>
               </div>
 
               <button type="submit" className="login-button" disabled={isLoading}>
@@ -176,14 +262,19 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
             <form onSubmit={handleRegister} className="login-form">
               {error && (
                 <div className="error-message" style={{
-                  color: '#ff4444',
-                  backgroundColor: '#ffe6e6',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  marginBottom: '15px',
-                  border: '1px solid #ff4444'
+                  color: '#d32f2f',
+                  backgroundColor: '#ffebee',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  border: '1px solid #ffcdd2',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}>
-                  {error}
+                  ⚠️ {error}
                 </div>
               )}
 
@@ -196,7 +287,7 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="El nombre de tu negocio"
-                    required
+                    //required
                     disabled={isLoading}
                   />
                 </div>
@@ -210,7 +301,7 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Tu apellido"
-                  required
+                  //required
                   disabled={isLoading}
                 />
               </div>
@@ -223,37 +314,59 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Ingresa tu correo electrónico"
-                  required
+                  //required
                   disabled={isLoading}
                 />
               </div>
               
               <div className="form-group">
                 <label htmlFor="password">Contraseña</label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Crea una contraseña (mín. 6 caracteres)"
-                  required
-                  disabled={isLoading}
-                  minLength={6}
-                />
+                <div className="password-input-container">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Crea una contraseña"
+                    //required
+                    disabled={isLoading}
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  >
+                    {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirma tu contraseña"
-                  required
-                  disabled={isLoading}
-                  minLength={6}
-                />
+                <div className="password-input-container">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirma tu contraseña"
+                    //required
+                    disabled={isLoading}
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    disabled={isLoading}
+                    aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  >
+                    {showConfirmPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">

@@ -43,16 +43,22 @@ export class AuthService {
 
       if (error instanceof AxiosError) {
         if (error.response?.status === 401) {
-          throw new Error('Credenciales incorrectas');
+          throw new Error(
+            'Credenciales incorrectas. Verifica tu email y contraseña.',
+          );
+        } else if (error.response?.status === 404) {
+          throw new Error('Usuario no encontrado. Verifica tu email.');
+        } else if (error.response?.status === 400) {
+          throw new Error('Datos inválidos. Verifica tu información.');
         } else if (error.response?.status === 500) {
-          throw new Error('Error del servidor. Intenta más tarde');
+          throw new Error('Error del servidor. Intenta más tarde.');
         } else if (!error.response) {
-          throw new Error('No se pudo conectar con el servidor');
+          throw new Error('Error de conexión. Verifica tu internet.');
         } else {
-          throw new Error('Error inesperado en el login');
+          throw new Error('Error inesperado en el login. Intenta nuevamente.');
         }
       } else {
-        throw new Error('Error inesperado en el login');
+        throw new Error('Error inesperado en el login. Intenta nuevamente.');
       }
     }
   }
@@ -70,18 +76,24 @@ export class AuthService {
 
       if (error instanceof AxiosError) {
         if (error.response?.status === 409) {
-          throw new Error('El email ya está registrado');
+          throw new Error(
+            'Este correo electrónico ya está registrado. Intenta con otro.',
+          );
         } else if (error.response?.status === 400) {
-          throw new Error('Datos inválidos para el registro');
+          throw new Error(
+            'Datos inválidos para el registro. Verifica la información.',
+          );
         } else if (error.response?.status === 500) {
-          throw new Error('Error del servidor. Intenta más tarde');
+          throw new Error('Error del servidor. Intenta más tarde.');
         } else if (!error.response) {
-          throw new Error('No se pudo conectar con el servidor');
+          throw new Error('Error de conexión. Verifica tu internet.');
         } else {
-          throw new Error('Error inesperado en el registro');
+          throw new Error(
+            'Error inesperado en el registro. Intenta nuevamente.',
+          );
         }
       } else {
-        throw new Error('Error inesperado en el registro');
+        throw new Error('Error inesperado en el registro. Intenta nuevamente.');
       }
     }
   }

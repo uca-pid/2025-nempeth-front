@@ -160,6 +160,55 @@ body {
   box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
 }
 
+/* Estilos para el contenedor de contraseña con botón toggle */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  width: 100%;
+  padding-right: 3rem; /* Espacio para el botón */
+}
+
+.password-toggle-button {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.password-toggle-button:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.password-toggle-button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.password-toggle-button:disabled:hover {
+  background-color: transparent;
+}
+
+.password-toggle-button:focus,
+.password-toggle-button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .form-group input::placeholder {
   color: #999;
 }
@@ -241,6 +290,12 @@ body {
 
 .toggle-button:hover {
   color: #ff4500;
+}
+
+.toggle-button:focus,
+.toggle-button:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 @keyframes float {
