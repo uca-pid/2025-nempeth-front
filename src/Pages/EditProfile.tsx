@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import '../Styles/EditProfile.css'
+import { useAuth } from '../contexts/useAuth'
 
 interface EditProfileProps {
   onBack: () => void
 }
 
 function EditProfile({ onBack }: EditProfileProps) {
+  const { user } = useAuth()
+  
   const [formData, setFormData] = useState({
-    nombre: 'Juan',
-    apellido: 'Pérez',
-    email: 'juan.perez@ejemplo.com',
+    nombre: user?.name || '',
+    apellido: user?.lastName || '',
+    email: user?.email || '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''

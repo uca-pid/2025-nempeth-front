@@ -2,13 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import korvenLogo from '../assets/bee.jpeg'
 import '../Styles/Home.css'
 import EditProfile from './EditProfile'
+import { useAuth } from '../contexts/useAuth'
 
-interface HomeProps {
-  onLogout: () => void
-}
-
-function Home({ onLogout }: HomeProps) {
-  const [userName] = useState('Usuario')
+function Home() {
+  const { user, logout } = useAuth()
+  const userName = user?.email || 'Usuario'
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [currentView, setCurrentView] = useState<'home' | 'editProfile'>('home')
   const userMenuRef = useRef<HTMLDivElement>(null)
@@ -29,10 +27,8 @@ function Home({ onLogout }: HomeProps) {
     }
   }, [showUserMenu])
 
-  const handleLogout = () => {
-    console.log('Logout')
-    setShowUserMenu(false)
-    onLogout()
+    const handleLogout = () => {
+    logout()
   }
 
   const toggleUserMenu = () => {

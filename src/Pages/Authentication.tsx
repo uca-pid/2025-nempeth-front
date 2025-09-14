@@ -5,12 +5,10 @@ import { AuthService } from '../services/loginService'
 import LoadingScreen from '../components/LoadingScreen'
 import SuccesOperation from '../components/SuccesOperation'
 import { IoEye, IoEyeOff } from 'react-icons/io5'
+import { useAuth } from '../contexts/useAuth'
 
-interface AuthenticationProps {
-  onLoginSuccess: () => void
-}
-
-function Authentication({ onLoginSuccess }: AuthenticationProps) {
+function Authentication() {
+  const { login } = useAuth()
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -63,7 +61,7 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
     setIsLoading(true)
 
     try {
-      const response = await AuthService.login({ email, password })
+      const response = await login({ email, password })
       console.log('Login exitoso:', response) //ELIMINAR ESTO 
 
       // Mostrar mensaje de éxito antes de ir al Home
@@ -177,7 +175,7 @@ function Authentication({ onLoginSuccess }: AuthenticationProps) {
           message="¡Bienvenido! Sesión exitosa, redirigiendo..." 
           onClose={() => {
             setShowLoginSuccess(false)
-            onLoginSuccess()
+            // El contexto maneja la redirección automáticamente
           }}
         />
       )}

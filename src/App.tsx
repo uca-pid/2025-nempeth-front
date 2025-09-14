@@ -1,44 +1,50 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { useState } from 'react'
+import { AuthProvider } from './contexts/AuthContext'
+import { useAuth } from './contexts/useAuth'
 import Authentication from './Pages/Authentication'
 import Home from './Pages/Home'
+import LoadingScreen from './components/LoadingScreen'
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+// Componente interno que usa el contexto
+function AppRoutes() {
+  const { isAuthenticated, isLoading } = useAuth()
 
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true)
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false)
+  if (isLoading) {
+    return <LoadingScreen />
   }
 
   return (
-    <Router>
-      <Routes>
+    <Routes>
+      <Route 
+        path="/" 
+        element={
+          isAuthenticated ? 
+          <Navigate to="/home" replace /> : 
+          <Authentication />
+        } 
+      />
+      
+      <Route 
+        path="/home" 
+        element={
+          isAuthenticated ? 
+          <Home /> : 
+          <Navigate to="/" replace />
+        } 
+      />
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
 
-        <Route 
-          path="/" 
-          element={
-            isAuthenticated ? 
-            <Navigate to="/home" replace /> : 
-            <Authentication onLoginSuccess={handleLoginSuccess} />
-          } 
-        />
-        
-        <Route 
-          path="/home" 
-          element={
-            isAuthenticated ? 
-            <Home onLogout={handleLogout} /> : 
-            <Navigate to="/" replace />
-          } 
-        />
-        
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
   )
 }
 
