@@ -1,12 +1,15 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import '../Styles/EditProfile.css'
 import { useAuth } from '../contexts/useAuth'
+import {editUserProfile} from '../services/editUserDataService'
 
 interface EditProfileProps {
-  onBack: () => void
+  onBack?: () => void
 }
 
 function EditProfile({ onBack }: EditProfileProps) {
+  const navigate = useNavigate()
   const { user } = useAuth()
   
   const [formData, setFormData] = useState({
@@ -31,14 +34,14 @@ function EditProfile({ onBack }: EditProfileProps) {
   const handleSaveProfile = async () => {
     setIsLoading(true)
     
-    // Simulamos una llamada a la API
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      await editUserProfile(user?.userId || '', {
+        name: formData.nombre,
+        lastname: formData.apellido
+      })
       
-      // Aquí iría la lógica para guardar los datos del perfil
-      console.log('Perfil guardado:', formData)
       
-      // Reset password fields
       setFormData(prev => ({
         ...prev,
         currentPassword: '',
@@ -47,8 +50,6 @@ function EditProfile({ onBack }: EditProfileProps) {
       }))
       setShowPasswordSection(false)
       
-      // Mostrar mensaje de éxito
-      alert('Perfil actualizado correctamente')
       
     } catch (error) {
       console.error('Error al guardar perfil:', error)
@@ -81,7 +82,7 @@ function EditProfile({ onBack }: EditProfileProps) {
   return (
     <div className="edit-profile-container">
       <div className="edit-profile-header">
-        <button onClick={onBack} className="back-button">
+        <button onClick={() => onBack ? onBack() : navigate('/home')} className="back-button">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15,18 9,12 15,6"></polyline>
           </svg>
