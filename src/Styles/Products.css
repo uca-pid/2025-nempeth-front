@@ -139,8 +139,8 @@
 .product-price {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-korven-primary);
-  background: var(--color-info-light);
+  color: var(--color-success);
+  background: var(--color-success-light);
   padding: 0.5rem 1rem;
   border-radius: var(--border-radius-md);
   display: inline-block;
@@ -374,6 +374,59 @@
 .btn-save:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
+}
+
+/* === MODAL DE CONFIRMACIÓN DE ELIMINACIÓN === */
+.confirm-delete-body {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.confirm-delete-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.confirm-delete-body p {
+  font-size: 1rem;
+  color: var(--color-gray-700);
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.confirm-delete-warning {
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  font-style: italic;
+}
+
+.btn-delete-confirm {
+  background: var(--color-error);
+  color: var(--color-white);
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-confirm:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.btn-delete-confirm:disabled {
+  background: var(--color-gray-400);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Centrar botones en el modal de confirmación */
+.confirm-delete-body + .modal-actions {
+  justify-content: center;
+  padding-bottom: 1rem;
 }
 
 /* === RESPONSIVE === */

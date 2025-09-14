@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import '../Styles/Products.css'
 import { productService, type Product } from '../services/productService'
 import { useAuth } from '../contexts/useAuth'
+import { IoOptionsOutline, IoTrashSharp } from 'react-icons/io5'
 
 interface ProductModalProps {
   isOpen: boolean
@@ -14,6 +15,14 @@ interface ProductModalProps {
 
 interface ProductsProps {
   onBack?: () => void
+}
+
+interface ConfirmDeleteModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+  productName: string
+  isDeleting: boolean
 }
 
 function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalProps) {
@@ -152,6 +161,46 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
   )
 }
 
+function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeleting }: ConfirmDeleteModalProps) {
+  if (!isOpen) return null
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content" style={{ maxWidth: '400px' }}>
+        <div className="modal-header">
+          <h3>Confirmar eliminación</h3>
+          <button className="modal-close" onClick={onClose} disabled={isDeleting}>×</button>
+        </div>
+        
+        <div className="confirm-delete-body">
+          <div className="confirm-delete-icon">⚠️</div>
+          <p>¿Estás seguro de que deseas eliminar el producto <strong>"{productName}"</strong>?</p>
+          <p className="confirm-delete-warning">Esta acción no se puede deshacer.</p>
+        </div>
+
+        <div className="modal-actions">
+          <button 
+            type="button" 
+            className="btn-cancel" 
+            onClick={onClose}
+            disabled={isDeleting}
+          >
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            className="btn-delete-confirm"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Products({ onBack }: ProductsProps = {}) {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -161,6 +210,9 @@ function Products({ onBack }: ProductsProps = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const loadProducts = useCallback(async () => {
     if (!user?.userId) return
@@ -214,23 +266,37 @@ function Products({ onBack }: ProductsProps = {}) {
     setIsModalOpen(true)
   }
 
-  const handleDeleteProduct = async (id: string) => {
-    if (!user?.userId || processing) return
+  const handleDeleteProduct = (product: Product) => {
+    if (!user?.userId || processing || isDeleting) return
+    
+    setProductToDelete(product)
+    setShowDeleteModal(true)
+  }
 
-    if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      try {
-        setProcessing(true)
-        setError(null)
-        await productService.deleteProduct(id, user.userId)
-        // Recargar la lista para asegurar consistencia
-        await loadProducts()
-      } catch (err) {
-        console.error('Error eliminando producto:', err)
-        setError('Error al eliminar el producto. Por favor, intenta nuevamente.')
-      } finally {
-        setProcessing(false)
-      }
+  const handleConfirmDelete = async () => {
+    if (!productToDelete || !user?.userId || isDeleting) return
+
+    try {
+      setIsDeleting(true)
+      setError(null)
+      await productService.deleteProduct(productToDelete.id, user.userId)
+      // Recargar la lista para asegurar consistencia
+      await loadProducts()
+      // Cerrar modal
+      setShowDeleteModal(false)
+      setProductToDelete(null)
+    } catch (err) {
+      console.error('Error eliminando producto:', err)
+      setError('Error al eliminar el producto. Por favor, intenta nuevamente.')
+    } finally {
+      setIsDeleting(false)
     }
+  }
+
+  const handleCloseDeleteModal = () => {
+    if (isDeleting) return
+    setShowDeleteModal(false)
+    setProductToDelete(null)
   }
 
   const handleSaveProduct = async (productData: Omit<Product, 'id'> & { id?: string }) => {
@@ -317,15 +383,15 @@ function Products({ onBack }: ProductsProps = {}) {
                 title="Editar producto"
                 disabled={processing}
               >
-                ✏️
+                <IoOptionsOutline size={20} />
               </button>
               <button 
                 className="btn-delete"
-                onClick={() => handleDeleteProduct(product.id)}
+                onClick={() => handleDeleteProduct(product)}
                 title="Eliminar producto"
-                disabled={processing}
+                disabled={processing || isDeleting}
               >
-                🗑️
+                <IoTrashSharp size={20} />
               </button>
             </div>
           </div>
@@ -354,6 +420,15 @@ function Products({ onBack }: ProductsProps = {}) {
         onSave={handleSaveProduct}
         product={editingProduct}
         error={error}
+      />
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        productName={productToDelete?.name || ''}
+        isDeleting={isDeleting}
       />
     </div>
   )
