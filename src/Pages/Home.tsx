@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import korvenLogo from '../assets/bee.jpeg'
 import '../Styles/Home.css'
-import EditProfile from './EditProfile'
 import { useAuth } from '../contexts/useAuth'
 
 function Home() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const userName = user?.email || 'Usuario'
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [currentView, setCurrentView] = useState<'home' | 'editProfile'>('home')
   const userMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -36,25 +36,16 @@ function Home() {
   }
 
   const handleProductsClick = () => {
-    console.log('Navegando a productos')
+    navigate('/products')
   }
 
   const handleProfileClick = () => {
     setShowUserMenu(false)
-    setCurrentView('editProfile')
-  }
-
-  const handleBackToHome = () => {
-    setCurrentView('home')
+    navigate('/profile')
   }
 
   const handleSettingsClick = () => {
     console.log('Navegando a configuración')
-  }
-
-
-  if (currentView === 'editProfile') {
-    return <EditProfile onBack={handleBackToHome} />
   }
 
   return (

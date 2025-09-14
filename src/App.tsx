@@ -3,6 +3,8 @@ import { AuthProvider } from './contexts/AuthContext'
 import { useAuth } from './contexts/useAuth'
 import Authentication from './Pages/Authentication'
 import Home from './Pages/Home'
+import EditProfile from './Pages/EditProfile'
+import Products from './Pages/Products'
 import LoadingScreen from './components/LoadingScreen'
 
 // Componente interno que usa el contexto
@@ -29,6 +31,24 @@ function AppRoutes() {
         element={
           isAuthenticated ? 
           <Home /> : 
+          <Navigate to="/" replace />
+        } 
+      />
+      
+      <Route 
+        path="/profile" 
+        element={
+          isAuthenticated ? 
+          <EditProfile /> : 
+          <Navigate to="/" replace />
+        } 
+      />
+      
+      <Route 
+        path="/products" 
+        element={
+          isAuthenticated ? 
+          <Products /> : 
           <Navigate to="/" replace />
         } 
       />
