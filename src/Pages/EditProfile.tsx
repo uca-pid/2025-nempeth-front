@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { UserService } from '../services/userService'
 import { useNavigate } from 'react-router-dom'
 import '../Styles/EditProfile.css'
 import { useAuth } from '../contexts/useAuth'
-import {editUserProfile} from '../services/editUserDataService'
 
 interface EditProfileProps {
   onBack?: () => void
@@ -10,8 +10,8 @@ interface EditProfileProps {
 
 function EditProfile({ onBack }: EditProfileProps) {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  
+  const { user, updateUser } = useAuth();
+
   const [formData, setFormData] = useState({
     nombre: user?.name || '',
     apellido: user?.lastName || '',
@@ -19,7 +19,19 @@ function EditProfile({ onBack }: EditProfileProps) {
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
-  })
+  });
+
+  // Sincroniza formData con user cuando user cambie (por fetchUserProfile)
+  React.useEffect(() => {
+    if (user?.name || user?.lastName) {
+      setFormData(prev => ({
+        ...prev,
+        nombre: user?.name || '',
+        apellido: user?.lastName || '',
+        email: user?.email || ''
+      }));
+    }
+  }, [user]);
 
   const [showPasswordSection, setShowPasswordSection] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -32,45 +44,65 @@ function EditProfile({ onBack }: EditProfileProps) {
   }
 
   const handleSaveProfile = async () => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
     try {
-
-      await editUserProfile(user?.userId || '', {
-        name: formData.nombre,
-        lastname: formData.apellido
-      })
-      
-      
+      await UserService.updateProfile(
+        user?.userId,
+        {
+          name: formData.nombre,
+          lastName: formData.apellido
+        }
+      );
+      // Actualiza el contexto global de usuario
+      updateUser({ name: formData.nombre, lastName: formData.apellido });
       setFormData(prev => ({
         ...prev,
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
-      }))
-      setShowPasswordSection(false)
-      
-      
+      }));
+      setShowPasswordSection(false);
+      alert('Perfil actualizado correctamente');
     } catch (error) {
-      console.error('Error al guardar perfil:', error)
-      alert('Error al guardar el perfil')
+      console.error('Error al guardar perfil:', error);
+      alert('Error al guardar el perfil');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (formData.newPassword !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden')
-      return
+      alert('Las contraseñas no coinciden');
+      return;
     }
-    
     if (formData.newPassword.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres')
-      return
+      alert('La contraseña debe tener al menos 6 caracteres');
+      return;
     }
-    
-    handleSaveProfile()
+    setIsLoading(true);
+    try {
+      await UserService.updatePassword(
+        user?.userId,
+        {
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword
+        }
+      );
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }));
+      setShowPasswordSection(false);
+      alert('Contraseña actualizada correctamente');
+    } catch (error) {
+      console.error('Error al cambiar contraseña:', error);
+      alert('Error al cambiar la contraseña');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const canSaveProfile = formData.nombre.trim() && formData.apellido.trim()

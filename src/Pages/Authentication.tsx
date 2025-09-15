@@ -268,7 +268,7 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="El nombre de tu negocio"
+                    placeholder="Tu nombre"
                     //required
                     disabled={isLoading}
                   />

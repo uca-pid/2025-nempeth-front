@@ -47,17 +47,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Verificar token al cargar la app
   useEffect(() => {
     const storedToken = AuthService.getToken();
-    if (storedToken) {
-      const userData = decodeToken(storedToken);
-      if (userData) {
-        setToken(storedToken);
-        setUser(userData);
-      } else {
-        // Token inválido o expirado
-        AuthService.logout();
+    const init = async () => {
+      if (storedToken) {
+        const userData = decodeToken(storedToken);
+        if (userData) {
+          setToken(storedToken);
+          setUser(userData);
+          // Si no hay name/lastName, forzar fetch del perfil
+          if (!userData.name || !userData.lastName) {
+            try {
+              const response = await api.get('/users/me', { headers: { Authorization: `Bearer ${storedToken}` } });
+              if (response.data) {
+                setUser(prev => prev ? { ...prev, ...response.data } : null);
+              }
+            } catch (error) {
+              console.error('Error fetching user profile:', error);
+            }
+          }
+        } else {
+          // Token inválido o expirado
+          AuthService.logout();
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+    init();
   }, []);
 
   //Opcional: Función para obtener más datos del usuario desde el backend
