@@ -1,5 +1,5 @@
 /* Importar solo los colores */
-@import './Variables.css';
+@import './colores.css';
 
 /* Contenedor principal */
 .edit-profile-container {
