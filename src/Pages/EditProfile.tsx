@@ -82,13 +82,18 @@ function EditProfile({ onBack }: EditProfileProps) {
   return (
     <div className="edit-profile-container">
       <div className="edit-profile-header">
-        <button onClick={() => onBack ? onBack() : navigate('/home')} className="back-button">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="15,18 9,12 15,6"></polyline>
-          </svg>
-          Volver
-        </button>
-        <h1 className="page-title">Editar Perfil</h1>
+        <div className="header-left">
+          <button onClick={() => onBack ? onBack() : navigate('/home')} className="back-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15,18 9,12 15,6"></polyline>
+            </svg>
+            Volver
+          </button>
+          <h1 className="page-title">Editar Perfil</h1>
+          <p className="page-subtitle">
+            Actualiza tu información personal y configuración de cuenta
+          </p>
+        </div>
       </div>
 
       <div className="edit-profile-content">

@@ -347,11 +347,14 @@ function Products({ onBack }: ProductsProps = {}) {
       {/* Header */}
       <div className="products-header">
         <div className="header-left">
-          <button className="btn-back" onClick={() => onBack ? onBack() : navigate('/home')}>
-            ← Volver
+          <button className="back-button" onClick={() => onBack ? onBack() : navigate('/home')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15,18 9,12 15,6"></polyline>
+            </svg>
+            Volver
           </button>
-          <h1 className="products-title">Gestión de Productos</h1>
-          <p className="products-subtitle">
+          <h1 className="page-title">Gestión de Productos</h1>
+          <p className="page-subtitle">
             Administra tu carta y controla tus productos
           </p>
         </div>
