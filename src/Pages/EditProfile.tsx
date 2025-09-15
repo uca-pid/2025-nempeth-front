@@ -3,6 +3,7 @@ import { UserService } from '../services/userService'
 import { useNavigate } from 'react-router-dom'
 import '../Styles/EditProfile.css'
 import { useAuth } from '../contexts/useAuth'
+import Modal from '../components/Modal'
 
 interface EditProfileProps {
   onBack?: () => void
@@ -10,7 +11,7 @@ interface EditProfileProps {
 
 function EditProfile({ onBack }: EditProfileProps) {
   const navigate = useNavigate()
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
 
   const [formData, setFormData] = useState({
     nombre: user?.name || '',
@@ -35,12 +36,42 @@ function EditProfile({ onBack }: EditProfileProps) {
 
   const [showPasswordSection, setShowPasswordSection] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Estados para el modal
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'info',
+    onConfirm: undefined as (() => void) | undefined
+  })
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }))
+  }
+
+  const showModal = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info', onConfirm?: () => void) => {
+    setModal({
+      isOpen: true,
+      title,
+      message,
+      type,
+      onConfirm
+    })
+  }
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }))
+  }
+
+  const handleModalConfirm = () => {
+    if (modal.onConfirm) {
+      modal.onConfirm()
+    }
+    closeModal()
   }
 
   const handleSaveProfile = async () => {
@@ -62,10 +93,10 @@ function EditProfile({ onBack }: EditProfileProps) {
         confirmPassword: ''
       }));
       setShowPasswordSection(false);
-      alert('Perfil actualizado correctamente');
+      showModal('¡Éxito!', 'Perfil actualizado correctamente', 'success');
     } catch (error) {
       console.error('Error al guardar perfil:', error);
-      alert('Error al guardar el perfil');
+      showModal('Error', 'No se pudo guardar el perfil. Por favor, inténtalo de nuevo.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -73,11 +104,11 @@ function EditProfile({ onBack }: EditProfileProps) {
 
   const handleChangePassword = async () => {
     if (formData.newPassword !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      showModal('Error de validación', 'Las contraseñas no coinciden. Por favor, verifica que ambas contraseñas sean iguales.', 'error');
       return;
     }
     if (formData.newPassword.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
+      showModal('Error de validación', 'La contraseña debe tener al menos 6 caracteres.', 'error');
       return;
     }
     setIsLoading(true);
@@ -96,10 +127,15 @@ function EditProfile({ onBack }: EditProfileProps) {
         confirmPassword: ''
       }));
       setShowPasswordSection(false);
-      alert('Contraseña actualizada correctamente');
+      showModal(
+        '¡Contraseña actualizada!', 
+        'Tu contraseña ha sido cambiada exitosamente. Por seguridad, deberás iniciar sesión nuevamente con tus nuevas credenciales.', 
+        'success',
+        () => logout() // Se ejecuta al hacer clic en Aceptar
+      );
     } catch (error) {
       console.error('Error al cambiar contraseña:', error);
-      alert('Error al cambiar la contraseña');
+      showModal('Error', 'No se pudo cambiar la contraseña. Por favor, verifica que tu contraseña actual sea correcta.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -258,6 +294,15 @@ function EditProfile({ onBack }: EditProfileProps) {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onConfirm={modal.onConfirm ? handleModalConfirm : undefined}
+      />
     </div>
   )
 }
