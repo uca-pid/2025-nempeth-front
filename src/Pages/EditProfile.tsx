@@ -145,16 +145,6 @@ function EditProfile({ onBack }: EditProfileProps) {
                   <span className="form-help">El email no puede ser modificado</span>
                 </div>
               </div>
-
-              <div className="form-actions">
-                <button 
-                  onClick={handleSaveProfile}
-                  disabled={!canSaveProfile || isLoading}
-                  className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
-                >
-                  {isLoading ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
-              </div>
             </div>
 
             <div className="form-section">
@@ -218,6 +208,16 @@ function EditProfile({ onBack }: EditProfileProps) {
                 </div>
               )}
             </div>
+          </div>
+          
+          <div className="global-form-actions">
+            <button 
+              onClick={handleSaveProfile}
+              disabled={!canSaveProfile || isLoading}
+              className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
+            >
+              {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
           </div>
         </div>
       </div>

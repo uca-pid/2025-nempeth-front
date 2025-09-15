@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import korvenLogo from '../assets/bee.jpeg'
 import '../Styles/Home.css'
 import { useAuth } from '../contexts/useAuth'
+import { IoArrowRedoSharp } from 'react-icons/io5'
 
 function Home() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const userName = user?.email || 'Usuario'
+  const userName = user?.name || 'Usuario'
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -44,10 +45,6 @@ function Home() {
     navigate('/profile')
   }
 
-  const handleSettingsClick = () => {
-    console.log('Navegando a configuración')
-  }
-
   return (
     <div className="erp-container">
       {/* Header Principal */}
@@ -79,16 +76,10 @@ function Home() {
               {showUserMenu && (
                 <div className="user-dropdown">
                   <button onClick={handleProfileClick} className="dropdown-item">
-                    <span className="dropdown-icon">👤</span>
                     Mi Perfil
-                  </button>
-                  <button onClick={handleSettingsClick} className="dropdown-item">
-                    <span className="dropdown-icon">⚙️</span>
-                    Configuración
                   </button>
                   <div className="dropdown-divider"></div>
                   <button onClick={handleLogout} className="dropdown-item logout-item">
-                    <span className="dropdown-icon">🚪</span>
                     Cerrar Sesión
                   </button>
                 </div>
@@ -108,26 +99,39 @@ function Home() {
         </div>
 
         <div className="dashboard-grid">
-          <div className="dashboard-card available" onClick={handleProductsClick}>
-            <div className="">
+          <div className="product-card-horizontal" onClick={handleProductsClick}>
+            {/* Imagen grande a la izquierda */}
+            <div className="product-card-image">
               <div className="card-icon products">🍽️</div>
-
             </div>
-            <div className="card-content">
-              <h3 className="card-title">Gestión de Productos</h3>
-              <p className="card-description">
-                Administra tu carta, precios, categorías y stock de productos
-              </p>
-              <ul className="card-features">
-                <li>• Crear y editar productos</li>
-                <li>• Gestionar categorías</li>
-                <li>• Control de precios</li>
-                <li>• Seguimiento de stock</li>
-              </ul>
+            
+            {/* Sección de título, características, divisor y descripción */}
+            <div className="product-card-left">
+              <div className="product-card-content">
+                <div className="product-card-main-content">
+                  <h3 className="product-card-title">Gestión de Productos</h3>
+                  <div className="product-card-features">
+                    <div className="feature-item">• Crear y editar productos</div>
+                    <div className="feature-item">• Gestionar categorías</div>
+                    <div className="feature-item">• Control de precios</div>
+                    <div className="feature-item">• Seguimiento de stock</div>
+                  </div>
+                </div>
+                
+                {/* Divisor vertical */}
+                <div className="product-card-divider"></div>
+                
+                {/* Descripción */}
+                <div className="product-card-description">
+                  <p>Administra tu carta, precios, categorías y stock de productos de manera integral</p>
+                </div>
+              </div>
             </div>
-            <div className="card-footer">
-              <button className="card-button primary">
-                Acceder a Productos
+            
+            {/* Botón de acceso cuadrado */}
+            <div className="product-card-action">
+              <button className="action-button">
+                <IoArrowRedoSharp size={40} />
               </button>
             </div>
           </div>

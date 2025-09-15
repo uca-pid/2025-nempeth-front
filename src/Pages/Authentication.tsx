@@ -2,7 +2,6 @@ import { useState } from 'react'
 import korvenLogo from '../assets/Korven_logo.png'
 import '../Styles/Authentication.css'
 import { AuthService } from '../services/loginService'
-import LoadingScreen from '../components/LoadingScreen'
 import SuccesOperation from '../components/SuccesOperation'
 import { IoEye, IoEyeOff } from 'react-icons/io5'
 import { useAuth } from '../contexts/useAuth'
@@ -21,7 +20,6 @@ function Authentication() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [showLoginSuccess, setShowLoginSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -64,8 +62,6 @@ function Authentication() {
       const response = await login({ email, password })
       console.log('Login exitoso:', response) //ELIMINAR ESTO 
 
-      // Mostrar mensaje de éxito antes de ir al Home
-      setShowLoginSuccess(true)
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -143,10 +139,6 @@ function Authentication() {
     }
   }
 
-  if (isLoading) {
-    const message = isLoginMode ? 'Iniciando sesión...' : 'Creando tu cuenta...'
-    return <LoadingScreen message={message} />
-  }
 
   const handleForgotPassword = () => {
     
@@ -167,16 +159,6 @@ function Authentication() {
         <SuccesOperation 
           message="Cuenta creada exitosamente. Ahora ya puede iniciar sesión..." 
           onClose={() => setShowSuccessMessage(false)}
-        />
-      )}
-
-      {showLoginSuccess && (
-        <SuccesOperation 
-          message="¡Bienvenido! Sesión exitosa, redirigiendo..." 
-          onClose={() => {
-            setShowLoginSuccess(false)
-            // El contexto maneja la redirección automáticamente
-          }}
         />
       )}
 
