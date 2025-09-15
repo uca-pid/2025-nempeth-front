@@ -17,6 +17,7 @@ function Authentication() {
   const [role, setRole] = useState<'OWNER' | 'USER'>('OWNER')
 
   const [isLoginMode, setIsLoginMode] = useState(true)
+  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
@@ -141,8 +142,47 @@ function Authentication() {
 
 
   const handleForgotPassword = () => {
+    setIsForgotPasswordMode(true)
+    setError('')
+  }
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     
-    alert('Funcionalidad de recuperar contraseña próximamente disponible')
+    setError('')
+    
+    if (!email.trim()) {
+      setError('El correo electrónico es obligatorio')
+      return
+    }
+    
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Por favor ingresa un correo electrónico válido')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      // Aquí irá la lógica para enviar el email de recuperación
+      // Por ahora solo simulamos la funcionalidad
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      alert('Se ha enviado un enlace de recuperación a tu correo electrónico')
+      setIsForgotPasswordMode(false)
+      setEmail('')
+      
+    } catch (err) {
+      setError('Error al enviar el correo de recuperación. Intenta nuevamente.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleBackToLogin = () => {
+    setIsForgotPasswordMode(false)
+    setError('')
+    setEmail('')
   }
 
   const toggleMode = () => {
@@ -176,10 +216,77 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
       <div className="right-section">
         <div className="login-panel">
           <h1 className="login-title">
-            {isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            {isForgotPasswordMode ? 'Recuperar Contraseña' : (isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta')}
           </h1>
           
-          {isLoginMode ? (
+          {isForgotPasswordMode ? (
+            <form onSubmit={handleForgotPasswordSubmit} className="login-form">
+              {error && (
+                <div className="error-message" style={{
+                  color: '#d32f2f',
+                  backgroundColor: '#ffebee',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  border: '1px solid #ffcdd2',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  ⚠️ {error}
+                </div>
+              )}
+              
+              <p className="forgot-password-description" style={{
+                textAlign: 'center',
+                marginBottom: '24px',
+                color: '#666',
+                fontSize: '14px',
+                lineHeight: '1.5'
+              }}>
+                Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+              </p>
+
+              <div className="form-group">
+                <label htmlFor="email">Correo electrónico</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Ingresa tu correo electrónico"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <button type="submit" className="login-button" disabled={isLoading}>
+                {isLoading ? 'Enviando...' : 'Enviar Enlace de Recuperación'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleBackToLogin}
+                className="toggle-button"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#FFA500',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  marginTop: '16px',
+                  width: '100%',
+                  textAlign: 'center'
+                }}
+                disabled={isLoading}
+              >
+                Volver al inicio de sesión
+              </button>
+            </form>
+          ) : isLoginMode ? (
             <form onSubmit={handleLogin} className="login-form">
               {error && (
                 <div className="error-message" style={{
@@ -372,25 +479,27 @@ Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y
             </form>
           )}
 
-          <div className="toggle-section">
-            {isLoginMode ? (
-              <p className="toggle-text">
-                ¿No tienes una cuenta?{' '}
-                <button onClick={toggleMode} className="toggle-button">
-                  Regístrate aquí
-                </button>
-              </p>
-            ) : (
-              <p className="toggle-text">
-                ¿Ya tienes una cuenta?{' '}
-                <button onClick={toggleMode} className="toggle-button">
-                  Inicia sesión
-                </button>
-              </p>
-            )}
-          </div>
+          {!isForgotPasswordMode && (
+            <div className="toggle-section">
+              {isLoginMode ? (
+                <p className="toggle-text">
+                  ¿No tienes una cuenta?{' '}
+                  <button onClick={toggleMode} className="toggle-button">
+                    Regístrate aquí
+                  </button>
+                </p>
+              ) : (
+                <p className="toggle-text">
+                  ¿Ya tienes una cuenta?{' '}
+                  <button onClick={toggleMode} className="toggle-button">
+                    Inicia sesión
+                  </button>
+                </p>
+              )}
+            </div>
+          )}
 
-          {isLoginMode && (
+          {isLoginMode && !isForgotPasswordMode && (
             <button
               onClick={handleForgotPassword}
               className="forgot-password-link"
