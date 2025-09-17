@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { UserService } from '../services/userService'
 import { useNavigate } from 'react-router-dom'
-import '../Styles/EditProfile.css'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
 
@@ -141,157 +140,251 @@ function EditProfile({ onBack }: EditProfileProps) {
     }
   }
 
+  const handleDeleteAccount = () => {
+    showModal(
+      '⚠️ Eliminar Cuenta',
+      'Esta acción es IRREVERSIBLE. Se eliminará permanentemente tu cuenta y todos los datos asociados, incluyendo tus productos, historial y configuraciones. ¿Estás seguro de que deseas continuar?',
+      'error',
+      async () => {
+        setIsLoading(true);
+        try {
+          await UserService.deleteAccount(user?.userId);
+          showModal(
+            'Cuenta eliminada',
+            'Tu cuenta ha sido eliminada exitosamente.',
+            'success',
+            () => logout()
+          );
+        } catch (error) {
+          console.error('Error al eliminar cuenta:', error);
+          showModal('Error', 'No se pudo eliminar la cuenta. Por favor, inténtalo de nuevo más tarde.', 'error');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    );
+  }
+
   const canSaveProfile = formData.nombre.trim() && formData.apellido.trim()
   const canChangePassword = formData.currentPassword && 
                            formData.newPassword && 
                            formData.confirmPassword &&
                            formData.newPassword === formData.confirmPassword
 
+  const baseInputClasses = 'w-full rounded-md border-2 border-[var(--color-gray-200)] bg-white px-3 py-2 text-sm text-[var(--color-gray-900)] transition focus:border-[var(--color-korven-brand)] focus:outline-none focus:ring-4 focus:ring-[rgba(247,65,22,0.1)] placeholder:text-[var(--color-gray-400)]';
+
+  const outlinedButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-[var(--color-korven-brand)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-korven-brand)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-korven-brand)] hover:text-white hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
+
+  const primaryButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-[var(--color-korven-brand)] bg-[var(--color-korven-brand)] px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:border-[#e53e0e] hover:bg-[#e53e0e] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
+
+  const dangerButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-red-600 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:border-red-700 hover:bg-red-700 hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
+
+  const renderLoadingContent = (loadingLabel: string, defaultLabel: string) => (
+    <>
+      {isLoading ? loadingLabel : defaultLabel}
+      {isLoading && (
+        <svg
+          className="ml-2 h-4 w-4 animate-spin"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            d="M4 12a8 8 0 018-8"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
+    </>
+  );
+
   return (
-    <div className="edit-profile-container">
-      <div className="edit-profile-header">
-        <div className="header-left">
-          <button onClick={() => onBack ? onBack() : navigate('/home')} className="back-button">
+    <div className="min-h-screen bg-[var(--color-korven-background)] p-4 sm:p-6 lg:p-8">
+      <div className="mb-8 border-b-2 border-[var(--color-gray-200)] pb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+          <button
+            onClick={() => (onBack ? onBack() : navigate('/home'))}
+            className="inline-flex w-fit items-center gap-2 rounded-md border border-[var(--color-gray-200)] bg-white px-3 py-2 text-[13px] font-medium text-[var(--color-gray-700)] transition duration-200 hover:-translate-x-0.5 hover:border-[var(--color-gray-300)] hover:bg-[var(--color-gray-50)]"
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="15,18 9,12 15,6"></polyline>
             </svg>
             Volver
           </button>
-          <h1 className="page-title">Editar Perfil</h1>
-          <p className="page-subtitle">
-            Actualiza tu información personal y configuración de cuenta
-          </p>
+          <div className="sm:flex sm:flex-col">
+            <h1 className="text-3xl font-bold text-[var(--color-gray-800)]">Editar Perfil</h1>
+            <p className="mt-2 text-base text-[var(--color-gray-600)] sm:mt-0">
+              Actualiza tu información personal y configuración de cuenta
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="edit-profile-content">
-        <div className="profile-card">
-          <div className="card-header">
-            <div className="user-avatar-large">
+      <div className="mx-auto max-w-[1200px]">
+        <div className="overflow-hidden rounded-2xl bg-white shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)]">
+          <div className="flex items-center gap-4 bg-[linear-gradient(135deg,var(--color-korven-brand),var(--color-korven-accent))] p-5 text-white sm:gap-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white/40 bg-white/20 text-2xl font-bold uppercase backdrop-blur">
               <span>{formData.nombre.charAt(0).toUpperCase()}</span>
             </div>
-            <div className="user-info-large">
-              <h2 className="user-name">{formData.nombre} {formData.apellido}</h2>
-              <p className="user-email">{formData.email}</p>
+            <div>
+              <h2 className="text-lg font-bold sm:text-xl">{formData.nombre} {formData.apellido}</h2>
+              <p className="text-sm opacity-90 sm:text-base">{formData.email}</p>
             </div>
           </div>
 
-          <div className="card-content">
-            <div className="form-section">
-              <h3 className="section-title">Información Personal</h3>
-              
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="nombre" className="form-label">Nombre</label>
+          <div className="grid gap-8 p-6 md:grid-cols-2 md:p-8">
+            <div className="space-y-6">
+              <h3 className="relative pl-3 text-lg font-semibold text-[var(--color-gray-900)] before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded before:bg-[var(--color-korven-brand)] before:content-['']">
+                Información Personal
+              </h3>
+
+              <div className="space-y-5">
+                <div className="flex flex-col">
+                  <label htmlFor="nombre" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                    Nombre
+                  </label>
                   <input
                     type="text"
                     id="nombre"
-                    className="form-input"
+                    className={baseInputClasses}
                     value={formData.nombre}
                     onChange={(e) => handleInputChange('nombre', e.target.value)}
                     placeholder="Ingresa tu nombre"
                   />
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="apellido" className="form-label">Apellido</label>
+                <div className="flex flex-col">
+                  <label htmlFor="apellido" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                    Apellido
+                  </label>
                   <input
                     type="text"
                     id="apellido"
-                    className="form-input"
+                    className={baseInputClasses}
                     value={formData.apellido}
                     onChange={(e) => handleInputChange('apellido', e.target.value)}
                     placeholder="Ingresa tu apellido"
                   />
                 </div>
 
-                <div className="form-group full-width">
-                  <label htmlFor="email" className="form-label">Email</label>
+                <div className="flex flex-col">
+                  <label htmlFor="email" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                    Email
+                  </label>
                   <input
                     type="email"
                     id="email"
-                    className="form-input disabled"
+                    className={`${baseInputClasses} cursor-not-allowed border-[var(--color-gray-200)] bg-[var(--color-gray-100)] text-[var(--color-gray-600)]`}
                     value={formData.email}
                     disabled
                     title="El email no puede ser modificado"
                   />
-                  <span className="form-help">El email no puede ser modificado</span>
+                  <span className="mt-1 text-sm italic text-[var(--color-gray-500)]">El email no puede ser modificado</span>
                 </div>
               </div>
             </div>
 
-            <div className="form-section">
-              <div className="section-header">
-                <h3 className="section-title">Seguridad</h3>
-                <button 
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="relative pl-3 text-lg font-semibold text-[var(--color-gray-900)] before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded before:bg-[var(--color-korven-brand)] before:content-['']">
+                  Seguridad
+                </h3>
+                <button
                   onClick={() => setShowPasswordSection(!showPasswordSection)}
-                  className="btn btn-outline"
+                  className={outlinedButtonClasses}
                 >
                   {showPasswordSection ? 'Cancelar' : 'Cambiar Contraseña'}
                 </button>
               </div>
 
               {showPasswordSection && (
-                <div className="password-section">
-                  <div className="form-group">
-                    <label htmlFor="currentPassword" className="form-label">Contraseña Actual</label>
+                <div className="space-y-5 rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-gray-50)] p-4 sm:p-5">
+                  <div className="flex flex-col">
+                    <label htmlFor="currentPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                      Contraseña Actual
+                    </label>
                     <input
                       type="password"
                       id="currentPassword"
-                      className="form-input"
+                      className={baseInputClasses}
                       value={formData.currentPassword}
                       onChange={(e) => handleInputChange('currentPassword', e.target.value)}
                       placeholder="Ingresa tu contraseña actual"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="newPassword" className="form-label">Nueva Contraseña</label>
+                  <div className="flex flex-col">
+                    <label htmlFor="newPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                      Nueva Contraseña
+                    </label>
                     <input
                       type="password"
                       id="newPassword"
-                      className="form-input"
+                      className={baseInputClasses}
                       value={formData.newPassword}
                       onChange={(e) => handleInputChange('newPassword', e.target.value)}
                       placeholder="Ingresa tu nueva contraseña"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="confirmPassword" className="form-label">Confirmar Nueva Contraseña</label>
+                  <div className="flex flex-col">
+                    <label htmlFor="confirmPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                      Confirmar Nueva Contraseña
+                    </label>
                     <input
                       type="password"
                       id="confirmPassword"
-                      className="form-input"
+                      className={baseInputClasses}
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       placeholder="Confirma tu nueva contraseña"
                     />
                   </div>
 
-                  <div className="form-actions">
-                    <button 
+                  <div className="flex flex-wrap justify-end gap-3">
+                    <button
                       onClick={handleChangePassword}
                       disabled={!canChangePassword || isLoading}
-                      className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
+                      className={primaryButtonClasses}
                     >
-                      {isLoading ? 'Cambiando...' : 'Cambiar Contraseña'}
+                      {renderLoadingContent('Cambiando...', 'Cambiar Contraseña')}
                     </button>
                   </div>
                 </div>
               )}
             </div>
           </div>
-          
-          <div className="global-form-actions">
-            <button 
+
+          <div className="flex justify-center border-t border-[var(--color-gray-200)] bg-[var(--color-gray-50)] px-6 py-5 sm:px-8">
+            <button
               onClick={handleSaveProfile}
               disabled={!canSaveProfile || isLoading}
-              className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
+              className={primaryButtonClasses}
             >
-              {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+              {renderLoadingContent('Guardando...', 'Guardar Cambios')}
             </button>
           </div>
+        </div>
+        
+        <div className="mt-6 flex justify-center border-t border-[var(--color-gray-200)] bg-[var(--color-gray-50)] px-6 py-5 sm:px-8">
+          <button
+            onClick={handleDeleteAccount}
+            disabled={isLoading}
+            className={dangerButtonClasses}
+          >
+            {renderLoadingContent('Eliminando...', 'Eliminar Cuenta')}
+          </button>
         </div>
       </div>
 

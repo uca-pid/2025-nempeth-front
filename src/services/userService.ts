@@ -13,15 +13,22 @@ export interface UpdatePasswordRequest {
 export class UserService {
   static async updateProfile(
     userId: string | undefined,
-    data: UpdateProfileRequest) {
+    data: UpdateProfileRequest,
+  ) {
     const response = await api.put(`/users/${userId}/profile`, data);
     return response.data;
   }
 
   static async updatePassword(
-    userId: string | undefined, 
-    data: UpdatePasswordRequest) {
+    userId: string | undefined,
+    data: UpdatePasswordRequest,
+  ) {
     const response = await api.put(`/users/${userId}/password`, data);
+    return response.data;
+  }
+
+  static async deleteAccount(userId: string | undefined) {
+    const response = await api.delete(`/users/${userId}`);
     return response.data;
   }
 }
