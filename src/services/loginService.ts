@@ -24,6 +24,32 @@ export interface RegisterResponse {
   userId: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ValidateTokenRequest {
+  token: string;
+}
+
+export interface ValidateTokenResponse {
+  message: string;
+  valid: boolean;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
 // Servicio de autenticación
 export class AuthService {
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -98,6 +124,37 @@ export class AuthService {
     }
   }
 
+  // Método para register (para uso futuro)
+  static async forgotPassword(userData: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+    try {
+      const response = await api.post<ForgotPasswordResponse>(
+        '/auth/password/forgot',
+        userData,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error en registro:', error);
+
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          throw new Error(
+            'Datos inválidos para el registro. Verifica la información.',
+          );
+        } else if (error.response?.status === 500) {
+          throw new Error('Error del servidor. Intenta más tarde.');
+        } else if (!error.response) {
+          throw new Error('Error de conexión. Verifica tu internet.');
+        } else {
+          throw new Error(
+            'Error inesperado en el registro. Intenta nuevamente.',
+          );
+        }
+      } else {
+        throw new Error('Error inesperado en el registro. Intenta nuevamente.');
+      }
+    }
+  }
+
   // Método para logout
   static logout(): void {
     localStorage.removeItem('token');
@@ -111,5 +168,84 @@ export class AuthService {
   // Método para obtener el token actual
   static getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  // Método para validar token de restablecimiento
+  static async validateResetToken(token: string): Promise<ValidateTokenResponse> {
+    try {
+      console.log('Haciendo request a:', `/password/validate?token=${encodeURIComponent(token)}`);
+      const response = await api.get<ValidateTokenResponse>(
+        `auth/password/validate?token=${encodeURIComponent(token)}`
+      );
+      console.log('Respuesta del servidor:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error en validación de token:', error);
+
+      if (error instanceof AxiosError) {
+        console.error('Status:', error.response?.status);
+        console.error('Data:', error.response?.data);
+        console.error('Headers:', error.response?.headers);
+        
+        if (error.response?.status === 403) {
+          throw new Error('No tienes permisos para realizar esta acción.');
+        } else if (error.response?.status === 404) {
+          throw new Error('Token no encontrado o inválido.');
+        } else if (error.response?.status === 410) {
+          throw new Error('El token ha expirado. Solicita un nuevo restablecimiento.');
+        } else if (error.response?.status === 400) {
+          throw new Error('Token inválido.');
+        } else if (error.response?.status === 500) {
+          throw new Error('Error del servidor. Intenta más tarde.');
+        } else if (!error.response) {
+          throw new Error('Error de conexión. Verifica tu internet.');
+        } else {
+          throw new Error(`Error ${error.response.status}: ${error.response.data?.message || 'Error inesperado'}`);
+        }
+      } else {
+        throw new Error('Error inesperado. Intenta nuevamente.');
+      }
+    }
+  }
+
+  // Método para restablecer la contraseña
+  static async resetPassword(token: string, newPassword: string): Promise<ResetPasswordResponse> {
+    try {
+      const request: ResetPasswordRequest = { token, newPassword };
+      console.log('Haciendo request a /password/reset con:', { token: token.substring(0, 10) + '...', newPassword: '[OCULTA]' });
+      
+      // Hacer request sin el header de Authorization para evitar 403
+      const response = await api.post<ResetPasswordResponse>(
+        'auth/password/reset',
+        request
+      );
+      console.log('Respuesta del servidor:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error en reset password:', error);
+
+      if (error instanceof AxiosError) {
+        console.error('Status:', error.response?.status);
+        console.error('Data:', error.response?.data);
+        
+        if (error.response?.status === 403) {
+          throw new Error('No tienes permisos para realizar esta acción.');
+        } else if (error.response?.status === 404) {
+          throw new Error('Token no encontrado o inválido.');
+        } else if (error.response?.status === 410) {
+          throw new Error('El token ha expirado. Solicita un nuevo restablecimiento.');
+        } else if (error.response?.status === 400) {
+          throw new Error('Datos inválidos. Verifica que la contraseña cumpla los requisitos.');
+        } else if (error.response?.status === 500) {
+          throw new Error('Error del servidor. Intenta más tarde.');
+        } else if (!error.response) {
+          throw new Error('Error de conexión. Verifica tu internet.');
+        } else {
+          throw new Error(`Error ${error.response.status}: ${error.response.data?.message || 'Error inesperado'}`);
+        }
+      } else {
+        throw new Error('Error inesperado. Intenta nuevamente.');
+      }
+    }
   }
 }

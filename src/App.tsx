@@ -5,6 +5,7 @@ import Authentication from './Pages/Authentication'
 import Home from './Pages/Home'
 import EditProfile from './Pages/EditProfile'
 import Products from './Pages/Products'
+import ResetPassword from './Pages/ResetPassword'
 import LoadingScreen from './components/LoadingScreen'
 
 // Componente interno que usa el contexto
@@ -51,6 +52,11 @@ function AppRoutes() {
           <Products /> : 
           <Navigate to="/" replace />
         } 
+      />
+      
+      <Route 
+        path="/reset-password" 
+        element={<ResetPassword />} 
       />
       
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -136,8 +136,8 @@ export default function Authentication() {
 
     setIsLoading(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      alert('Se ha enviado un enlace de recuperación a tu correo electrónico')
+      const response = await AuthService.forgotPassword({ email })
+      console.log('Correo de recuperación enviado:', response)
       setIsForgotPasswordMode(false)
       setEmail('')
     } catch {
