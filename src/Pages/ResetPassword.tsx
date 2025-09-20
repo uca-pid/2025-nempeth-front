@@ -53,18 +53,18 @@ function ResetPassword() {
   }, [token])
 
   const validatePassword = (password: string): string | null => {
-    if (password.length < 6) {
-      return 'La contraseña debe tener al menos 6 caracteres'
+    if (password.length < 8) {
+      return 'La contraseña debe tener al menos 8 caracteres'
     }
-    // if (!/(?=.*[a-z])/.test(password)) {
-    //   return 'La contraseña debe contener al menos una letra minúscula'
-    // }
-    // if (!/(?=.*[A-Z])/.test(password)) {
-    //   return 'La contraseña debe contener al menos una letra mayúscula'
-    // }
-    // if (!/(?=.*\d)/.test(password)) {
-    //   return 'La contraseña debe contener al menos un número'
-    // }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'La contraseña debe contener al menos una letra minúscula'
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'La contraseña debe contener al menos una letra mayúscula'
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'La contraseña debe contener al menos un número'
+    }
     return null
   }
 
@@ -217,10 +217,10 @@ function ResetPassword() {
             <div className="password-requirements">
               <p>La contraseña debe contener:</p>
               <ul>
-                <li className={newPassword.length >= 6 ? 'valid' : ''}>
-                  Al menos 6 caracteres
+                <li className={newPassword.length >= 8 ? 'valid' : ''}>
+                  Al menos 8 caracteres
                 </li>
-                {/* <li className={/(?=.*[a-z])/.test(newPassword) ? 'valid' : ''}>
+                <li className={/(?=.*[a-z])/.test(newPassword) ? 'valid' : ''}>
                   Una letra minúscula
                 </li>
                 <li className={/(?=.*[A-Z])/.test(newPassword) ? 'valid' : ''}>
@@ -228,7 +228,7 @@ function ResetPassword() {
                 </li>
                 <li className={/(?=.*\d)/.test(newPassword) ? 'valid' : ''}>
                   Un número
-                </li> */}
+                </li>
               </ul>
             </div>
 

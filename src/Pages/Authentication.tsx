@@ -89,8 +89,20 @@ export default function Authentication() {
       setError('Las contraseñas no coinciden')
       return
     }
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres')
+      return
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      setError('La contraseña debe contener al menos una letra minúscula')
+      return 
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      setError('La contraseña debe contener al menos una letra mayúscula')
+      return
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      setError('La contraseña debe contener al menos un número')
       return
     }
 
@@ -172,7 +184,7 @@ export default function Authentication() {
             alt="Logo Korven"
             className="max-w-[850px] max-h-[750px] w-auto h-auto drop-shadow-lg animate-gentle-float mb-8"
           />
-          <h4 className="w-full text-center text-lg font-normal leading-relaxed tracking-wide text-white/95 drop-shadow sm:text-xl md:text-2xl">
+          <h4 className="w-full text-center text-lg font-normal leading-relaxed tracking-wide text-white/95 drop-shadow">
             En la tradición europea, mucho antes de las colmenas modernas, las abejas vivían en cestas de mimbre, donde cada abeja encontraba su rol y la comunidad prosperaba. Esas cestas no eran solo un contenedor, eran símbolo de orden, cooperación y productividad. Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y restaurante en una colmena digital perfectamente organizada.
           </h4>
         </div>
@@ -343,7 +355,7 @@ export default function Authentication() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Crea una contraseña"
                     disabled={isLoading}
-                    minLength={6}
+                    minLength={8}
                     className="w-full rounded-lg border-2 border-neutral-200 px-4 py-3 pr-10 text-base outline-none transition focus:border-rose-600 focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:opacity-75"
                   />
                   <button
@@ -368,7 +380,7 @@ export default function Authentication() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirma tu contraseña"
                     disabled={isLoading}
-                    minLength={6}
+                    minLength={8}
                     className="w-full rounded-lg border-2 border-neutral-200 px-4 py-3 pr-10 text-base outline-none transition focus:border-rose-600 focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:opacity-75"
                   />
                   <button
@@ -381,6 +393,24 @@ export default function Authentication() {
                     {showConfirmPassword ? <IoEye size={20} /> : <IoEyeOff size={20} /> }
                   </button>
                 </div>
+              </div>
+
+              <div className="password-requirements">
+                <p>La contraseña debe contener:</p>
+                <ul>
+                  <li className={password.length >= 8 ? 'valid' : ''}>
+                    Al menos 8 caracteres
+                  </li>
+                  <li className={/(?=.*[a-z])/.test(password) ? 'valid' : ''}>
+                    Una letra minúscula
+                  </li>
+                  <li className={/(?=.*[A-Z])/.test(password) ? 'valid' : ''}>
+                    Una letra mayúscula
+                  </li>
+                  <li className={/(?=.*\d)/.test(password) ? 'valid' : ''}>
+                    Un número
+                  </li>
+                </ul>
               </div>
 
               <div className="mt-4 flex flex-col gap-1">
@@ -449,7 +479,7 @@ export default function Authentication() {
 
       {showSuccessMessage && (
         <SuccesOperation
-          message="Cuenta creada exitosamente. Ahora ya puede iniciar sesión..."
+          message="Ahora ya puede iniciar sesión..."
           onClose={() => setShowSuccessMessage(false)}
         />
       )}

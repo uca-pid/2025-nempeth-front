@@ -3,6 +3,8 @@ import { UserService } from '../services/userService'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
+import '../Styles/ResetPassword.css'
 
 interface EditProfileProps {
   onBack?: () => void
@@ -35,6 +37,9 @@ function EditProfile({ onBack }: EditProfileProps) {
 
   const [showPasswordSection, setShowPasswordSection] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
   // Estados para el modal
   const [modal, setModal] = useState({
@@ -106,8 +111,20 @@ function EditProfile({ onBack }: EditProfileProps) {
       showModal('Error de validación', 'Las contraseñas no coinciden. Por favor, verifica que ambas contraseñas sean iguales.', 'error');
       return;
     }
-    if (formData.newPassword.length < 6) {
-      showModal('Error de validación', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+    if (formData.newPassword.length < 8) {
+      showModal('Error de validación', 'La contraseña debe tener al menos 8 caracteres.', 'error');
+      return;
+    }
+    if (!/(?=.*[a-z])/.test(formData.newPassword)) {
+      showModal('Error de validación', 'La contraseña debe contener al menos una letra minúscula.', 'error');
+      return;
+    }
+    if (!/(?=.*[A-Z])/.test(formData.newPassword)) {
+      showModal('Error de validación', 'La contraseña debe contener al menos una letra mayúscula.', 'error');
+      return;
+    }
+    if (!/(?=.*\d)/.test(formData.newPassword)) {
+      showModal('Error de validación', 'La contraseña debe contener al menos un número.', 'error');
       return;
     }
     setIsLoading(true);
@@ -314,42 +331,90 @@ function EditProfile({ onBack }: EditProfileProps) {
                     <label htmlFor="currentPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
                       Contraseña Actual
                     </label>
-                    <input
-                      type="password"
-                      id="currentPassword"
-                      className={baseInputClasses}
-                      value={formData.currentPassword}
-                      onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-                      placeholder="Ingresa tu contraseña actual"
-                    />
+                    <div className="relative flex items-center">
+                      <input
+                        type={showCurrentPassword ? 'text' : 'password'}
+                        id="currentPassword"
+                        className={baseInputClasses}
+                        value={formData.currentPassword}
+                        onChange={(e) => handleInputChange('currentPassword', e.target.value)}
+                        placeholder="Ingresa tu contraseña actual"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        aria-label={showCurrentPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500 transition active:scale-95"
+                      >
+                        {showCurrentPassword ? <IoEye size={20} /> : <IoEyeOff size={20} />}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex flex-col">
                     <label htmlFor="newPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
                       Nueva Contraseña
                     </label>
-                    <input
-                      type="password"
-                      id="newPassword"
-                      className={baseInputClasses}
-                      value={formData.newPassword}
-                      onChange={(e) => handleInputChange('newPassword', e.target.value)}
-                      placeholder="Ingresa tu nueva contraseña"
-                    />
+                    <div className="relative flex items-center">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        id="newPassword"
+                        className={baseInputClasses}
+                        value={formData.newPassword}
+                        onChange={(e) => handleInputChange('newPassword', e.target.value)}
+                        placeholder="Ingresa tu nueva contraseña"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        aria-label={showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500 transition active:scale-95"
+                      >
+                        {showNewPassword ? <IoEye size={20} /> : <IoEyeOff size={20} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="password-requirements">
+                    <p>La nueva contraseña debe contener:</p>
+                    <ul>
+                      <li className={formData.newPassword.length >= 8 ? 'valid' : ''}>
+                        Al menos 8 caracteres
+                      </li>
+                      <li className={/(?=.*[a-z])/.test(formData.newPassword) ? 'valid' : ''}>
+                        Una letra minúscula
+                      </li>
+                      <li className={/(?=.*[A-Z])/.test(formData.newPassword) ? 'valid' : ''}>
+                        Una letra mayúscula
+                      </li>
+                      <li className={/(?=.*\d)/.test(formData.newPassword) ? 'valid' : ''}>
+                        Un número
+                      </li>
+                    </ul>
                   </div>
 
                   <div className="flex flex-col">
                     <label htmlFor="confirmPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
                       Confirmar Nueva Contraseña
                     </label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      className={baseInputClasses}
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      placeholder="Confirma tu nueva contraseña"
-                    />
+                    <div className="relative flex items-center">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        id="confirmPassword"
+                        className={baseInputClasses}
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                        placeholder="Confirma tu nueva contraseña"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500 transition active:scale-95"
+                      >
+                        {showConfirmPassword ? <IoEye size={20} /> : <IoEyeOff size={20} />}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap justify-end gap-3">
