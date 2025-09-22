@@ -1,0 +1,34 @@
+:root {
+  /* === COLORES PRINCIPALES === */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  
+  /* === COLORES DE GRISES === */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  /* === COLORES DE ESTADO === */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-info: #3b82f6;
+  --color-info-light: #dbeafe;
+
+  /* === COLORES ESPECÍFICOS DE KORVEN === */
+  --color-korven-brand: #f74116;
+  --color-korven-accent: #f59e0b;
+  --color-korven-background: #f8f7fc;
+  --color-korven-primary: #2563eb;
+  --color-korven-secondary: #64748b;
+}
