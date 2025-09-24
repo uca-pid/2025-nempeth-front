@@ -41,10 +41,10 @@ vi.mock('lottie-react', () => ({
 vi.mock('axios', () => ({
   default: {
     create: vi.fn(() => ({
-      get: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
+      get: vi.fn().mockResolvedValue({ data: {} }),
+      post: vi.fn().mockResolvedValue({ data: {} }),
+      put: vi.fn().mockResolvedValue({ data: {} }),
+      delete: vi.fn().mockResolvedValue({ data: {} }),
       interceptors: {
         request: {
           use: vi.fn(),
@@ -54,11 +54,57 @@ vi.mock('axios', () => ({
         },
       },
     })),
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
+    get: vi.fn().mockResolvedValue({ data: {} }),
+    post: vi.fn().mockResolvedValue({ data: {} }),
+    put: vi.fn().mockResolvedValue({ data: {} }),
+    delete: vi.fn().mockResolvedValue({ data: {} }),
   },
+}))
+
+// Mock the API service specifically
+vi.mock('../services/api', () => ({
+  default: {
+    get: vi.fn().mockResolvedValue({ data: {} }),
+    post: vi.fn().mockResolvedValue({ data: {} }),
+    put: vi.fn().mockResolvedValue({ data: {} }),
+    delete: vi.fn().mockResolvedValue({ data: {} }),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  },
+}))
+
+// Mock all service modules
+vi.mock('../services/loginService', () => ({
+  login: vi.fn().mockResolvedValue({ token: 'mock-token', message: 'Success' }),
+  register: vi.fn().mockResolvedValue({ userId: 'mock-user-id' }),
+  forgotPassword: vi.fn().mockResolvedValue({ message: 'Email sent' }),
+  resetPassword: vi.fn().mockResolvedValue({ message: 'Password reset' }),
+  validateResetToken: vi.fn().mockResolvedValue({ valid: true }),
+  AuthService: {
+    login: vi.fn().mockResolvedValue({ token: 'mock-token', message: 'Success' }),
+    register: vi.fn().mockResolvedValue({ userId: 'mock-user-id' }),
+    getToken: vi.fn().mockReturnValue(null),
+    isAuthenticated: vi.fn().mockReturnValue(false),
+    validateResetToken: vi.fn().mockResolvedValue({ valid: true }),
+  }
+}))
+
+vi.mock('../services/userService', () => ({
+  getUserProfile: vi.fn().mockResolvedValue({ name: 'Mock User', email: 'mock@example.com' }),
+  updateUserProfile: vi.fn().mockResolvedValue({ message: 'Profile updated' }),
+}))
+
+vi.mock('../services/productService', () => ({
+  getProducts: vi.fn().mockResolvedValue([]),
+  createProduct: vi.fn().mockResolvedValue({ id: 'mock-product-id' }),
+  updateProduct: vi.fn().mockResolvedValue({ message: 'Product updated' }),
+  deleteProduct: vi.fn().mockResolvedValue({ message: 'Product deleted' }),
+}))
+
+vi.mock('../services/editUserDataService', () => ({
+  updateUserData: vi.fn().mockResolvedValue({ message: 'User data updated' }),
 }))
 
 // Mock react-router-dom for navigation
