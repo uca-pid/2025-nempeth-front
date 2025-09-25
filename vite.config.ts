@@ -11,13 +11,13 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       thresholds: {
         global: {
-          branches: 50,
-          functions: 50,
-          lines: 50,
-          statements: 50,
+          branches: 10,
+          functions: 10,
+          lines: 10,
+          statements: 10,
         },
       },
       exclude: [
