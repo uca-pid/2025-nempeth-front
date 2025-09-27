@@ -10,8 +10,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  const isAuthenticated = !!user && !!token;
+  useEffect(() => {
+    setIsAuthenticated(!!user && !!token);
+  }, [user, token]);
 
   // Función para decodificar el JWT y extraer la información del usuario
   const decodeToken = (token: string): User | null => {
@@ -99,6 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setToken(response.token);
           setUser(userData);
           console.log('userData:', userData);
+          setIsAuthenticated(true);
 
           // Opcionalmente, obtener más datos del usuario
             await fetchUserProfile();
@@ -107,6 +111,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       
       return response;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }

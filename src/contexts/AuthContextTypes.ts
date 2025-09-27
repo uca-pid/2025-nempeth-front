@@ -6,7 +6,6 @@ export interface User {
   userId: string;
   email: string;
   role: 'OWNER' | 'USER';
-  // Puedes agregar más campos cuando los tengas disponibles desde el backend
   name?: string;
   lastName?: string;
 }
