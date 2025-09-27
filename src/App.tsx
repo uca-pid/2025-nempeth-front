@@ -6,15 +6,15 @@ import Home from './Pages/Home'
 import EditProfile from './Pages/EditProfile'
 import Products from './Pages/Products'
 import ResetPassword from './Pages/ResetPassword'
-import LoadingScreen from './components/LoadingScreen'
+// import LoadingScreen from './components/LoadingScreen'
 
 // Componente interno que usa el contexto
 function AppRoutes() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated } = useAuth()
 
-  if (isLoading) {
-    return <LoadingScreen />
-  }
+  // if (isLoading) {
+  //   return <LoadingScreen />
+  // }
 
   return (
     <Routes>
@@ -59,7 +59,6 @@ function AppRoutes() {
         element={<ResetPassword />} 
       />
       
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

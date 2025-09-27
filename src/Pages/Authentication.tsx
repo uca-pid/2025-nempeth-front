@@ -6,7 +6,7 @@ import { IoEye, IoEyeOff } from 'react-icons/io5'
 import { useAuth } from '../contexts/useAuth'
 
 export default function Authentication() {
-  const { login } = useAuth()
+  const { login, isLoading } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,7 +17,6 @@ export default function Authentication() {
 
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -52,7 +51,6 @@ export default function Authentication() {
       return
     }
 
-    setIsLoading(true)
     try {
       const response = await login({ email, password })
       console.log('Login exitoso:', response)
@@ -60,8 +58,6 @@ export default function Authentication() {
       if (err instanceof Error) setError(err.message)
       else setError('Error inesperado. Intenta nuevamente.')
       console.error('Error en login:', err)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -115,7 +111,6 @@ export default function Authentication() {
         role,
       })
       console.log('Registro exitoso:', response)
-      setIsLoading(true)
       clearFormFields()
       setIsLoginMode(true)
       setShowSuccessMessage(true)
@@ -123,9 +118,8 @@ export default function Authentication() {
       if (err instanceof Error) setError(err.message)
       else setError('Error inesperado durante el registro. Intenta nuevamente.')
       console.error('Error en registro:', err)
-    } finally {
-      setIsLoading(false)
-    }
+    } 
+    
   }
 
   const handleForgotPassword = () => {
@@ -146,7 +140,6 @@ export default function Authentication() {
       return
     }
 
-    setIsLoading(true)
     try {
       const response = await AuthService.forgotPassword({ email })
       console.log('Correo de recuperación enviado:', response)
@@ -154,9 +147,7 @@ export default function Authentication() {
       setEmail('')
     } catch {
       setError('Error al enviar el correo de recuperación. Intenta nuevamente.')
-    } finally {
-      setIsLoading(false)
-    }
+    } 
   }
 
   const handleBackToLogin = () => {
@@ -168,7 +159,6 @@ export default function Authentication() {
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode)
     clearFormFields()
-    setIsLoading(false)
     setError('')
   }
 
