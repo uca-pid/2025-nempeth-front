@@ -217,6 +217,8 @@ function Products() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false)
+  const [selectedProductDescription, setSelectedProductDescription] = useState({ name: '', description: '' })
 
   const loadProducts = useCallback(async () => {
     if (!user?.userId) return
@@ -309,6 +311,11 @@ function Products() {
     setProductToDelete(null)
   }
 
+  const handleShowDescription = (product: Product) => {
+    setSelectedProductDescription({ name: product.name, description: product.description })
+    setShowDescriptionModal(true)
+  }
+
   const handleSaveProduct = async (productData: Omit<Product, 'id'> & { id?: string }) => {
     if (!user?.userId || processing) return
 
@@ -382,37 +389,73 @@ function Products() {
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 xl:max-w-[1400px] xl:mx-auto">
           {products.map(product => (
             <div
-              key={product.id}
-              className="flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition hover:-translate-y-1 hover:border-[#2563eb] hover:shadow-xl"
-            >
-              <div className="flex flex-1 flex-col">
-                <h3 className="text-2xl font-semibold text-gray-800">{product.name}</h3>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600">{product.description}</p>
-                <div className="mt-4 w-fit rounded-md bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-600">
-                  ${product.price.toFixed(2)}
+                key={product.id}
+                className="group flex min-h-[320px] flex-col overflow-hidden rounded-2xl border bg-white p-0 shadow-md ring-1 ring-gray-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-gray-300"
+              >
+                {/* Header: Enhanced title with gradient background and subtle hover effect */}
+                <div className="relative  px-6 pt-6 pb-4">
+                  <h3 className="text-xl font-bold tracking-tight text-gray-900 transition-colors">
+                    {product.name}
+                  </h3>
                 </div>
-              </div>
 
-              <div className="mt-4 flex items-center justify-end gap-3 border-t border-gray-200 pt-4">
-                <button
-                  className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-100 text-amber-500 transition hover:scale-105 hover:bg-amber-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => handleEditProduct(product)}
-                  title="Editar producto"
-                  disabled={processing}
-                  type="button"
-                >
-                  <IoOptionsOutline size={20} />
-                </button>
-                <button
-                  className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-100 text-red-500 transition hover:scale-105 hover:bg-red-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => handleDeleteProduct(product)}
-                  title="Eliminar producto"
-                  disabled={processing || isDeleting}
-                  type="button"
-                >
-                  <IoTrashSharp size={20} />
-                </button>
-              </div>
+                {/* Body: Enhanced description with better typography and hover animation */}
+                <div className="flex-1 px-6 py-4">
+                  <div
+                    className="min-h-[140px] max-h-[140px] rounded-xl border border-gray-200/50 bg-gray-50/50 p-4 text-sm leading-relaxed text-gray-700 shadow-inner transition-all duration-300 group-hover:bg-gray-100/80 group-hover:shadow-md cursor-pointer overflow-hidden"
+                    onClick={() => handleShowDescription(product)}
+                  >
+                    <div 
+                      className="overflow-hidden"
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 6,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {product.description}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer: Improved layout with price and actions, enhanced hover effects */}
+                <div className="mt-4 flex items-center justify-between px-6 pb-6">
+                  {/* Price: Larger, more prominent with gradient background */}
+                  <div className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-2 text-base font-semibold text-emerald-800 ring-1 ring-emerald-200 transition-all group-hover:ring-emerald-300">
+                    ${product.price.toFixed(2)}
+                  </div>
+
+                    {/* Actions: Refined buttons with beautiful, color-matched icons */}
+                    <div className="flex items-center gap-4">
+                      
+                      {/* Edit button */}
+                      <button
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100/90 ring-1 ring-indigo-200/90 
+                                  transition-all duration-300 hover:scale-110 hover:bg-indigo-200 hover:ring-indigo-300 active:scale-95 
+                                  disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => handleEditProduct(product)}
+                        aria-label="Edit product"
+                        disabled={processing}
+                        type="button"
+                      >
+                        <IoOptionsOutline size={20} className="text-indigo-600 transition-all duration-200 hover:text-indigo-700 group-hover:rotate-3" />
+                      </button>
+
+                      {/* Delete button */}
+                      <button
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100/90 ring-1 ring-rose-200/90 
+                                  transition-all duration-300 hover:scale-110 hover:bg-rose-200 hover:ring-rose-300 active:scale-95 
+                                  disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => handleDeleteProduct(product)}
+                        aria-label="Delete product"
+                        disabled={processing || isDeleting}
+                        type="button"
+                      >
+                        <IoTrashSharp size={20} className="text-rose-600 transition-all duration-200 hover:text-rose-700 group-hover:-rotate-3" />
+                      </button>
+                    </div>
+                </div>
             </div>
           ))}
 
@@ -453,6 +496,43 @@ function Products() {
           productName={productToDelete?.name || ''}
           isDeleting={isDeleting}
         />
+
+        {/* Modal de descripción completa */}
+        {showDescriptionModal && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col">
+              {/* Header fijo */}
+              <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0">
+                <h3 className="text-xl font-semibold text-gray-800">Descripción - {selectedProductDescription.name}</h3>
+                <button
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-700"
+                  onClick={() => setShowDescriptionModal(false)}
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+              
+              {/* Contenido con scroll */}
+              <div className="flex-1 overflow-y-auto px-6 py-8">
+                <div className="rounded-lg bg-gray-50 p-6 text-base leading-relaxed text-gray-700">
+                  {selectedProductDescription.description}
+                </div>
+              </div>
+              
+              {/* Footer fijo */}
+              <div className="flex justify-end border-t border-gray-200 px-6 py-4 flex-shrink-0">
+                <button
+                  type="button"
+                  className="rounded-lg bg-gray-200 px-6 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300"
+                  onClick={() => setShowDescriptionModal(false)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
