@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { productService, type Product } from '../services/productService'
 import { useAuth } from '../contexts/useAuth'
 import { IoOptionsOutline, IoTrashSharp } from 'react-icons/io5'
@@ -10,10 +9,6 @@ interface ProductModalProps {
   onSave: (product: Omit<Product, 'id'> & { id?: string }) => Promise<void>
   product?: Product | null
   error?: string | null
-}
-
-interface ProductsProps {
-  onBack?: () => void
 }
 
 interface ConfirmDeleteModalProps {
@@ -211,9 +206,8 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
   )
 }
 
-function Products({ onBack }: ProductsProps = {}) {
+function Products() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [products, setProducts] = useState<Product[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -359,116 +353,107 @@ function Products({ onBack }: ProductsProps = {}) {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7fc] p-6 md:p-10">
-      {/* Header */}
-      <div className="flex flex-col gap-6 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-4">
-            <button
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:-translate-x-0.5 hover:border-gray-300 hover:bg-gray-50"
-              onClick={() => (onBack ? onBack() : navigate('/home'))}
-              type="button"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="15,18 9,12 15,6"></polyline>
-              </svg>
-              Volver
-            </button>
-            <div className="flex flex-col gap-1">
-              <h1 className="text-4xl font-bold text-gray-800">Gestión de Productos</h1>
-              <p className="text-lg text-gray-600">
-                Administra tu carta y controla tus productos
-              </p>
-            </div>
+    <div className="min-h-screen bg-white">
+      {/* Header que coincide con Sidebar */}
+      <div className="bg-white border-b border-gray-200 p-7">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold leading-tight text-gray-900 md:text-2xl">Gestión de Productos</h1>
+            <span className="text-xs font-medium text-gray-600 md:text-sm">
+              Administra tu carta y controla tus productos
+            </span>
           </div>
-        </div>
-
-        <button
-          className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={handleAddProduct}
-          disabled={processing}
-          type="button"
-        >
-          <span className="text-xl font-bold">+</span>
-          {processing ? 'Procesando...' : 'Agregar Producto'}
-        </button>
-      </div>
-
-      {/* Grid de productos */}
-      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 xl:max-w-[1400px] xl:mx-auto">
-        {products.map(product => (
-          <div
-            key={product.id}
-            className="flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition hover:-translate-y-1 hover:border-[#2563eb] hover:shadow-xl"
+          
+          <button
+            className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleAddProduct}
+            disabled={processing}
+            type="button"
           >
-            <div className="flex flex-1 flex-col">
-              <h3 className="text-2xl font-semibold text-gray-800">{product.name}</h3>
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600">{product.description}</p>
-              <div className="mt-4 w-fit rounded-md bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-600">
-                ${product.price.toFixed(2)}
+            <span className="text-xl font-bold">+</span>
+            {processing ? 'Procesando...' : 'Agregar Producto'}
+          </button>
+        </div>
+      </div>
+      
+      <div className="p-6 md:p-10">
+
+        {/* Grid de productos */}
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 xl:max-w-[1400px] xl:mx-auto">
+          {products.map(product => (
+            <div
+              key={product.id}
+              className="flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition hover:-translate-y-1 hover:border-[#2563eb] hover:shadow-xl"
+            >
+              <div className="flex flex-1 flex-col">
+                <h3 className="text-2xl font-semibold text-gray-800">{product.name}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600">{product.description}</p>
+                <div className="mt-4 w-fit rounded-md bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-600">
+                  ${product.price.toFixed(2)}
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-end gap-3 border-t border-gray-200 pt-4">
+                <button
+                  className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-100 text-amber-500 transition hover:scale-105 hover:bg-amber-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() => handleEditProduct(product)}
+                  title="Editar producto"
+                  disabled={processing}
+                  type="button"
+                >
+                  <IoOptionsOutline size={20} />
+                </button>
+                <button
+                  className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-100 text-red-500 transition hover:scale-105 hover:bg-red-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() => handleDeleteProduct(product)}
+                  title="Eliminar producto"
+                  disabled={processing || isDeleting}
+                  type="button"
+                >
+                  <IoTrashSharp size={20} />
+                </button>
               </div>
             </div>
+          ))}
 
-            <div className="mt-4 flex items-center justify-end gap-3 border-t border-gray-200 pt-4">
+          {products.length === 0 && (
+            <div className="col-span-full rounded-2xl border-2 border-dashed border-gray-300 bg-white p-10 text-center">
+              <div className="text-6xl">📦</div>
+              <h3 className="mt-4 text-2xl font-semibold text-gray-700">No hay productos registrados</h3>
+              <p className="mt-2 text-base text-gray-500">Comienza agregando tu primer producto</p>
               <button
-                className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-100 text-amber-500 transition hover:scale-105 hover:bg-amber-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => handleEditProduct(product)}
-                title="Editar producto"
-                disabled={processing}
+                className="mt-6 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
+                onClick={handleAddProduct}
                 type="button"
               >
-                <IoOptionsOutline size={20} />
-              </button>
-              <button
-                className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-100 text-red-500 transition hover:scale-105 hover:bg-red-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => handleDeleteProduct(product)}
-                title="Eliminar producto"
-                disabled={processing || isDeleting}
-                type="button"
-              >
-                <IoTrashSharp size={20} />
+                Agregar Primer Producto
               </button>
             </div>
-          </div>
-        ))}
+          )}
+        </div>
 
-        {products.length === 0 && (
-          <div className="col-span-full rounded-2xl border-2 border-dashed border-gray-300 bg-white p-10 text-center">
-            <div className="text-6xl">📦</div>
-            <h3 className="mt-4 text-2xl font-semibold text-gray-700">No hay productos registrados</h3>
-            <p className="mt-2 text-base text-gray-500">Comienza agregando tu primer producto</p>
-            <button
-              className="mt-6 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
-              onClick={handleAddProduct}
-              type="button"
-            >
-              Agregar Primer Producto
-            </button>
-          </div>
-        )}
+        {/* Modal */}
+        <ProductModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false)
+            setEditingProduct(null)
+            setError(null) // Limpiar errores al cerrar
+          }}
+          onSave={handleSaveProduct}
+          product={editingProduct}
+          error={error}
+        />
+
+        {/* Modal de confirmación de eliminación */}
+        <ConfirmDeleteModal
+          isOpen={showDeleteModal}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDelete}
+          productName={productToDelete?.name || ''}
+          isDeleting={isDeleting}
+        />
       </div>
-
-      {/* Modal */}
-      <ProductModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setEditingProduct(null)
-          setError(null) // Limpiar errores al cerrar
-        }}
-        onSave={handleSaveProduct}
-        product={editingProduct}
-        error={error}
-      />
-
-      {/* Modal de confirmación de eliminación */}
-      <ConfirmDeleteModal
-        isOpen={showDeleteModal}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
-        productName={productToDelete?.name || ''}
-        isDeleting={isDeleting}
-      />
     </div>
   )
 }

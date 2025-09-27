@@ -1,16 +1,10 @@
 import React, { useState } from 'react'
 import { UserService } from '../services/userService'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
 import { IoEye, IoEyeOff } from 'react-icons/io5'
 
-interface EditProfileProps {
-  onBack?: () => void
-}
-
-function EditProfile({ onBack }: EditProfileProps) {
-  const navigate = useNavigate()
+function EditProfile() {
   const { user, updateUser, logout } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -233,26 +227,20 @@ function EditProfile({ onBack }: EditProfileProps) {
   };
 
   return (
-    <div className="min-h-screen bg-korven-background p-4 sm:p-6 lg:p-8">
-      <div className="mb-8 border-b-2 border-gray-200 pb-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-          <button
-            onClick={() => (onBack ? onBack() : navigate('/home'))}
-            className="inline-flex w-fit items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-[13px] font-medium text-gray-700 transition duration-200 hover:-translate-x-0.5 hover:border-gray-300 hover:bg-gray-50"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15,18 9,12 15,6"></polyline>
-            </svg>
-            Volver
-          </button>
-          <div className="sm:flex sm:flex-col">
-            <h1 className="text-3xl font-bold text-gray-800">Editar Perfil</h1>
-            <p className="mt-2 text-base text-gray-600 sm:mt-0">
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 p-7">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold leading-tight text-gray-900 md:text-2xl">Editar Perfil</h1>
+            <span className="text-xs font-medium text-gray-600 md:text-sm">
               Actualiza tu información personal y configuración de cuenta
-            </p>
+            </span>
           </div>
         </div>
       </div>
+      
+      <div className="p-4 sm:p-6 lg:p-8">
 
       <div className="mx-auto max-w-[1200px]">
         <div className="overflow-hidden rounded-2xl bg-white shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)]">
@@ -478,6 +466,7 @@ function EditProfile({ onBack }: EditProfileProps) {
           >
             {renderLoadingContent('Eliminando...', 'Eliminar Cuenta')}
           </button>
+        </div>
         </div>
       </div>
 
