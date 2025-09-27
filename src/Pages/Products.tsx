@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { productService, type Product } from '../services/productService'
 import { useAuth } from '../contexts/useAuth'
-import { IoOptionsOutline, IoTrashSharp } from 'react-icons/io5'
+import EmptyState from '../components/Products/EmptyState'
+import DescriptionModal from '../components/Products/DescriptionModal'
+import CategorySection, { type Category } from '../components/Products/CategorySection'
 
 interface ProductModalProps {
   isOpen: boolean
@@ -220,6 +222,53 @@ function Products() {
   const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [selectedProductDescription, setSelectedProductDescription] = useState({ name: '', description: '' })
 
+  // Función temporal para asignar categorías basada en palabras clave en el nombre del producto
+  // En el futuro esta información vendrá del backend
+  const getCategoryForProduct = (product: Product): { id: string; name: string; icon: string } => {
+    const name = product.name.toLowerCase()
+    
+    if (name.includes('bebida') || name.includes('jugo') || name.includes('agua') || name.includes('refresco') || name.includes('café') || name.includes('té')) {
+      return { id: 'bebidas', name: 'Bebidas', icon: '🥤' }
+    }
+    if (name.includes('hamburguesa') || name.includes('sandwich') || name.includes('torta') || name.includes('empanada')) {
+      return { id: 'principales', name: 'Platos Principales', icon: '🍔' }
+    }
+    if (name.includes('ensalada') || name.includes('vegetal') || name.includes('verdura') || name.includes('lechuga')) {
+      return { id: 'ensaladas', name: 'Ensaladas', icon: '🥗' }
+    }
+    if (name.includes('postre') || name.includes('helado') || name.includes('torta') || name.includes('flan') || name.includes('dulce')) {
+      return { id: 'postres', name: 'Postres', icon: '🍰' }
+    }
+    if (name.includes('pizza') || name.includes('italiana')) {
+      return { id: 'pizzas', name: 'Pizzas', icon: '🍕' }
+    }
+    
+    // Categoría por defecto
+    return { id: 'otros', name: 'Otros', icon: '🍽️' }
+  }
+
+  // Agrupar productos por categorías usando useMemo para optimizar
+  const categorizedProducts = useMemo(() => {
+    const categoryMap = new Map<string, Category>()
+
+    products.forEach(product => {
+      const categoryInfo = getCategoryForProduct(product)
+      
+      if (!categoryMap.has(categoryInfo.id)) {
+        categoryMap.set(categoryInfo.id, {
+          id: categoryInfo.id,
+          name: categoryInfo.name,
+          icon: categoryInfo.icon,
+          products: []
+        })
+      }
+      
+      categoryMap.get(categoryInfo.id)!.products.push(product)
+    })
+
+    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+  }, [products])
+
   const loadProducts = useCallback(async () => {
     if (!user?.userId) return
 
@@ -385,93 +434,22 @@ function Products() {
       
       <div className="p-6 md:p-10">
 
-        {/* Grid de productos */}
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 xl:max-w-[1400px] xl:mx-auto">
-          {products.map(product => (
-            <div
-                key={product.id}
-                className="group flex min-h-[320px] flex-col overflow-hidden rounded-2xl border bg-white p-0 shadow-md ring-1 ring-gray-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-gray-300"
-              >
-                {/* Header: Enhanced title with gradient background and subtle hover effect */}
-                <div className="relative  px-6 pt-6 pb-4">
-                  <h3 className="text-xl font-bold tracking-tight text-gray-900 transition-colors">
-                    {product.name}
-                  </h3>
-                </div>
-
-                {/* Body: Enhanced description with better typography and hover animation */}
-                <div className="flex-1 px-6 py-4">
-                  <div
-                    className="min-h-[140px] max-h-[140px] rounded-xl border border-gray-200/50 bg-gray-50/50 p-4 text-sm leading-relaxed text-gray-700 shadow-inner transition-all duration-300 group-hover:bg-gray-100/80 group-hover:shadow-md cursor-pointer overflow-hidden"
-                    onClick={() => handleShowDescription(product)}
-                  >
-                    <div 
-                      className="overflow-hidden"
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 6,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      {product.description}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer: Improved layout with price and actions, enhanced hover effects */}
-                <div className="mt-4 flex items-center justify-between px-6 pb-6">
-                  {/* Price: Larger, more prominent with gradient background */}
-                  <div className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-2 text-base font-semibold text-emerald-800 ring-1 ring-emerald-200 transition-all group-hover:ring-emerald-300">
-                    ${product.price.toFixed(2)}
-                  </div>
-
-                    {/* Actions: Refined buttons with beautiful, color-matched icons */}
-                    <div className="flex items-center gap-4">
-                      
-                      {/* Edit button */}
-                      <button
-                        className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100/90 ring-1 ring-indigo-200/90 
-                                  transition-all duration-300 hover:scale-110 hover:bg-indigo-200 hover:ring-indigo-300 active:scale-95 
-                                  disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-50"
-                        onClick={() => handleEditProduct(product)}
-                        aria-label="Edit product"
-                        disabled={processing}
-                        type="button"
-                      >
-                        <IoOptionsOutline size={20} className="text-indigo-600 transition-all duration-200 hover:text-indigo-700 group-hover:rotate-3" />
-                      </button>
-
-                      {/* Delete button */}
-                      <button
-                        className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100/90 ring-1 ring-rose-200/90 
-                                  transition-all duration-300 hover:scale-110 hover:bg-rose-200 hover:ring-rose-300 active:scale-95 
-                                  disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-50"
-                        onClick={() => handleDeleteProduct(product)}
-                        aria-label="Delete product"
-                        disabled={processing || isDeleting}
-                        type="button"
-                      >
-                        <IoTrashSharp size={20} className="text-rose-600 transition-all duration-200 hover:text-rose-700 group-hover:-rotate-3" />
-                      </button>
-                    </div>
-                </div>
-            </div>
-          ))}
-
-          {products.length === 0 && (
-            <div className="col-span-full rounded-2xl border-2 border-dashed border-gray-300 bg-white p-10 text-center">
-              <div className="text-6xl">📦</div>
-              <h3 className="mt-4 text-2xl font-semibold text-gray-700">No hay productos registrados</h3>
-              <p className="mt-2 text-base text-gray-500">Comienza agregando tu primer producto</p>
-              <button
-                className="mt-6 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
-                onClick={handleAddProduct}
-                type="button"
-              >
-                Agregar Primer Producto
-              </button>
-            </div>
+        {/* Productos agrupados por categorías */}
+        <div className="mt-8 xl:max-w-[1400px] xl:mx-auto">
+          {products.length === 0 ? (
+            <EmptyState onAddProduct={handleAddProduct} />
+          ) : (
+            categorizedProducts.map(category => (
+              <CategorySection
+                key={category.id}
+                category={category}
+                onEdit={handleEditProduct}
+                onDelete={handleDeleteProduct}
+                onShowDescription={handleShowDescription}
+                processing={processing}
+                isDeleting={isDeleting}
+              />
+            ))
           )}
         </div>
 
@@ -498,41 +476,12 @@ function Products() {
         />
 
         {/* Modal de descripción completa */}
-        {showDescriptionModal && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-            <div className="w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col">
-              {/* Header fijo */}
-              <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0">
-                <h3 className="text-xl font-semibold text-gray-800">Descripción - {selectedProductDescription.name}</h3>
-                <button
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-700"
-                  onClick={() => setShowDescriptionModal(false)}
-                  type="button"
-                >
-                  ×
-                </button>
-              </div>
-              
-              {/* Contenido con scroll */}
-              <div className="flex-1 overflow-y-auto px-6 py-8">
-                <div className="rounded-lg bg-gray-50 p-6 text-base leading-relaxed text-gray-700">
-                  {selectedProductDescription.description}
-                </div>
-              </div>
-              
-              {/* Footer fijo */}
-              <div className="flex justify-end border-t border-gray-200 px-6 py-4 flex-shrink-0">
-                <button
-                  type="button"
-                  className="rounded-lg bg-gray-200 px-6 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300"
-                  onClick={() => setShowDescriptionModal(false)}
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DescriptionModal
+          isOpen={showDescriptionModal}
+          onClose={() => setShowDescriptionModal(false)}
+          productName={selectedProductDescription.name}
+          description={selectedProductDescription.description}
+        />
       </div>
     </div>
   )
