@@ -7,15 +7,10 @@ import EditProfile from './Pages/EditProfile'
 import Products from './Pages/Products'
 import ResetPassword from './Pages/ResetPassword'
 import Layout from './components/Layout'
-// import LoadingScreen from './components/LoadingScreen'
 
 // Componente interno que usa el contexto
 function AppRoutes() {
   const { isAuthenticated } = useAuth()
-
-  // if (isLoading) {
-  //   return <LoadingScreen />
-  // }
 
   return (
     <Routes>

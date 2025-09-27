@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { UserService } from '../services/userService'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
+import PasswordValidationList from '../components/PasswordValidationList'
 import { IoEye, IoEyeOff } from 'react-icons/io5'
 
 function EditProfile() {
@@ -152,7 +153,7 @@ function EditProfile() {
 
   const handleDeleteAccount = () => {
     showModal(
-      '⚠️ Eliminar Cuenta',
+      'Eliminar Cuenta',
       'Esta acción es IRREVERSIBLE. Se eliminará permanentemente tu cuenta y todos los datos asociados, incluyendo tus productos, historial y configuraciones. ¿Estás seguro de que deseas continuar?',
       'error',
       async () => {
@@ -194,7 +195,7 @@ function EditProfile() {
       {isLoading ? loadingLabel : defaultLabel}
       {isLoading && (
         <svg
-          className="ml-2 h-4 w-4 animate-spin"
+          className="w-4 h-4 ml-2 animate-spin"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -219,13 +220,6 @@ function EditProfile() {
     </>
   );
 
-  const passwordChecks = {
-    minLength: formData.newPassword.length >= 8,
-    hasLowercase: /[a-z]/.test(formData.newPassword),
-    hasUppercase: /[A-Z]/.test(formData.newPassword),
-    hasNumber: /\d/.test(formData.newPassword)
-  };
-
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -244,7 +238,7 @@ function EditProfile() {
 
       <div className="mx-auto max-w-[1200px]">
         <div className="overflow-hidden rounded-2xl bg-white shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)]">
-          <div className="flex items-center gap-4 bg-gradient-to-br from-korven-brand to-korven-accent p-5 text-white sm:gap-6">
+          <div className="flex items-center gap-4 p-5 text-white bg-gradient-to-br from-korven-brand to-korven-accent sm:gap-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white/40 bg-white/20 text-2xl font-bold uppercase backdrop-blur">
               <span>{formData.nombre.charAt(0).toUpperCase()}</span>
             </div>
@@ -320,7 +314,7 @@ function EditProfile() {
               </div>
 
               {showPasswordSection && (
-                <div className="space-y-5 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-5">
+                <div className="p-4 space-y-5 border border-gray-200 rounded-lg bg-gray-50 sm:p-5">
                   <div className="flex flex-col">
                     <label htmlFor="currentPassword" className="mb-2 text-sm font-semibold text-gray-800">
                       Contraseña Actual
@@ -338,7 +332,7 @@ function EditProfile() {
                         type="button"
                         onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                         aria-label={showCurrentPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500 transition active:scale-95"
+                        className="absolute p-1 transition -translate-y-1/2 rounded right-3 top-1/2 text-neutral-500 active:scale-95"
                       >
                         {showCurrentPassword ? <IoEye size={20} /> : <IoEyeOff size={20} />}
                       </button>
@@ -362,52 +356,14 @@ function EditProfile() {
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
                         aria-label={showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500 transition active:scale-95"
+                        className="absolute p-1 transition -translate-y-1/2 rounded right-3 top-1/2 text-neutral-500 active:scale-95"
                       >
                         {showNewPassword ? <IoEye size={20} /> : <IoEyeOff size={20} />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="rounded-md border border-gray-200 bg-gray-100 p-4">
-                    <p className="mb-2 text-sm font-semibold text-gray-700">
-                      La nueva contraseña debe contener:
-                    </p>
-                    <ul className="space-y-1 text-sm">
-                      <li
-                        className={`flex items-center gap-2 font-medium ${passwordChecks.minLength ? 'text-green-600' : 'text-gray-500'}`}
-                      >
-                        <span className={`text-base ${passwordChecks.minLength ? 'text-green-500' : 'text-red-500'}`}>
-                          {passwordChecks.minLength ? '✓' : '✗'}
-                        </span>
-                        Al menos 8 caracteres
-                      </li>
-                      <li
-                        className={`flex items-center gap-2 font-medium ${passwordChecks.hasLowercase ? 'text-green-600' : 'text-gray-500'}`}
-                      >
-                        <span className={`text-base ${passwordChecks.hasLowercase ? 'text-green-500' : 'text-red-500'}`}>
-                          {passwordChecks.hasLowercase ? '✓' : '✗'}
-                        </span>
-                        Una letra minúscula
-                      </li>
-                      <li
-                        className={`flex items-center gap-2 font-medium ${passwordChecks.hasUppercase ? 'text-green-600' : 'text-gray-500'}`}
-                      >
-                        <span className={`text-base ${passwordChecks.hasUppercase ? 'text-green-500' : 'text-red-500'}`}>
-                          {passwordChecks.hasUppercase ? '✓' : '✗'}
-                        </span>
-                        Una letra mayúscula
-                      </li>
-                      <li
-                        className={`flex items-center gap-2 font-medium ${passwordChecks.hasNumber ? 'text-green-600' : 'text-gray-500'}`}
-                      >
-                        <span className={`text-base ${passwordChecks.hasNumber ? 'text-green-500' : 'text-red-500'}`}>
-                          {passwordChecks.hasNumber ? '✓' : '✗'}
-                        </span>
-                        Un número
-                      </li>
-                    </ul>
-                  </div>
+                  <PasswordValidationList password={formData.newPassword} />
 
                   <div className="flex flex-col">
                     <label htmlFor="confirmPassword" className="mb-2 text-sm font-semibold text-gray-800">
@@ -426,7 +382,7 @@ function EditProfile() {
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500 transition active:scale-95"
+                        className="absolute p-1 transition -translate-y-1/2 rounded right-3 top-1/2 text-neutral-500 active:scale-95"
                       >
                         {showConfirmPassword ? <IoEye size={20} /> : <IoEyeOff size={20} />}
                       </button>
@@ -447,7 +403,7 @@ function EditProfile() {
             </div>
           </div>
 
-          <div className="flex justify-center border-t border-gray-200 bg-gray-50 px-6 py-5 sm:px-8">
+          <div className="flex justify-center px-6 py-5 border-t border-gray-200 bg-gray-50 sm:px-8">
             <button
               onClick={handleSaveProfile}
               disabled={!canSaveProfile || isLoading}
@@ -458,7 +414,7 @@ function EditProfile() {
           </div>
         </div>
         
-        <div className="mt-6 flex justify-center border-t border-gray-200 bg-gray-50 px-6 py-5 sm:px-8">
+        <div className="flex justify-center px-6 py-5 mt-6 border-t border-gray-200 sm:px-8">
           <button
             onClick={handleDeleteAccount}
             disabled={isLoading}
@@ -467,6 +423,7 @@ function EditProfile() {
             {renderLoadingContent('Eliminando...', 'Eliminar Cuenta')}
           </button>
         </div>
+
         </div>
       </div>
 
