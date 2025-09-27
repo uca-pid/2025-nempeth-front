@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
 import { IoEye, IoEyeOff } from 'react-icons/io5'
-import '../Styles/ResetPassword.css'
 
 interface EditProfileProps {
   onBack?: () => void
@@ -188,11 +187,11 @@ function EditProfile({ onBack }: EditProfileProps) {
                            formData.confirmPassword &&
                            formData.newPassword === formData.confirmPassword
 
-  const baseInputClasses = 'w-full rounded-md border-2 border-[var(--color-gray-200)] bg-white px-3 py-2 text-sm text-[var(--color-gray-900)] transition focus:border-[var(--color-korven-brand)] focus:outline-none focus:ring-4 focus:ring-[rgba(247,65,22,0.1)] placeholder:text-[var(--color-gray-400)]';
+  const baseInputClasses = 'w-full rounded-md border-2 border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-korven-brand focus:outline-none focus:ring-4 focus:ring-korven-brand/10 placeholder:text-gray-400';
 
-  const outlinedButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-[var(--color-korven-brand)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-korven-brand)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-korven-brand)] hover:text-white hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
+  const outlinedButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-korven-brand bg-white px-4 py-2 text-sm font-semibold text-korven-brand transition duration-200 hover:-translate-y-0.5 hover:bg-korven-brand hover:text-white hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
 
-  const primaryButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-[var(--color-korven-brand)] bg-[var(--color-korven-brand)] px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:border-[#e53e0e] hover:bg-[#e53e0e] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
+  const primaryButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-korven-brand bg-korven-brand px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:border-[#e53e0e] hover:bg-[#e53e0e] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
 
   const dangerButtonClasses = 'inline-flex min-w-[120px] items-center justify-center rounded-md border-2 border-red-600 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:border-red-700 hover:bg-red-700 hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none';
 
@@ -226,13 +225,20 @@ function EditProfile({ onBack }: EditProfileProps) {
     </>
   );
 
+  const passwordChecks = {
+    minLength: formData.newPassword.length >= 8,
+    hasLowercase: /[a-z]/.test(formData.newPassword),
+    hasUppercase: /[A-Z]/.test(formData.newPassword),
+    hasNumber: /\d/.test(formData.newPassword)
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--color-korven-background)] p-4 sm:p-6 lg:p-8">
-      <div className="mb-8 border-b-2 border-[var(--color-gray-200)] pb-6">
+    <div className="min-h-screen bg-korven-background p-4 sm:p-6 lg:p-8">
+      <div className="mb-8 border-b-2 border-gray-200 pb-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           <button
             onClick={() => (onBack ? onBack() : navigate('/home'))}
-            className="inline-flex w-fit items-center gap-2 rounded-md border border-[var(--color-gray-200)] bg-white px-3 py-2 text-[13px] font-medium text-[var(--color-gray-700)] transition duration-200 hover:-translate-x-0.5 hover:border-[var(--color-gray-300)] hover:bg-[var(--color-gray-50)]"
+            className="inline-flex w-fit items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-[13px] font-medium text-gray-700 transition duration-200 hover:-translate-x-0.5 hover:border-gray-300 hover:bg-gray-50"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="15,18 9,12 15,6"></polyline>
@@ -240,8 +246,8 @@ function EditProfile({ onBack }: EditProfileProps) {
             Volver
           </button>
           <div className="sm:flex sm:flex-col">
-            <h1 className="text-3xl font-bold text-[var(--color-gray-800)]">Editar Perfil</h1>
-            <p className="mt-2 text-base text-[var(--color-gray-600)] sm:mt-0">
+            <h1 className="text-3xl font-bold text-gray-800">Editar Perfil</h1>
+            <p className="mt-2 text-base text-gray-600 sm:mt-0">
               Actualiza tu información personal y configuración de cuenta
             </p>
           </div>
@@ -250,7 +256,7 @@ function EditProfile({ onBack }: EditProfileProps) {
 
       <div className="mx-auto max-w-[1200px]">
         <div className="overflow-hidden rounded-2xl bg-white shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)]">
-          <div className="flex items-center gap-4 bg-[linear-gradient(135deg,var(--color-korven-brand),var(--color-korven-accent))] p-5 text-white sm:gap-6">
+          <div className="flex items-center gap-4 bg-gradient-to-br from-korven-brand to-korven-accent p-5 text-white sm:gap-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white/40 bg-white/20 text-2xl font-bold uppercase backdrop-blur">
               <span>{formData.nombre.charAt(0).toUpperCase()}</span>
             </div>
@@ -262,13 +268,13 @@ function EditProfile({ onBack }: EditProfileProps) {
 
           <div className="grid gap-8 p-6 md:grid-cols-2 md:p-8">
             <div className="space-y-6">
-              <h3 className="relative pl-3 text-lg font-semibold text-[var(--color-gray-900)] before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded before:bg-[var(--color-korven-brand)] before:content-['']">
+              <h3 className="relative pl-3 text-lg font-semibold text-gray-900 before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded before:bg-korven-brand before:content-['']">
                 Información Personal
               </h3>
 
               <div className="space-y-5">
                 <div className="flex flex-col">
-                  <label htmlFor="nombre" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                  <label htmlFor="nombre" className="mb-2 text-sm font-semibold text-gray-800">
                     Nombre
                   </label>
                   <input
@@ -282,7 +288,7 @@ function EditProfile({ onBack }: EditProfileProps) {
                 </div>
 
                 <div className="flex flex-col">
-                  <label htmlFor="apellido" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                  <label htmlFor="apellido" className="mb-2 text-sm font-semibold text-gray-800">
                     Apellido
                   </label>
                   <input
@@ -296,25 +302,25 @@ function EditProfile({ onBack }: EditProfileProps) {
                 </div>
 
                 <div className="flex flex-col">
-                  <label htmlFor="email" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                  <label htmlFor="email" className="mb-2 text-sm font-semibold text-gray-800">
                     Email
                   </label>
                   <input
                     type="email"
                     id="email"
-                    className={`${baseInputClasses} cursor-not-allowed border-[var(--color-gray-200)] bg-[var(--color-gray-100)] text-[var(--color-gray-600)]`}
+                    className={`${baseInputClasses} cursor-not-allowed border-gray-200 bg-gray-100 text-gray-600`}
                     value={formData.email}
                     disabled
                     title="El email no puede ser modificado"
                   />
-                  <span className="mt-1 text-sm italic text-[var(--color-gray-500)]">El email no puede ser modificado</span>
+                  <span className="mt-1 text-sm italic text-gray-500">El email no puede ser modificado</span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="relative pl-3 text-lg font-semibold text-[var(--color-gray-900)] before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded before:bg-[var(--color-korven-brand)] before:content-['']">
+                <h3 className="relative pl-3 text-lg font-semibold text-gray-900 before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded before:bg-korven-brand before:content-['']">
                   Seguridad
                 </h3>
                 <button
@@ -326,9 +332,9 @@ function EditProfile({ onBack }: EditProfileProps) {
               </div>
 
               {showPasswordSection && (
-                <div className="space-y-5 rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-gray-50)] p-4 sm:p-5">
+                <div className="space-y-5 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-5">
                   <div className="flex flex-col">
-                    <label htmlFor="currentPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                    <label htmlFor="currentPassword" className="mb-2 text-sm font-semibold text-gray-800">
                       Contraseña Actual
                     </label>
                     <div className="relative flex items-center">
@@ -352,7 +358,7 @@ function EditProfile({ onBack }: EditProfileProps) {
                   </div>
 
                   <div className="flex flex-col">
-                    <label htmlFor="newPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                    <label htmlFor="newPassword" className="mb-2 text-sm font-semibold text-gray-800">
                       Nueva Contraseña
                     </label>
                     <div className="relative flex items-center">
@@ -375,26 +381,48 @@ function EditProfile({ onBack }: EditProfileProps) {
                     </div>
                   </div>
 
-                  <div className="password-requirements">
-                    <p>La nueva contraseña debe contener:</p>
-                    <ul>
-                      <li className={formData.newPassword.length >= 8 ? 'valid' : ''}>
+                  <div className="rounded-md border border-gray-200 bg-gray-100 p-4">
+                    <p className="mb-2 text-sm font-semibold text-gray-700">
+                      La nueva contraseña debe contener:
+                    </p>
+                    <ul className="space-y-1 text-sm">
+                      <li
+                        className={`flex items-center gap-2 font-medium ${passwordChecks.minLength ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        <span className={`text-base ${passwordChecks.minLength ? 'text-green-500' : 'text-red-500'}`}>
+                          {passwordChecks.minLength ? '✓' : '✗'}
+                        </span>
                         Al menos 8 caracteres
                       </li>
-                      <li className={/(?=.*[a-z])/.test(formData.newPassword) ? 'valid' : ''}>
+                      <li
+                        className={`flex items-center gap-2 font-medium ${passwordChecks.hasLowercase ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        <span className={`text-base ${passwordChecks.hasLowercase ? 'text-green-500' : 'text-red-500'}`}>
+                          {passwordChecks.hasLowercase ? '✓' : '✗'}
+                        </span>
                         Una letra minúscula
                       </li>
-                      <li className={/(?=.*[A-Z])/.test(formData.newPassword) ? 'valid' : ''}>
+                      <li
+                        className={`flex items-center gap-2 font-medium ${passwordChecks.hasUppercase ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        <span className={`text-base ${passwordChecks.hasUppercase ? 'text-green-500' : 'text-red-500'}`}>
+                          {passwordChecks.hasUppercase ? '✓' : '✗'}
+                        </span>
                         Una letra mayúscula
                       </li>
-                      <li className={/(?=.*\d)/.test(formData.newPassword) ? 'valid' : ''}>
+                      <li
+                        className={`flex items-center gap-2 font-medium ${passwordChecks.hasNumber ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        <span className={`text-base ${passwordChecks.hasNumber ? 'text-green-500' : 'text-red-500'}`}>
+                          {passwordChecks.hasNumber ? '✓' : '✗'}
+                        </span>
                         Un número
                       </li>
                     </ul>
                   </div>
 
                   <div className="flex flex-col">
-                    <label htmlFor="confirmPassword" className="mb-2 text-sm font-semibold text-[var(--color-gray-800)]">
+                    <label htmlFor="confirmPassword" className="mb-2 text-sm font-semibold text-gray-800">
                       Confirmar Nueva Contraseña
                     </label>
                     <div className="relative flex items-center">
@@ -431,7 +459,7 @@ function EditProfile({ onBack }: EditProfileProps) {
             </div>
           </div>
 
-          <div className="flex justify-center border-t border-[var(--color-gray-200)] bg-[var(--color-gray-50)] px-6 py-5 sm:px-8">
+          <div className="flex justify-center border-t border-gray-200 bg-gray-50 px-6 py-5 sm:px-8">
             <button
               onClick={handleSaveProfile}
               disabled={!canSaveProfile || isLoading}
@@ -442,7 +470,7 @@ function EditProfile({ onBack }: EditProfileProps) {
           </div>
         </div>
         
-        <div className="mt-6 flex justify-center border-t border-[var(--color-gray-200)] bg-[var(--color-gray-50)] px-6 py-5 sm:px-8">
+        <div className="mt-6 flex justify-center border-t border-gray-200 bg-gray-50 px-6 py-5 sm:px-8">
           <button
             onClick={handleDeleteAccount}
             disabled={isLoading}
