@@ -7,6 +7,8 @@ import EditProfile from './Pages/EditProfile'
 import Products from './Pages/Products'
 import BusinessInfo from './Pages/BusinessInfo'
 import CreateOrder from './Pages/CreateOrder'
+import SalesHistory from './Pages/SalesHistory'
+import SaleDetails from './Pages/SaleDetails'
 import ResetPassword from './Pages/ResetPassword'
 import Layout from './components/Layout'
 
@@ -66,6 +68,24 @@ function AppRoutes() {
         element={
           isAuthenticated ? 
           <Layout><CreateOrder /></Layout> : 
+          <Navigate to="/" replace />
+        } 
+      />
+      
+      <Route 
+        path="/sales-history" 
+        element={
+          isAuthenticated ? 
+          <Layout><SalesHistory /></Layout> : 
+          <Navigate to="/" replace />
+        } 
+      />
+      
+      <Route 
+        path="/sales/:saleId" 
+        element={
+          isAuthenticated ? 
+          <Layout><SaleDetails /></Layout> : 
           <Navigate to="/" replace />
         } 
       />
