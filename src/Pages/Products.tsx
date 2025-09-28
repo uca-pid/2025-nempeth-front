@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/useAuth'
 import EmptyState from '../components/Products/EmptyState'
 import DescriptionModal from '../components/Products/DescriptionModal'
 import CategorySection, { type Category } from '../components/Products/CategorySection'
+import CategoryManagementModal from '../components/Products/CategoryManagementModal'
+import { IoFilterCircle } from 'react-icons/io5'
 
 interface ProductModalProps {
   isOpen: boolean
@@ -73,11 +75,11 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
+      <div className="w-full max-w-lg overflow-hidden bg-white shadow-2xl rounded-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h3 className="text-xl font-semibold text-gray-800">{product ? 'Editar Producto' : 'Agregar Producto'}</h3>
           <button
-            className="flex h-8 w-8 items-center justify-center rounded-md text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-700"
+            className="flex items-center justify-center w-8 h-8 text-2xl text-gray-500 transition rounded-md hover:bg-gray-200 hover:text-gray-700"
             onClick={onClose}
             type="button"
           >
@@ -85,9 +87,9 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 px-6 py-6">
+        <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
           {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            <div className="px-4 py-3 text-sm font-medium text-red-600 border border-red-200 rounded-md bg-red-50">
               {error}
             </div>
           )}
@@ -136,10 +138,10 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
+          <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
-              className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
+              className="px-4 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
               onClick={onClose}
               disabled={saving}
             >
@@ -164,11 +166,11 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
+      <div className="w-full max-w-sm overflow-hidden bg-white shadow-2xl rounded-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h3 className="text-lg font-semibold text-gray-800">Confirmar eliminación</h3>
           <button
-            className="flex h-8 w-8 items-center justify-center rounded-md text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex items-center justify-center w-8 h-8 text-2xl text-gray-500 transition rounded-md hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={onClose}
             disabled={isDeleting}
             type="button"
@@ -177,7 +179,7 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
           </button>
         </div>
 
-        <div className="space-y-3 px-6 py-6 text-center">
+        <div className="px-6 py-6 space-y-3 text-center">
           <div className="text-4xl">⚠️</div>
           <p className="text-base text-gray-700">
             ¿Estás seguro de que deseas eliminar el producto <strong className="font-semibold text-gray-900">"{productName}"</strong>?
@@ -185,10 +187,10 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
           <p className="text-sm italic text-gray-500">Esta acción no se puede deshacer.</p>
         </div>
 
-        <div className="flex items-center justify-center gap-3 border-t border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-center gap-3 px-6 py-4 border-t border-gray-200">
           <button
             type="button"
-            className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
+            className="px-4 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={onClose}
             disabled={isDeleting}
           >
@@ -221,6 +223,15 @@ function Products() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [selectedProductDescription, setSelectedProductDescription] = useState({ name: '', description: '' })
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [customCategories, setCustomCategories] = useState<Array<{ id: string; name: string; icon: string }>>([
+    { id: 'bebidas', name: 'Bebidas', icon: '🥤' },
+    { id: 'principales', name: 'Platos Principales', icon: '🍔' },
+    { id: 'ensaladas', name: 'Ensaladas', icon: '🥗' },
+    { id: 'postres', name: 'Postres', icon: '🍰' },
+    { id: 'pizzas', name: 'Pizzas', icon: '🍕' },
+    { id: 'otros', name: 'Otros', icon: '🍽️' }
+  ])
 
   // Función temporal para asignar categorías basada en palabras clave en el nombre del producto
   // En el futuro esta información vendrá del backend
@@ -270,12 +281,14 @@ function Products() {
   }, [products])
 
   const loadProducts = useCallback(async () => {
-    if (!user?.userId) return
+    console.log('Cargando productos para el negocio:', user?.businesses[0].businessId);
+    
+    if (!user?.businesses[0].businessId) return
 
     try {
       setLoading(true)
       setError(null)
-      const fetchedProducts = await productService.getProducts(user.userId)
+      const fetchedProducts = await productService.getProducts(user.businesses[0].businessId)
       setProducts(fetchedProducts)
     } catch (err) {
       console.error('Error cargando productos:', err)
@@ -283,7 +296,7 @@ function Products() {
     } finally {
       setLoading(false)
     }
-  }, [user?.userId])
+  }, [user?.businesses[0].businessId])
 
   // Cargar productos al montar el componente
   useEffect(() => {
@@ -408,6 +421,25 @@ function Products() {
     }
   }
 
+  // Funciones para manejar categorías
+  const handleAddCategory = (category: Omit<{ id: string; name: string; icon: string }, 'id'>) => {
+    const newCategory = {
+      ...category,
+      id: `custom-${Date.now()}`
+    }
+    setCustomCategories(prev => [...prev, newCategory])
+  }
+
+  const handleEditCategory = (id: string, category: Omit<{ id: string; name: string; icon: string }, 'id'>) => {
+    setCustomCategories(prev => 
+      prev.map(cat => cat.id === id ? { ...category, id } : cat)
+    )
+  }
+
+  const handleDeleteCategory = (id: string) => {
+    setCustomCategories(prev => prev.filter(cat => cat.id !== id))
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header que coincide con Sidebar */}
@@ -419,7 +451,13 @@ function Products() {
               Administra tu carta y controla tus productos
             </span>
           </div>
-          
+        </div>
+      </div>
+      
+      <div className="p-1 md:p-10">
+
+        <div className="flex items-center justify-start gap-4">
+
           <button
             className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={handleAddProduct}
@@ -429,10 +467,56 @@ function Products() {
             <span className="text-xl font-bold">+</span>
             {processing ? 'Procesando...' : 'Agregar Producto'}
           </button>
+
+          <button
+            className="inline-flex items-center gap-2 rounded-xl bg-[#ff5804] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => setShowCategoryModal(true)}
+            disabled={processing}
+            type="button"
+          >
+            <span className="text-xl font-bold">+</span>
+            {processing ? 'Procesando...' : 'Administrar categorías'}
+          </button>
+          
         </div>
-      </div>
-      
-      <div className="p-6 md:p-10">
+
+        {/* Sección de filtros y categorías */}
+        <div className="mt-6">
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Botón de filtrar */}
+            <button
+                className="
+                  flex h-12 w-12 items-center justify-center 
+                  rounded-full 
+                  bg-white
+                  border border-black-500  
+                  text-gray-700 shadow-md 
+                  transition-all duration-200
+                  hover:-translate-y-0.5 hover:shadow-xl
+                  hover:from-rose-100 hover:to-rose-200 hover:text-rose-600
+                  hover:border-rose-300 
+                  disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60
+                "
+                disabled={processing}
+                type="button"
+              >
+              <IoFilterCircle className="text-xl" />
+            </button>
+
+            {/* Contenedor para categorías filtradas - aquí aparecerán las categorías seleccionadas */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Ejemplo de cómo se verán las categorías filtradas */}
+              {/* Esto será dinámico cuando implementes la funcionalidad */}
+              
+              {/* <div className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                <span>🍔</span>
+                <span>Platos Principales</span>
+                <button className="ml-1 text-blue-600 hover:text-blue-800">×</button>
+              </div> */}
+             
+            </div>
+          </div>
+        </div>
 
         {/* Productos agrupados por categorías */}
         <div className="mt-8 xl:max-w-[1400px] xl:mx-auto">
@@ -481,6 +565,16 @@ function Products() {
           onClose={() => setShowDescriptionModal(false)}
           productName={selectedProductDescription.name}
           description={selectedProductDescription.description}
+        />
+
+        {/* Modal de gestión de categorías */}
+        <CategoryManagementModal
+          isOpen={showCategoryModal}
+          onClose={() => setShowCategoryModal(false)}
+          categories={customCategories}
+          onAddCategory={handleAddCategory}
+          onEditCategory={handleEditCategory}
+          onDeleteCategory={handleDeleteCategory}
         />
       </div>
     </div>

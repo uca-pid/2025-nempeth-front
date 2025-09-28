@@ -20,10 +20,9 @@ export interface UpdateProductRequest {
 }
 
 export const productService = {
-  // Obtener todos los productos de un owner
-  getProducts: async (ownerId: string): Promise<Product[]> => {
+  getProducts: async (businessId: string): Promise<Product[]> => {
     try {
-      const response = await api.get(`/products?ownerId=${ownerId}`);
+      const response = await api.get(`/businesses/${businessId}/products`);
       return response.data;
     } catch (error) {
       console.error('Error al obtener productos:', error);
@@ -31,7 +30,6 @@ export const productService = {
     }
   },
 
-  // Crear un nuevo producto
   createProduct: async (
     ownerId: string,
     productData: CreateProductRequest,
@@ -48,7 +46,6 @@ export const productService = {
     }
   },
 
-  // Actualizar un producto existente
   updateProduct: async (
     productId: string,
     ownerId: string,
@@ -66,7 +63,6 @@ export const productService = {
     }
   },
 
-  // Eliminar un producto
   deleteProduct: async (productId: string, ownerId: string): Promise<void> => {
     try {
       await api.delete(`/products/${productId}?ownerId=${ownerId}`);

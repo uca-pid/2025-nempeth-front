@@ -4,7 +4,6 @@ import { AuthService } from '../services/loginService';
 import type { LoginRequest, LoginResponse } from '../services/loginService';
 import { AuthContext, type User } from './AuthContextTypes';
 import api from '../services/api'; // Para uso futuro
-// import api from '../services/api'; // Para uso futuro
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -34,12 +33,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const now = Math.floor(Date.now() / 1000);
       if (decoded.exp && decoded.exp < now) {
         return null; // Token expirado
-      }
-
+      } 
       return {
         userId: decoded.userId,
         email: decoded.sub, // El 'sub' generalmente contiene el email
         role: decoded.role,
+        businesses: decoded.businesses || [],
       };
     } catch (error) {
       console.error('Error decoding token:', error);

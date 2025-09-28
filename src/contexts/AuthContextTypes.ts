@@ -5,9 +5,15 @@ import type { LoginRequest, LoginResponse } from '../services/loginService';
 export interface User {
   userId: string;
   email: string;
-  role: 'OWNER' | 'USER';
   name?: string;
   lastName?: string;
+  role: string;
+  businesses: Array<{
+    businessId: string;
+    businessName: string;
+    role: string;
+    status: string;
+  }>;
 }
 
 export interface AuthContextType {
