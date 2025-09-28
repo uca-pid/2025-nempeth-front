@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { productService, type Product } from '../services/productService'
 import { categoryService, type Category as CategoryType } from '../services/categoryService'
 import { useAuth } from '../contexts/useAuth'
@@ -249,6 +249,8 @@ function Products() {
   const [selectedProductDescription, setSelectedProductDescription] = useState({ name: '', description: '' })
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [categories, setCategories] = useState<CategoryType[]>([])
+  const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([])
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false)
 
   const businessId = user?.businesses?.[0]?.businessId
 
@@ -287,13 +289,36 @@ function Products() {
     }
   }, [businessId])
 
-
+  // Filtrar productos basado en las categorías seleccionadas
+  const filteredProducts = useMemo(() => {
+    if (selectedCategoryFilters.length === 0) {
+      return products // Si no hay filtros, mostrar todos los productos
+    }
+    return products.filter(product => 
+      selectedCategoryFilters.includes(product.categoryId || '')
+    )
+  }, [products, selectedCategoryFilters])
 
   // Cargar productos y categorías al montar el componente
   useEffect(() => {
     loadProducts()
     loadCategories()
   }, [loadProducts, loadCategories])
+
+  // Efecto para cerrar el dropdown cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (showFilterDropdown && !target.closest('.filter-dropdown-container')) {
+        setShowFilterDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showFilterDropdown])
 
   if (loading) {
     return (
@@ -415,6 +440,23 @@ function Products() {
     }
   }
 
+  // Funciones para manejar filtros de categorías
+  const handleToggleCategoryFilter = (categoryId: string) => {
+    setSelectedCategoryFilters(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    )
+  }
+
+  const handleClearAllFilters = () => {
+    setSelectedCategoryFilters([])
+  }
+
+  const handleToggleFilterDropdown = () => {
+    setShowFilterDropdown(!showFilterDropdown)
+  }
+
   // Funciones para manejar categorías
   const handleAddCategory = async (category: Omit<CategoryType, 'id'>) => {
     if (!businessId) return
@@ -495,13 +537,14 @@ function Products() {
         {/* Sección de filtros y categorías */}
         <div className="mt-6">
           <div className="flex flex-wrap items-center gap-4">
-            {/* Botón de filtrar */}
-            <button
+            {/* Dropdown de filtros */}
+            <div className="relative filter-dropdown-container">
+              <button
                 className="
                   flex h-12 w-12 items-center justify-center 
                   rounded-full 
                   bg-white
-                  border border-black-500  
+                  border border-gray-500  
                   text-gray-700 shadow-md 
                   transition-all duration-200
                   hover:-translate-y-0.5 hover:shadow-xl
@@ -511,32 +554,100 @@ function Products() {
                 "
                 disabled={processing}
                 type="button"
+                onClick={handleToggleFilterDropdown}
               >
-              <IoFilterCircle className="text-xl" />
-            </button>
-
-            {/* Contenedor para categorías filtradas - aquí aparecerán las categorías seleccionadas */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Ejemplo de cómo se verán las categorías filtradas */}
-              {/* Esto será dinámico cuando implementes la funcionalidad */}
+                <IoFilterCircle className="text-xl" />
+              </button>
               
-              {/* <div className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
-                <span>🍔</span>
-                <span>Platos Principales</span>
-                <button className="ml-1 text-blue-600 hover:text-blue-800">×</button>
-              </div> */}
-             
+              {/* Dropdown menu */}
+              {showFilterDropdown && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50 py-2">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <h3 className="text-sm font-semibold text-gray-800">Filtrar por categoría</h3>
+                  </div>
+                  
+                  <div className="max-h-64 overflow-y-auto">
+                    {categories.map(category => (
+                      <button
+                        key={category.id}
+                        className={`
+                          w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 transition-colors
+                          ${selectedCategoryFilters.includes(category.id) ? 'bg-blue-50 text-blue-800' : 'text-gray-700'}
+                        `}
+                        onClick={() => handleToggleCategoryFilter(category.id)}
+                        type="button"
+                      >
+                        <span className="text-lg">{category.icon}</span>
+                        <span className="flex-1 text-sm font-medium">{category.name}</span>
+                        {selectedCategoryFilters.includes(category.id) && (
+                          <span className="text-blue-600">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {selectedCategoryFilters.length > 0 && (
+                    <div className="px-4 py-2 border-t border-gray-100">
+                      <button
+                        className="w-full text-sm text-red-600 hover:text-red-800 font-medium"
+                        onClick={handleClearAllFilters}
+                        type="button"
+                      >
+                        Limpiar filtros
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Categorías seleccionadas como filtros */}
+            <div className="flex flex-wrap items-center gap-2">
+              {selectedCategoryFilters.map(categoryId => {
+                const category = categories.find(cat => cat.id === categoryId)
+                if (!category) return null
+                
+                return (
+                  <div 
+                    key={categoryId}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 rounded-full border border-blue-200"
+                  >
+                    <span>{category.icon}</span>
+                    <span>{category.name}</span>
+                    <button 
+                      className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                      onClick={() => handleToggleCategoryFilter(categoryId)}
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
 
         {/* Productos */}
         <div className="mt-8 xl:max-w-[1400px] xl:mx-auto">
-          {products.length === 0 ? (
+          {filteredProducts.length === 0 && products.length > 0 ? (
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
+              <div className="text-6xl opacity-50">🔍</div>
+              <h3 className="text-xl font-semibold text-gray-700">No se encontraron productos</h3>
+              <p className="text-gray-500">No hay productos que coincidan con los filtros seleccionados.</p>
+              <button
+                className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
+                onClick={handleClearAllFilters}
+                type="button"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <EmptyState onAddProduct={handleAddProduct} />
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {products.map(product => (
+              {filteredProducts.map(product => (
                 <ProductCard
                   key={product.id}
                   product={product}
