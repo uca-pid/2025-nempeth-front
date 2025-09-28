@@ -70,9 +70,16 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    
+    // Limitar descripción a 300 caracteres
+    let finalValue = value
+    if (name === 'description' && value.length > 300) {
+      finalValue = value.substring(0, 300)
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(value) || 0 : value
+      [name]: name === 'price' ? parseFloat(finalValue) || 0 : finalValue
     }))
   }
 
@@ -144,6 +151,11 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
               placeholder="Describe el producto"
               className="w-full min-h-[4rem] rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
             />
+            <div className="flex justify-end">
+              <span className={`text-sm ${formData.description.length > 280 ? 'text-orange-600' : formData.description.length === 300 ? 'text-red-600' : 'text-gray-500'}`}>
+                {formData.description.length}/300
+              </span>
+            </div>
           </div>
 
           <div className="space-y-1">

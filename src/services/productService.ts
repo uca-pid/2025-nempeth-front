@@ -38,6 +38,11 @@ export const productService = {
     productData: CreateProductRequest,
   ): Promise<Product> => {
     try {
+      // Validar longitud de descripción
+      if (productData.description.length > 300) {
+        throw new Error('La descripción no puede exceder 300 caracteres');
+      }
+      
       const response = await api.post(
         `/businesses/${businessId}/products`,
         productData,
@@ -55,6 +60,11 @@ export const productService = {
     productData: UpdateProductRequest,
   ): Promise<Product> => {
     try {
+      // Validar longitud de descripción
+      if (productData.description.length > 300) {
+        throw new Error('La descripción no puede exceder 300 caracteres');
+      }
+      
       const response = await api.put(
         `/businesses/${businessId}/products/${productId}`,
         productData,
