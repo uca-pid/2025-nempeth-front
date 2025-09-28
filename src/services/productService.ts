@@ -5,18 +5,21 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  categoryId?: string;
 }
 
 export interface CreateProductRequest {
   name: string;
   description: string;
   price: number;
+  categoryId: string;
 }
 
 export interface UpdateProductRequest {
   name: string;
   description: string;
   price: number;
+  categoryId: string;
 }
 
 export const productService = {
@@ -31,12 +34,12 @@ export const productService = {
   },
 
   createProduct: async (
-    ownerId: string,
+    businessId: string,
     productData: CreateProductRequest,
   ): Promise<Product> => {
     try {
       const response = await api.post(
-        `/products?ownerId=${ownerId}`,
+        `/businesses/${businessId}/products`,
         productData,
       );
       return response.data;
@@ -47,13 +50,13 @@ export const productService = {
   },
 
   updateProduct: async (
+    businessId: string,
     productId: string,
-    ownerId: string,
     productData: UpdateProductRequest,
   ): Promise<Product> => {
     try {
       const response = await api.put(
-        `/products/${productId}?ownerId=${ownerId}`,
+        `/businesses/${businessId}/products/${productId}`,
         productData,
       );
       return response.data;
@@ -63,9 +66,12 @@ export const productService = {
     }
   },
 
-  deleteProduct: async (productId: string, ownerId: string): Promise<void> => {
+  deleteProduct: async (
+    businessId: string,
+    productId: string,
+  ): Promise<void> => {
     try {
-      await api.delete(`/products/${productId}?ownerId=${ownerId}`);
+      await api.delete(`/businesses/${businessId}/products/${productId}`);
     } catch (error) {
       console.error('Error al eliminar producto:', error);
       throw error;

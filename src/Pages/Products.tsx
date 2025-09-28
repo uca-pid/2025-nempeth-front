@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { productService, type Product } from '../services/productService'
+import { categoryService, type Category as CategoryType } from '../services/categoryService'
 import { useAuth } from '../contexts/useAuth'
 import EmptyState from '../components/Products/EmptyState'
 import DescriptionModal from '../components/Products/DescriptionModal'
@@ -13,6 +14,7 @@ interface ProductModalProps {
   onSave: (product: Omit<Product, 'id'> & { id?: string }) => Promise<void>
   product?: Product | null
   error?: string | null
+  categories: CategoryType[]
 }
 
 interface ConfirmDeleteModalProps {
@@ -23,11 +25,12 @@ interface ConfirmDeleteModalProps {
   isDeleting: boolean
 }
 
-function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalProps) {
+function ProductModal({ isOpen, onClose, onSave, product, error, categories }: ProductModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: 0
+    price: 0,
+    categoryId: ''
   })
   const [saving, setSaving] = useState(false)
 
@@ -36,21 +39,23 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
       setFormData({
         name: product.name,
         description: product.description,
-        price: product.price
+        price: product.price,
+        categoryId: product.categoryId || (categories.length > 0 ? categories[0].id : '')
       })
     } else {
       setFormData({
         name: '',
         description: '',
-        price: 0
+        price: 0,
+        categoryId: categories.length > 0 ? categories[0].id : ''
       })
     }
     setSaving(false) // Resetear estado de guardado
-  }, [product, isOpen])
+  }, [product, isOpen, categories])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.name.trim() && formData.description.trim() && formData.price > 0) {
+    if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.categoryId) {
       setSaving(true)
       try {
         await onSave({
@@ -63,7 +68,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -106,6 +111,25 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
               placeholder="Ingresa el nombre del producto"
               className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
             />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-sm font-semibold text-gray-700" htmlFor="categoryId">Categoría del Producto</label>
+            <select
+              id="categoryId"
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              required
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
+            >
+              <option value="">Selecciona una categoría</option>
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.icon} {category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-1">
@@ -224,71 +248,31 @@ function Products() {
   const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [selectedProductDescription, setSelectedProductDescription] = useState({ name: '', description: '' })
   const [showCategoryModal, setShowCategoryModal] = useState(false)
-  const [customCategories, setCustomCategories] = useState<Array<{ id: string; name: string; icon: string }>>([
-    { id: 'bebidas', name: 'Bebidas', icon: '🥤' },
-    { id: 'principales', name: 'Platos Principales', icon: '🍔' },
-    { id: 'ensaladas', name: 'Ensaladas', icon: '🥗' },
-    { id: 'postres', name: 'Postres', icon: '🍰' },
-    { id: 'pizzas', name: 'Pizzas', icon: '🍕' },
-    { id: 'otros', name: 'Otros', icon: '🍽️' }
-  ])
+  const [categories, setCategories] = useState<CategoryType[]>([])
 
-  // Función temporal para asignar categorías basada en palabras clave en el nombre del producto
-  // En el futuro esta información vendrá del backend
-  const getCategoryForProduct = (product: Product): { id: string; name: string; icon: string } => {
-    const name = product.name.toLowerCase()
-    
-    if (name.includes('bebida') || name.includes('jugo') || name.includes('agua') || name.includes('refresco') || name.includes('café') || name.includes('té')) {
-      return { id: 'bebidas', name: 'Bebidas', icon: '🥤' }
-    }
-    if (name.includes('hamburguesa') || name.includes('sandwich') || name.includes('torta') || name.includes('empanada')) {
-      return { id: 'principales', name: 'Platos Principales', icon: '🍔' }
-    }
-    if (name.includes('ensalada') || name.includes('vegetal') || name.includes('verdura') || name.includes('lechuga')) {
-      return { id: 'ensaladas', name: 'Ensaladas', icon: '🥗' }
-    }
-    if (name.includes('postre') || name.includes('helado') || name.includes('torta') || name.includes('flan') || name.includes('dulce')) {
-      return { id: 'postres', name: 'Postres', icon: '🍰' }
-    }
-    if (name.includes('pizza') || name.includes('italiana')) {
-      return { id: 'pizzas', name: 'Pizzas', icon: '🍕' }
-    }
-    
-    // Categoría por defecto
-    return { id: 'otros', name: 'Otros', icon: '🍽️' }
-  }
+  const businessId = user?.businesses?.[0]?.businessId
 
-  // Agrupar productos por categorías usando useMemo para optimizar
-  const categorizedProducts = useMemo(() => {
-    const categoryMap = new Map<string, Category>()
+  const loadCategories = useCallback(async () => {
+    if (!businessId) return
 
-    products.forEach(product => {
-      const categoryInfo = getCategoryForProduct(product)
-      
-      if (!categoryMap.has(categoryInfo.id)) {
-        categoryMap.set(categoryInfo.id, {
-          id: categoryInfo.id,
-          name: categoryInfo.name,
-          icon: categoryInfo.icon,
-          products: []
-        })
-      }
-      
-      categoryMap.get(categoryInfo.id)!.products.push(product)
-    })
-
-    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name))
-  }, [products])
+    try {
+      const fetchedCategories = await categoryService.getCategories(businessId)
+      setCategories(fetchedCategories)
+    } catch (err) {
+      console.error('Error cargando categorías:', err)
+      setError('Error al cargar las categorías')
+    }
+  }, [businessId])
 
   const loadProducts = useCallback(async () => {
-    console.log('Cargando productos para el negocio:', user?.businesses[0].businessId);
+    console.log('Cargando productos para el negocio:', businessId);
     
-    if (!user?.businesses[0].businessId) return
+    if (!businessId) return
 
     try {
       setLoading(true)
       setError(null)
-      const fetchedProducts = await productService.getProducts(user.businesses[0].businessId)
+      const fetchedProducts = await productService.getProducts(businessId)
       setProducts(fetchedProducts)
     } catch (err) {
       console.error('Error cargando productos:', err)
@@ -296,12 +280,59 @@ function Products() {
     } finally {
       setLoading(false)
     }
-  }, [user?.businesses[0].businessId])
+  }, [businessId])
 
-  // Cargar productos al montar el componente
+  // Agrupar productos por categorías usando useMemo para optimizar
+  const categorizedProducts = useMemo(() => {
+    const categoryMap = new Map<string, Category>()
+
+    // Inicializar todas las categorías disponibles
+    categories.forEach(category => {
+      categoryMap.set(category.id, {
+        id: category.id,
+        name: category.name,
+        icon: category.icon,
+        products: []
+      })
+    })
+
+    // Crear categoría especial para productos sin categoría
+    const uncategorizedId = 'uncategorized'
+    categoryMap.set(uncategorizedId, {
+      id: uncategorizedId,
+      name: 'Sin Categoría',
+      icon: '📦',
+      products: []
+    })
+
+    // Asignar productos a sus categorías usando el categoryId real
+    products.forEach(product => {
+      const categoryId = product.categoryId || uncategorizedId
+      
+      if (categoryMap.has(categoryId)) {
+        categoryMap.get(categoryId)!.products.push(product)
+      } else {
+        // Si la categoría no existe, ponerlo en "Sin Categoría"
+        categoryMap.get(uncategorizedId)!.products.push(product)
+      }
+    })
+
+    // Filtrar categorías que tienen productos y ordenar
+    return Array.from(categoryMap.values())
+      .filter(category => category.products.length > 0)
+      .sort((a, b) => {
+        // Poner "Sin Categoría" al final
+        if (a.id === uncategorizedId) return 1
+        if (b.id === uncategorizedId) return -1
+        return a.name.localeCompare(b.name)
+      })
+  }, [products, categories])
+
+  // Cargar productos y categorías al montar el componente
   useEffect(() => {
     loadProducts()
-  }, [loadProducts])
+    loadCategories()
+  }, [loadProducts, loadCategories])
 
   if (loading) {
     return (
@@ -341,19 +372,19 @@ function Products() {
   }
 
   const handleDeleteProduct = (product: Product) => {
-    if (!user?.userId || processing || isDeleting) return
+    if (!businessId || processing || isDeleting) return
     
     setProductToDelete(product)
     setShowDeleteModal(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (!productToDelete || !user?.userId || isDeleting) return
+    if (!productToDelete || !businessId || isDeleting) return
 
     try {
       setIsDeleting(true)
       setError(null)
-      await productService.deleteProduct(productToDelete.id, user.userId)
+      await productService.deleteProduct(businessId, productToDelete.id)
       // Recargar la lista para asegurar consistencia
       await loadProducts()
       // Cerrar modal
@@ -379,7 +410,7 @@ function Products() {
   }
 
   const handleSaveProduct = async (productData: Omit<Product, 'id'> & { id?: string }) => {
-    if (!user?.userId || processing) return
+    if (!businessId || processing) return
 
     try {
       setProcessing(true)
@@ -388,20 +419,22 @@ function Products() {
       if (productData.id) {
         // Editar producto existente
         await productService.updateProduct(
+          businessId,
           productData.id, 
-          user.userId, 
           {
             name: productData.name,
             description: productData.description,
-            price: productData.price
+            price: productData.price,
+            categoryId: productData.categoryId!
           }
         )
       } else {
         // Agregar nuevo producto
-        await productService.createProduct(user.userId, {
+        await productService.createProduct(businessId, {
           name: productData.name,
           description: productData.description,
-          price: productData.price
+          price: productData.price,
+          categoryId: productData.categoryId!
         })
       }
       
@@ -422,22 +455,40 @@ function Products() {
   }
 
   // Funciones para manejar categorías
-  const handleAddCategory = (category: Omit<{ id: string; name: string; icon: string }, 'id'>) => {
-    const newCategory = {
-      ...category,
-      id: `custom-${Date.now()}`
+  const handleAddCategory = async (category: Omit<CategoryType, 'id'>) => {
+    if (!businessId) return
+    
+    try {
+      await categoryService.createCategory(businessId, category)
+      await loadCategories() // Recargar categorías
+    } catch (err) {
+      console.error('Error creando categoría:', err)
+      setError('Error al crear la categoría')
     }
-    setCustomCategories(prev => [...prev, newCategory])
   }
 
-  const handleEditCategory = (id: string, category: Omit<{ id: string; name: string; icon: string }, 'id'>) => {
-    setCustomCategories(prev => 
-      prev.map(cat => cat.id === id ? { ...category, id } : cat)
-    )
+  const handleEditCategory = async (id: string, category: Omit<CategoryType, 'id'>) => {
+    if (!businessId) return
+    
+    try {
+      await categoryService.updateCategory(businessId, id, category)
+      await loadCategories() // Recargar categorías
+    } catch (err) {
+      console.error('Error actualizando categoría:', err)
+      setError('Error al actualizar la categoría')
+    }
   }
 
-  const handleDeleteCategory = (id: string) => {
-    setCustomCategories(prev => prev.filter(cat => cat.id !== id))
+  const handleDeleteCategory = async (id: string) => {
+    if (!businessId) return
+    
+    try {
+      await categoryService.deleteCategory(businessId, id)
+      await loadCategories() // Recargar categorías
+    } catch (err) {
+      console.error('Error eliminando categoría:', err)
+      setError('Error al eliminar la categoría')
+    }
   }
 
   return (
@@ -548,6 +599,7 @@ function Products() {
           onSave={handleSaveProduct}
           product={editingProduct}
           error={error}
+          categories={categories}
         />
 
         {/* Modal de confirmación de eliminación */}
@@ -571,7 +623,7 @@ function Products() {
         <CategoryManagementModal
           isOpen={showCategoryModal}
           onClose={() => setShowCategoryModal(false)}
-          categories={customCategories}
+          categories={categories}
           onAddCategory={handleAddCategory}
           onEditCategory={handleEditCategory}
           onDeleteCategory={handleDeleteCategory}

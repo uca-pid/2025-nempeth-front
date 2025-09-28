@@ -3,7 +3,9 @@ import { IoClose, IoOptionsOutline, IoTrashSharp  } from 'react-icons/io5'
 
 interface Category {
   id: string
+  displayName: string
   name: string
+  type?: string
   icon: string
 }
 
@@ -11,9 +13,9 @@ interface CategoryManagementModalProps {
   isOpen: boolean
   onClose: () => void
   categories: Category[]
-  onAddCategory: (category: Omit<Category, 'id'>) => void
-  onEditCategory: (id: string, category: Omit<Category, 'id'>) => void
-  onDeleteCategory: (id: string) => void
+  onAddCategory: (category: Omit<Category, 'id'>) => Promise<void>
+  onEditCategory: (id: string, category: Omit<Category, 'id'>) => Promise<void>
+  onDeleteCategory: (id: string) => Promise<void>
 }
 
 // Iconos disponibles para las categorías
@@ -36,25 +38,38 @@ function CategoryManagementModal({
   const [selectedIcon, setSelectedIcon] = useState('')
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [processing, setProcessing] = useState(false)
 
-  const handleAddCategory = () => {
-    if (categoryName.trim() && selectedIcon) {
+  const handleAddCategory = async () => {
+    if (!categoryName.trim() || !selectedIcon || processing) return
+
+    try {
+      setProcessing(true)
+      
       if (editingCategory) {
-        onEditCategory(editingCategory.id, {
+        await onEditCategory(editingCategory.id, {
           name: categoryName.trim(),
+          displayName: categoryName.trim(),
           icon: selectedIcon
         })
         setEditingCategory(null)
       } else {
-        onAddCategory({
+        await onAddCategory({
           name: categoryName.trim(),
+          displayName: categoryName.trim(),
           icon: selectedIcon
         })
       }
+      
       // Resetear formulario
       setCategoryName('')
       setSelectedIcon('')
       setShowIconPicker(false)
+    } catch (error) {
+      console.error('Error al procesar categoría:', error)
+      // El error ya se maneja en Products.tsx, aquí solo logueamos
+    } finally {
+      setProcessing(false)
     }
   }
 
@@ -70,6 +85,19 @@ function CategoryManagementModal({
     setCategoryName('')
     setSelectedIcon('')
     setShowIconPicker(false)
+  }
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (processing) return
+    
+    try {
+      setProcessing(true)
+      await onDeleteCategory(categoryId)
+    } catch (error) {
+      console.error('Error al eliminar categoría:', error)
+    } finally {
+      setProcessing(false)
+    }
   }
 
   const isFormValid = !!(categoryName.trim() && selectedIcon)
@@ -148,10 +176,10 @@ function CategoryManagementModal({
                 <button
                   type="button"
                   onClick={handleAddCategory}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || processing}
                   className="rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {editingCategory ? 'Actualizar' : 'Añadir'}
+                  {processing ? 'Procesando...' : (editingCategory ? 'Actualizar' : 'Añadir')}
                 </button>
 
                 {/* Botón cancelar (solo en modo edición) */}
@@ -188,28 +216,37 @@ function CategoryManagementModal({
                       <span className="font-medium text-gray-800">{category.name}</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      
-                      <button
-                        type="button"
-                        onClick={() => handleEditCategory(category)}
-                        className="flex items-center justify-center w-10 h-10 text-blue-700 transition rounded-full ring-1 ring-blue-200/70 hover:bg-blue-50 hover:ring-blue-300 active:scale-95"
-                        title="Editar categoría"
-                        aria-label="Editar categoría"
-                      >
-                        <IoOptionsOutline size={20} className="text-indigo-600 transition-all duration-200 hover:text-indigo-700 group-hover:rotate-3" />
-                      </button>
-                      
-                      <button
-                        type="button"
-                        onClick={() => onDeleteCategory(category.id)}
-                        className="flex items-center justify-center w-10 h-10 text-red-700 transition rounded-full ring-1 ring-red-200/70 hover:bg-red-50 hover:ring-red-300 active:scale-95"
-                        title="Eliminar categoría"
-                        aria-label="Eliminar categoría"
-                      >
-                        <IoTrashSharp size={20} className="transition-all duration-200 text-rose-600 hover:text-rose-700 group-hover:-rotate-3" />
-                      </button>
-                    </div>
+                    {category.type === "CUSTOM" && (
+                      <div className="flex items-center gap-2">
+                        
+                        
+                          <button
+                            type="button"
+                            onClick={() => handleEditCategory(category)}
+                            disabled={processing}
+                            className="flex items-center justify-center w-10 h-10 text-blue-700 transition rounded-full ring-1 ring-blue-200/70 hover:bg-blue-50 hover:ring-blue-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Editar categoría"
+                            aria-label="Editar categoría"
+                          >
+                            <IoOptionsOutline
+                              size={20}
+                              className="text-indigo-600 transition-all duration-200 hover:text-indigo-700 group-hover:rotate-3"
+                            />
+                          </button>
+                        
+                        
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCategory(category.id)}
+                          disabled={processing}
+                          className="flex items-center justify-center w-10 h-10 text-red-700 transition rounded-full ring-1 ring-red-200/70 hover:bg-red-50 hover:ring-red-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Eliminar categoría"
+                          aria-label="Eliminar categoría"
+                        >
+                          <IoTrashSharp size={20} className="transition-all duration-200 text-rose-600 hover:text-rose-700 group-hover:-rotate-3" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
