@@ -1,5 +1,6 @@
 import { IoOptionsOutline, IoTrashSharp } from 'react-icons/io5'
 import { type Product } from '../../services/productService'
+import { type Category as CategoryType } from '../../services/categoryService'
 
 interface ProductCardProps {
   product: Product
@@ -8,6 +9,7 @@ interface ProductCardProps {
   onShowDescription: (product: Product) => void
   processing: boolean
   isDeleting: boolean
+  categories: CategoryType[]
 }
 
 function ProductCard({ 
@@ -16,13 +18,32 @@ function ProductCard({
   onDelete, 
   onShowDescription, 
   processing, 
-  isDeleting 
+  isDeleting,
+  categories 
 }: ProductCardProps) {
+  // Encontrar la categoría del producto
+  const productCategory = categories.find(category => category.id === product.categoryId)
+  
   return (
     <div className="group flex min-h-[320px] flex-col overflow-hidden rounded-2xl border bg-white p-0 shadow-md ring-1 ring-gray-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-gray-300">
       {/* Header: Enhanced title with gradient background and subtle hover effect */}
       <div className="relative px-6 pt-6 pb-4">
-        <h3 className="text-xl font-bold tracking-tight text-gray-900 transition-colors">
+        {/* Icono de categoría en la esquina superior derecha */}
+        {productCategory && (
+          <div className="absolute top-6 right-6">
+            <div 
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-100/90 ring-1 ring-amber-200/90 
+                        transition-all duration-300 hover:scale-110 hover:bg-amber-200 hover:ring-amber-300"
+              title={productCategory.name}
+            >
+              <span className="text-xl" role="img" aria-label={productCategory.name}>
+                {productCategory.icon}
+              </span>
+            </div>
+          </div>
+        )}
+        
+        <h3 className="text-xl font-bold tracking-tight text-gray-900 transition-colors pr-16">
           {product.name}
         </h3>
       </div>

@@ -40,7 +40,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
         name: product.name,
         description: product.description,
         price: product.price,
-        categoryId: product.categoryId || (categories.length > 0 ? categories[0].id : '')
+        categoryId: product.categoryId ? product.categoryId : ''
       })
     } else {
       setFormData({
@@ -265,15 +265,20 @@ function Products() {
   }, [businessId])
 
   const loadProducts = useCallback(async () => {
-    console.log('Cargando productos para el negocio:', businessId);
-    
     if (!businessId) return
 
     try {
       setLoading(true)
       setError(null)
       const fetchedProducts = await productService.getProducts(businessId)
-      setProducts(fetchedProducts)
+      
+      // Transformar los productos para extraer el categoryId del objeto category
+      const transformedProducts = fetchedProducts.map((product: any) => ({
+        ...product,
+        categoryId: product.category?.id || ''
+      })) as Product[]
+      
+      setProducts(transformedProducts)
     } catch (err) {
       console.error('Error cargando productos:', err)
       setError('Error al cargar los productos')
@@ -540,6 +545,7 @@ function Products() {
                   onShowDescription={handleShowDescription}
                   processing={processing}
                   isDeleting={isDeleting}
+                  categories={categories}
                 />
               ))}
             </div>
