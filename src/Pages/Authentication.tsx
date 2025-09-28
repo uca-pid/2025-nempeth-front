@@ -15,11 +15,13 @@ export default function Authentication() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [role, setRole] = useState<'OWNER' | 'USER'>('OWNER')
+  const [variableField, setVariableField] = useState('')
 
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false)
   const [error, setError] = useState('')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -29,10 +31,22 @@ export default function Authentication() {
     setConfirmPassword('')
     setFirstName('')
     setLastName('')
-    setRole('OWNER')
+    setVariableField('')
     setError('')
+    setShowErrorModal(false)
     setShowPassword(false)
     setShowConfirmPassword(false)
+  }
+
+  // Función auxiliar para manejar errores con modal
+  const handleError = (err: unknown, defaultMessage: string = 'Error inesperado. Intenta nuevamente.') => {
+    if (err instanceof Error) {
+      setError(err.message)
+    } else {
+      setError(defaultMessage)
+    }
+    setShowErrorModal(true)
+    console.error('Error:', err)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -56,9 +70,7 @@ export default function Authentication() {
       const response = await login({ email, password })
       console.log('Login exitoso:', response)
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message)
-      else setError('Error inesperado. Intenta nuevamente.')
-      console.error('Error en login:', err)
+      handleError(err, 'Error inesperado en el login. Intenta nuevamente.')
     }
   }
 
@@ -103,23 +115,52 @@ export default function Authentication() {
       return
     }
 
-    try {
-      const response = await AuthService.register({
-        name: firstName,
-        lastName,
-        email,
-        password,
-        role,
-      })
+    // Validación específica para propietarios
+    if (role === 'OWNER' && !variableField.trim()) {
+      setError('El nombre del negocio es obligatorio para propietarios')
+      return
+    }
+
+    // Función auxiliar para manejar errores de registro
+    const handleRegistrationError = (err: unknown) => {
+      handleError(err, 'Error inesperado durante el registro. Intenta nuevamente.')
+    }
+
+    // Función auxiliar para manejar registro exitoso
+    const handleRegistrationSuccess = (response: unknown) => {
       console.log('Registro exitoso:', response)
       clearFormFields()
       setIsLoginMode(true)
       setShowSuccessMessage(true)
+    }
+
+    try {
+      let response;
+      
+      if (role === 'OWNER') {
+        // Registro de propietario con información del negocio
+        response = await AuthService.registerByOwner({
+          name: firstName,
+          lastName,
+          email,
+          password,
+          businessName: variableField,
+        })
+      } else {
+        // Registro de empleado
+        response = await AuthService.registerByEmployee({
+          name: firstName,
+          lastName,
+          email,
+          password,
+          businessJoinCode: variableField,
+        })
+      }
+      
+      handleRegistrationSuccess(response)
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message)
-      else setError('Error inesperado durante el registro. Intenta nuevamente.')
-      console.error('Error en registro:', err)
-    } 
+      handleRegistrationError(err)
+    }
     
   }
 
@@ -146,8 +187,8 @@ export default function Authentication() {
       console.log('Correo de recuperación enviado:', response)
       setIsForgotPasswordMode(false)
       setEmail('')
-    } catch {
-      setError('Error al enviar el correo de recuperación. Intenta nuevamente.')
+    } catch (err: unknown) {
+      handleError(err, 'Error al enviar el correo de recuperación. Intenta nuevamente.')
     } 
   }
 
@@ -403,6 +444,18 @@ return (
               </select>
             </div>
 
+            <div>
+              <input
+                type="text"
+                id="businessName"
+                value={variableField }
+                onChange={(e) => setVariableField(e.target.value)}
+                placeholder={role === 'OWNER' ? "Nombre del negocio" : "Código del negocio"}
+                disabled={isLoading}
+                className={`w-full mt-4 px-4 py-3 text-base transition border-2 rounded-lg outline-none border-neutral-200 focus:border-rose-600 focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:opacity-75 ${role === 'USER' ? 'bg-gray-100' : 'bg-white'}`}
+              />
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
@@ -464,7 +517,18 @@ return (
         message="Ahora ya puede iniciar sesión..."
       />
     )}
+
+    {showErrorModal && (
+      <Modal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        type="error"
+        title="Error en el registro"
+        confirmText="Intentar nuevamente"
+        showCancelButton={false}
+        message={error}
+      />
+    )}
   </div>
 )
 }
-

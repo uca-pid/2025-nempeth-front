@@ -12,12 +12,20 @@ export interface LoginResponse {
   message: string;
 }
 
-export interface RegisterRequest {
+export interface RegisterRequestByEmployee {
   name: string;
   lastName: string;
   email: string;
   password: string;
-  role: 'OWNER' | 'USER';
+  businessJoinCode: string;
+}
+
+export interface RegisterRequestByOwner {
+  name: string;
+  lastName: string;
+  email: string;
+  password: string;
+  businessName: string;
 }
 
 export interface RegisterResponse {
@@ -68,21 +76,7 @@ export class AuthService {
       console.error('Error en login:', error);
 
       if (error instanceof AxiosError) {
-        if (error.response?.status === 401) {
-          throw new Error(
-            'Credenciales incorrectas. Verifica tu email y contraseña.',
-          );
-        } else if (error.response?.status === 404) {
-          throw new Error('Usuario no encontrado. Verifica tu email.');
-        } else if (error.response?.status === 400) {
-          throw new Error('Datos inválidos. Verifica tu información.');
-        } else if (error.response?.status === 500) {
-          throw new Error('Error del servidor. Intenta más tarde.');
-        } else if (!error.response) {
-          throw new Error('Error de conexión. Verifica tu internet.');
-        } else {
-          throw new Error('Error inesperado en el login. Intenta nuevamente.');
-        }
+        throw new Error(error.response?.data.error);
       } else {
         throw new Error('Error inesperado en el login. Intenta nuevamente.');
       }
@@ -90,41 +84,63 @@ export class AuthService {
   }
 
   // Método para register (para uso futuro)
-  static async register(userData: RegisterRequest): Promise<RegisterResponse> {
+  // static async register(userData: RegisterRequest): Promise<RegisterResponse> {
+  //   try {
+  //     const response = await api.post<RegisterResponse>(
+  //       '/auth/register',
+  //       userData,
+  //     );
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error('Error en registro:', error);
+  //     if (error instanceof AxiosError) {
+  //       throw new Error(error.response?.data.error);
+  //     } else {
+  //       throw new Error('Error inesperado en el registro. Intenta nuevamente.');
+  //     }
+  //   }
+  // }
+
+  // Método para register de Owner
+  static async registerByOwner(
+    userData: RegisterRequestByOwner,
+  ): Promise<RegisterRequestByOwner> {
     try {
-      const response = await api.post<RegisterResponse>(
-        '/auth/register',
+      const response = await api.post<RegisterRequestByOwner>(
+        '/auth/register/owner',
         userData,
       );
       return response.data;
     } catch (error) {
       console.error('Error en registro:', error);
-
       if (error instanceof AxiosError) {
-        if (error.response?.status === 409) {
-          throw new Error(
-            'Este correo electrónico ya está registrado. Intenta con otro.',
-          );
-        } else if (error.response?.status === 400) {
-          throw new Error(
-            'Datos inválidos para el registro. Verifica la información.',
-          );
-        } else if (error.response?.status === 500) {
-          throw new Error('Error del servidor. Intenta más tarde.');
-        } else if (!error.response) {
-          throw new Error('Error de conexión. Verifica tu internet.');
-        } else {
-          throw new Error(
-            'Error inesperado en el registro. Intenta nuevamente.',
-          );
-        }
+        throw new Error(error.response?.data.error);
       } else {
         throw new Error('Error inesperado en el registro. Intenta nuevamente.');
       }
     }
   }
 
-  // Método para register (para uso futuro)
+  // Método para register de Employee
+  static async registerByEmployee(
+    userData: RegisterRequestByEmployee,
+  ): Promise<RegisterRequestByEmployee> {
+    try {
+      const response = await api.post<RegisterRequestByEmployee>(
+        '/auth/register/employee',
+        userData,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error en registro:', error);
+      if (error instanceof AxiosError) {
+        throw new Error(error.response?.data.error);
+      } else {
+        throw new Error('Error inesperado en el registro. Intenta nuevamente.');
+      }
+    }
+  }
+
   static async forgotPassword(
     userData: ForgotPasswordRequest,
   ): Promise<ForgotPasswordResponse> {
@@ -136,23 +152,10 @@ export class AuthService {
       return response.data;
     } catch (error) {
       console.error('Error en registro:', error);
-
       if (error instanceof AxiosError) {
-        if (error.response?.status === 400) {
-          throw new Error(
-            'Datos inválidos para el registro. Verifica la información.',
-          );
-        } else if (error.response?.status === 500) {
-          throw new Error('Error del servidor. Intenta más tarde.');
-        } else if (!error.response) {
-          throw new Error('Error de conexión. Verifica tu internet.');
-        } else {
-          throw new Error(
-            'Error inesperado en el registro. Intenta nuevamente.',
-          );
-        }
+        throw new Error(error.response?.data.error);
       } else {
-        throw new Error('Error inesperado en el registro. Intenta nuevamente.');
+        throw new Error('Error inesperado. Intenta nuevamente.');
       }
     }
   }
