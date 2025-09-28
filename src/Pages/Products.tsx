@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { productService, type Product } from '../services/productService'
 import { categoryService, type Category as CategoryType } from '../services/categoryService'
 import { useAuth } from '../contexts/useAuth'
 import EmptyState from '../components/Products/EmptyState'
 import DescriptionModal from '../components/Products/DescriptionModal'
-import CategorySection, { type Category } from '../components/Products/CategorySection'
+import ProductCard from '../components/Products/ProductCard'
 import CategoryManagementModal from '../components/Products/CategoryManagementModal'
 import { IoFilterCircle } from 'react-icons/io5'
 
@@ -282,51 +282,7 @@ function Products() {
     }
   }, [businessId])
 
-  // Agrupar productos por categorías usando useMemo para optimizar
-  const categorizedProducts = useMemo(() => {
-    const categoryMap = new Map<string, Category>()
 
-    // Inicializar todas las categorías disponibles
-    categories.forEach(category => {
-      categoryMap.set(category.id, {
-        id: category.id,
-        name: category.name,
-        icon: category.icon,
-        products: []
-      })
-    })
-
-    // Crear categoría especial para productos sin categoría
-    const uncategorizedId = 'uncategorized'
-    categoryMap.set(uncategorizedId, {
-      id: uncategorizedId,
-      name: 'Sin Categoría',
-      icon: '📦',
-      products: []
-    })
-
-    // Asignar productos a sus categorías usando el categoryId real
-    products.forEach(product => {
-      const categoryId = product.categoryId || uncategorizedId
-      
-      if (categoryMap.has(categoryId)) {
-        categoryMap.get(categoryId)!.products.push(product)
-      } else {
-        // Si la categoría no existe, ponerlo en "Sin Categoría"
-        categoryMap.get(uncategorizedId)!.products.push(product)
-      }
-    })
-
-    // Filtrar categorías que tienen productos y ordenar
-    return Array.from(categoryMap.values())
-      .filter(category => category.products.length > 0)
-      .sort((a, b) => {
-        // Poner "Sin Categoría" al final
-        if (a.id === uncategorizedId) return 1
-        if (b.id === uncategorizedId) return -1
-        return a.name.localeCompare(b.name)
-      })
-  }, [products, categories])
 
   // Cargar productos y categorías al montar el componente
   useEffect(() => {
@@ -569,22 +525,24 @@ function Products() {
           </div>
         </div>
 
-        {/* Productos agrupados por categorías */}
+        {/* Productos */}
         <div className="mt-8 xl:max-w-[1400px] xl:mx-auto">
           {products.length === 0 ? (
             <EmptyState onAddProduct={handleAddProduct} />
           ) : (
-            categorizedProducts.map(category => (
-              <CategorySection
-                key={category.id}
-                category={category}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-                onShowDescription={handleShowDescription}
-                processing={processing}
-                isDeleting={isDeleting}
-              />
-            ))
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {products.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                  onShowDescription={handleShowDescription}
+                  processing={processing}
+                  isDeleting={isDeleting}
+                />
+              ))}
+            </div>
           )}
         </div>
 
