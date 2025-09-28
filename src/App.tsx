@@ -5,6 +5,7 @@ import Authentication from './Pages/Authentication'
 import Home from './Pages/Home'
 import EditProfile from './Pages/EditProfile'
 import Products from './Pages/Products'
+import BusinessInfo from './Pages/BusinessInfo'
 import ResetPassword from './Pages/ResetPassword'
 import Layout from './components/Layout'
 
@@ -46,6 +47,15 @@ function AppRoutes() {
         element={
           isAuthenticated ? 
           <Layout><Products /></Layout> : 
+          <Navigate to="/" replace />
+        } 
+      />
+      
+      <Route 
+        path="/business" 
+        element={
+          isAuthenticated ? 
+          <Layout><BusinessInfo /></Layout> : 
           <Navigate to="/" replace />
         } 
       />

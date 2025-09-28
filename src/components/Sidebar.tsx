@@ -21,6 +21,12 @@ const UserIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const BuildingStorefrontIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.001 3.001 0 01-3.75-.614C.75 8.737.75 8.737.75 8.737s-.75 0-.75 0v10.5z" />
+  </svg>
+)
+
 const ArrowRightOnRectangleIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -47,6 +53,11 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
       name: 'Productos',
       path: '/products',
       icon: ShoppingBagIcon,
+    },
+    {
+      name: 'Mi Negocio',
+      path: '/business',
+      icon: BuildingStorefrontIcon,
     },
     {
       name: 'Perfil',
