@@ -123,12 +123,6 @@ function SalesHistory() {
             <p className="mb-6 text-center text-gray-600">
               Las ventas que generes aparecerán aquí
             </p>
-            <button
-              onClick={() => navigate('/create-order')}
-              className="px-6 py-3 bg-[#2563eb] text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-            >
-              Crear Primera Venta
-            </button>
           </div>
         ) : (
           <div className="space-y-4">
