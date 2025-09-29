@@ -1,5 +1,5 @@
 import Lottie from 'lottie-react'
-import loadingAnimation from '../assets/Honey Bee.json'
+import loadingAnimation from '../assets/HoneyBee.json'
 import '../Styles/colores.css'
 
 interface LoadingScreenProps {
@@ -8,7 +8,7 @@ interface LoadingScreenProps {
 
 function LoadingScreen({ message = 'Cargando datos...' }: LoadingScreenProps) {
   return (
-    <div className="fixed inset-0 z-[9999] flex h-dvh w-screen items-center justify-center bg-white p-4 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-[9999] flex h-dvh w-screen items-center justify-center bg-gradient-to-b from-white via-[#fff1eb] to-white p-4 sm:p-6 animate-fadeIn">
       <div className="relative w-full max-w-[600px] bg-transparent text-center px-4 sm:px-6 py-6 animate-slideIn">
         <div className="flex justify-center mb-6 sm:mb-0">
           <Lottie
@@ -30,9 +30,9 @@ function LoadingScreen({ message = 'Cargando datos...' }: LoadingScreenProps) {
 
         <div className="flex justify-center mb-6">
           <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-gradient-to-r from-[var(--color-korven-brand)] to-[var(--color-korven-accent)] rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
-            <div className="w-2 h-2 bg-gradient-to-r from-[var(--color-korven-brand)] to-[var(--color-korven-accent)] rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
-            <div className="w-2 h-2 bg-gradient-to-r from-[var(--color-korven-brand)] to-[var(--color-korven-accent)] rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            <div className="w-2 h-2 bg-gradient-to-r from-[var(--color-korven-brand)] to-[var(--color-korven-accent)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-gradient-to-r from-[var(--color-korven-brand)] to-[var(--color-korven-accent)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-gradient-to-r from-[var(--color-korven-brand)] to-[var(--color-korven-accent)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
         </div>
 

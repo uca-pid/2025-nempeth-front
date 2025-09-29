@@ -25,7 +25,7 @@ function DescriptionModal({ isOpen, onClose, productName, description }: Descrip
         
         {/* Contenido con scroll */}
         <div className="flex-1 overflow-y-auto px-6 py-8">
-          <div className="rounded-lg bg-gray-50 p-6 text-base leading-relaxed text-gray-700">
+          <div className="rounded-lg bg-gray-50 p-6 text-base leading-relaxed text-gray-700 whitespace-pre-wrap break-words">
             {description}
           </div>
         </div>
