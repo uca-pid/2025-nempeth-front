@@ -664,7 +664,7 @@ function Products() {
               </button>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <EmptyState onAddProduct={handleAddProduct} />
+            <EmptyState />
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {filteredProducts.map(product => (
