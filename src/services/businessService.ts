@@ -2,9 +2,9 @@ import api from './api'
 
 export interface BusinessMemberDetailResponse {
   userId: string
-  email: string
-  name: string
-  lastName: string
+  userEmail: string
+  userName: string
+  userLastName: string
   role: string
   status: string
 }
@@ -48,6 +48,16 @@ export const businessService = {
       return response.data
     } catch (error) {
       console.error('Error al obtener detalles del negocio:', error)
+      throw error
+    }
+  },
+
+  getBusinessEmployees: async (businessId: string): Promise<BusinessMemberDetailResponse[]> => {
+    try {
+      const response = await api.get(`/businesses/${businessId}/employees`)
+      return response.data
+    } catch (error) {
+      console.error('Error al obtener empleados del negocio:', error)
       throw error
     }
   }

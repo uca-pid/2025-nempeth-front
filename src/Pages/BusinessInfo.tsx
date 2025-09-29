@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/useAuth'
-import { businessService, type BusinessDetailResponse } from '../services/businessService'
-import { IoCopyOutline, IoCheckmarkCircle, IoBusinessOutline, IoCodeSlashOutline } from 'react-icons/io5'
+import { businessService, type BusinessDetailResponse, type BusinessMemberDetailResponse } from '../services/businessService'
+import { IoCopyOutline, IoCheckmarkCircle, IoBusinessOutline, IoCodeSlashOutline, IoPeopleOutline, IoPersonOutline } from 'react-icons/io5'
 
 function BusinessInfo() {
   const { user } = useAuth()
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [businessDetail, setBusinessDetail] = useState<BusinessDetailResponse | null>(null)
+  const [employees, setEmployees] = useState<BusinessMemberDetailResponse[]>([])
   const [loading, setLoading] = useState(true)
+  const [employeesLoading, setEmployeesLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   
@@ -28,11 +30,27 @@ function BusinessInfo() {
         setError(null)
         const detail = await businessService.getBusinessDetail(businessId)
         setBusinessDetail(detail)
+        
+        // Cargar empleados después de cargar los detalles del negocio
+        await loadEmployees(businessId)
       } catch (err) {
         console.error('Error cargando detalles del negocio:', err)
         setError('Error al cargar la información del negocio')
       } finally {
         setLoading(false)
+      }
+    }
+
+    const loadEmployees = async (businessId: string) => {
+      try {
+        setEmployeesLoading(true)
+        const employeesData = await businessService.getBusinessEmployees(businessId)
+        setEmployees(employeesData || [])
+      } catch (err) {
+        console.error('Error cargando empleados:', err)
+        setEmployees([]) // Asegurar que employees sea un array vacío en caso de error
+      } finally {
+        setEmployeesLoading(false)
       }
     }
 
@@ -231,6 +249,101 @@ function BusinessInfo() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Sección de Empleados */}
+          <div className="mt-8 overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl">
+            {/* Header de empleados */}
+            <div className="p-8 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full shadow-lg bg-gradient-to-r from-green-100 to-emerald-100 ring-4 ring-white">
+                  <IoPeopleOutline className="text-2xl text-green-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Empleados</h2>
+                  <p className="text-gray-600">Lista de empleados del negocio</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contenido de empleados */}
+            <div className="p-8">
+              {employeesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <p className="text-base font-medium text-gray-600">Cargando empleados...</p>
+                </div>
+              ) : employees.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                  <div className="text-4xl opacity-50">👥</div>
+                  <h3 className="text-lg font-semibold text-gray-700">Sin empleados registrados</h3>
+                  <p className="text-gray-500">
+                    Aún no hay empleados registrados en este negocio.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Total de empleados: {employees.length}
+                    </h3>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {employees.map((employee) => (
+                      <div
+                        key={employee.userId}
+                        className="flex items-center justify-between p-4 border border-gray-200 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-12 h-12 rounded-full shadow bg-gradient-to-r from-gray-100 to-gray-200">
+                            <IoPersonOutline className="text-xl text-gray-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-base font-semibold text-gray-900">
+                              {(employee.userName && employee.userLastName) 
+                                ? `${employee.userName} ${employee.userLastName}` 
+                                : employee.userName || 'Sin nombre'
+                              }
+                            </h4>
+                            <p className="text-sm text-gray-600">{employee.userEmail}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                employee.status === 'ACTIVE' 
+                                  ? 'bg-green-500' 
+                                  : employee.status === 'PENDING'
+                                  ? 'bg-yellow-500'
+                                  : 'bg-red-500'
+                              }`}></div>
+                              <span className={`text-sm font-medium ${
+                                employee.status === 'ACTIVE' 
+                                  ? 'text-green-700' 
+                                  : employee.status === 'PENDING'
+                                  ? 'text-yellow-700'
+                                  : 'text-red-700'
+                              }`}>
+                                {employee.status === 'ACTIVE' 
+                                  ? 'Activo' 
+                                  : employee.status === 'PENDING'
+                                  ? 'Pendiente'
+                                  : 'Inactivo'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500 capitalize">
+                              {employee.role.toLowerCase()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
