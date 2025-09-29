@@ -3,7 +3,70 @@ import type { ReactNode } from 'react';
 import { AuthService } from '../services/loginService';
 import type { LoginRequest, LoginResponse } from '../services/loginService';
 import { AuthContext, type User } from './AuthContextTypes';
-import api from '../services/api'; // Para uso futuro
+import api from '../services/api';
+
+// Función helper para decodificar el JWT y extraer información básica del usuario
+const decodeToken = (token: string): { userId: string; email: string } | null => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+
+    const decoded = JSON.parse(jsonPayload);
+    
+    // Verifica si el token no ha expirado
+    const now = Math.floor(Date.now() / 1000);
+    if (decoded.exp && decoded.exp < now) {
+      return null; // Token expirado
+    } 
+    
+    // Solo retornamos los datos que sabemos que están en el token
+    return {
+      userId: decoded.userId,
+      email: decoded.sub, // El 'sub' generalmente contiene el email
+    };
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+};
+
+// Función helper para obtener todos los datos del usuario desde el backend
+const fetchCompleteUserData = async (authToken: string): Promise<User | null> => {
+  try {
+    const response = await api.get('/users/me', { 
+      headers: { Authorization: `Bearer ${authToken}` } 
+    });
+
+    if (response.data) {
+      const basicData = decodeToken(authToken);
+      if (!basicData) return null;
+
+      console.log("Aca",response);
+      
+
+      return {
+        userId: basicData.userId,
+        email: basicData.email,
+        name: response.data.name,
+        lastName: response.data.lastName,
+        businessId: response.data.businesses[0].businessId,
+        businessName: response.data.businesses[0].businessName,
+        role: response.data.businesses[0].role,
+        status: response.data.businesses[0].status
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching complete user data:', error);
+    return null;
+  }
+};
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -15,56 +78,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(!!user && !!token);
   }, [user, token]);
 
-  // Función para decodificar el JWT y extraer la información del usuario
-  const decodeToken = (token: string): User | null => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-
-      const decoded = JSON.parse(jsonPayload);
-      
-      // Verifica si el token no ha expirado
-      const now = Math.floor(Date.now() / 1000);
-      if (decoded.exp && decoded.exp < now) {
-        return null; // Token expirado
-      } 
-      return {
-        userId: decoded.userId,
-        email: decoded.sub, // El 'sub' generalmente contiene el email
-        role: decoded.role,
-        businesses: decoded.businesses || [],
-      };
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      return null;
-    }
-  };
-
-  // Verificar token al cargar la app
+  // Verificar token al cargar la app y obtener datos completos del usuario
   useEffect(() => {
     const storedToken = AuthService.getToken();
     const init = async () => {
       if (storedToken) {
-        const userData = decodeToken(storedToken);
-        if (userData) {
+        const basicUserData = decodeToken(storedToken);
+        if (basicUserData) {
           setToken(storedToken);
-          setUser(userData);
-          // Si no hay name/lastName, forzar fetch del perfil
-          if (!userData.name || !userData.lastName) {
-            try {
-              const response = await api.get('/users/me', { headers: { Authorization: `Bearer ${storedToken}` } });
-              if (response.data) {
-                setUser(prev => prev ? { ...prev, ...response.data } : null);
-              }
-            } catch (error) {
-              console.error('Error fetching user profile:', error);
-            }
+          
+          // Obtener datos completos del usuario desde el backend
+          const completeUserData = await fetchCompleteUserData(storedToken);
+          if (completeUserData) {
+            setUser(completeUserData);
+          } else {
+            // Si no se pueden obtener los datos completos, limpiar todo
+            AuthService.logout();
           }
         } else {
           // Token inválido o expirado
@@ -76,42 +105,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     init();
   }, []);
 
-  //Opcional: Función para obtener más datos del usuario desde el backend
-  const fetchUserProfile = async () => {
-    try {
-      const response = await api.get('/users/me', { headers: { Authorization: `Bearer ${token}` } });
-
-      if (response.data) {
-        setUser(prev => prev ? { ...prev, ...response.data } : null);
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-    
-  };
-
   const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
     setIsLoading(true);
     try {
       const response = await AuthService.login(credentials);
       
       if (response.token) {
-        const userData = decodeToken(response.token);
-        if (userData) {
+        const basicUserData = decodeToken(response.token);
+        if (basicUserData) {
           setToken(response.token);
-          setUser(userData);
-          console.log('userData:', userData);
-          setIsAuthenticated(true);
-
-          // Opcionalmente, obtener más datos del usuario
-            await fetchUserProfile();
           
+          // Obtener datos completos del usuario antes de marcar como autenticado
+          const completeUserData = await fetchCompleteUserData(response.token);
+          if (completeUserData) {
+            setUser(completeUserData);
+            console.log('Complete user data loaded:', completeUserData);
+          } else {
+            // Si no se pueden obtener los datos completos, fallar el login
+            throw new Error('No se pudieron cargar los datos completos del usuario');
+          }
         }
       }
       
       return response;
     } catch (error) {
       console.error('Login error:', error);
+      // Limpiar estado en caso de error
+      setToken(null);
+      setUser(null);
       throw error;
     } finally {
       setIsLoading(false);

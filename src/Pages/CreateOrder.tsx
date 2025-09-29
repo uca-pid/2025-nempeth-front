@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { productService, type Product } from '../services/productService'
 import { categoryService, type Category as CategoryType } from '../services/categoryService'
+
+// Tipo para productos que vienen de la API con el objeto category anidado
+interface ProductWithCategory extends Omit<Product, 'categoryId'> {
+  category?: {
+    id: string;
+    name: string;
+  };
+}
 import { salesService, type CreateSaleRequest } from '../services/salesService'
 import { useAuth } from '../contexts/useAuth'
 import EmptyState from '../components/Products/EmptyState'
@@ -23,7 +31,7 @@ function CreateOrder() {
   const [isCreatingOrder, setIsCreatingOrder] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-  const businessId = user?.businesses?.[0]?.businessId
+  const businessId = user?.businessId
 
   const loadCategories = useCallback(async () => {
     if (!businessId) return
@@ -46,7 +54,7 @@ function CreateOrder() {
       const fetchedProducts = await productService.getProducts(businessId)
       
       // Transformar los productos para extraer el categoryId del objeto category
-      const transformedProducts = fetchedProducts.map((product: any) => ({
+      const transformedProducts = (fetchedProducts as ProductWithCategory[]).map((product) => ({
         ...product,
         categoryId: product.category?.id || ''
       })) as Product[]
@@ -228,7 +236,7 @@ function CreateOrder() {
 
       <div className="flex">
         {/* Panel izquierdo - Productos */}
-        <div className="flex-1 p-6 md:p-10 pr-4">
+        <div className="flex-1 p-6 pr-4 md:p-10">
           {/* Sección de filtros y categorías */}
           <div className="mb-6">
             <div className="flex flex-wrap items-center gap-4">
@@ -255,12 +263,12 @@ function CreateOrder() {
                 
                 {/* Dropdown menu */}
                 {showFilterDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50 py-2">
+                  <div className="absolute left-0 z-50 w-64 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full rounded-xl">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <h3 className="text-sm font-semibold text-gray-800">Filtrar por categoría</h3>
                     </div>
                     
-                    <div className="max-h-64 overflow-y-auto">
+                    <div className="overflow-y-auto max-h-64">
                       {categories.map(category => (
                         <button
                           key={category.id}
@@ -283,7 +291,7 @@ function CreateOrder() {
                     {selectedCategoryFilters.length > 0 && (
                       <div className="px-4 py-2 border-t border-gray-100">
                         <button
-                          className="w-full text-sm text-red-600 hover:text-red-800 font-medium"
+                          className="w-full text-sm font-medium text-red-600 hover:text-red-800"
                           onClick={handleClearAllFilters}
                           type="button"
                         >
@@ -304,12 +312,12 @@ function CreateOrder() {
                   return (
                     <div 
                       key={categoryId}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 rounded-full border border-blue-200"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 border border-blue-200 rounded-full"
                     >
                       <span>{category.icon}</span>
                       <span>{category.name}</span>
                       <button 
-                        className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                        className="ml-1 font-bold text-blue-600 hover:text-blue-800"
                         onClick={() => handleToggleCategoryFilter(categoryId)}
                         type="button"
                       >
@@ -356,7 +364,7 @@ function CreateOrder() {
         </div>
 
         {/* Panel derecho - Carrito */}
-        <div className="w-96 bg-gray-50 border-l border-gray-200 p-6">
+        <div className="p-6 border-l border-gray-200 w-96 bg-gray-50">
           <ShoppingCart
             items={cartItems}
             onUpdateQuantity={handleUpdateCartQuantity}

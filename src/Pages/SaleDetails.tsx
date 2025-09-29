@@ -19,7 +19,7 @@ function SaleDetails() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const businessId = user?.businesses?.[0]?.businessId
+  const businessId = user?.businessId
 
   const loadSaleDetails = useCallback(async () => {
     if (!businessId || !saleId) return
@@ -68,7 +68,7 @@ function SaleDetails() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/sales-history')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 transition-colors rounded-lg hover:bg-gray-100"
             >
               <IoArrowBackOutline size={24} />
             </button>
@@ -89,7 +89,7 @@ function SaleDetails() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/sales-history')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 transition-colors rounded-lg hover:bg-gray-100"
             >
               <IoArrowBackOutline size={24} />
             </button>
@@ -97,9 +97,9 @@ function SaleDetails() {
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-20">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error al cargar la venta</h2>
-          <p className="text-gray-600 mb-4">{error || 'Venta no encontrada'}</p>
+          <div className="mb-4 text-6xl text-red-500">⚠️</div>
+          <h2 className="mb-2 text-xl font-semibold text-gray-800">Error al cargar la venta</h2>
+          <p className="mb-4 text-gray-600">{error || 'Venta no encontrada'}</p>
           <div className="flex space-x-4">
             <button
               onClick={loadSaleDetails}
@@ -109,7 +109,7 @@ function SaleDetails() {
             </button>
             <button
               onClick={() => navigate('/sales-history')}
-              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="px-6 py-3 text-white transition-colors bg-gray-600 rounded-lg hover:bg-gray-700"
             >
               Volver al Historial
             </button>
@@ -126,7 +126,7 @@ function SaleDetails() {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/sales-history')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 transition-colors rounded-lg hover:bg-gray-100"
           >
             <IoArrowBackOutline size={24} />
           </button>
@@ -134,18 +134,18 @@ function SaleDetails() {
             <h1 className="text-2xl font-bold text-gray-900">
               Venta #{sale.id.substring(0, 8)}
             </h1>
-            <p className="text-sm text-gray-600 mt-1">Detalles completos de la transacción</p>
+            <p className="mt-1 text-sm text-gray-600">Detalles completos de la transacción</p>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-7 max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto p-7">
         {/* Sale Summary Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+        <div className="p-6 mb-6 bg-white border border-gray-200 rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-4 rounded-xl">
+              <div className="p-4 bg-blue-100 rounded-xl">
                 <IoReceiptOutline size={32} className="text-[#2563eb]" />
               </div>
               <div>
@@ -158,11 +158,11 @@ function SaleDetails() {
                 <IoCashOutline size={28} />
                 <span>{formatCurrency(sale.totalAmount)}</span>
               </div>
-              <p className="text-sm text-gray-600 mt-1">Total de la venta</p>
+              <p className="mt-1 text-sm text-gray-600">Total de la venta</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex items-center space-x-3">
               <IoCalendarOutline size={20} className="text-gray-500" />
               <div>
@@ -181,8 +181,8 @@ function SaleDetails() {
         </div>
 
         {/* Items Detail Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <div className="flex items-center space-x-3 mb-6">
+        <div className="p-6 bg-white border border-gray-200 rounded-xl">
+          <div className="flex items-center mb-6 space-x-3">
             <IoList size={24} className="text-[#2563eb]" />
             <h2 className="text-xl font-bold text-gray-900">
               Productos Vendidos ({sale.items.length})
@@ -193,7 +193,7 @@ function SaleDetails() {
             {sale.items.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-4 rounded-lg bg-gray-50"
               >
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{item.productName}</h3>
@@ -218,8 +218,8 @@ function SaleDetails() {
           </div>
 
           {/* Total Summary */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex justify-between items-center">
+          <div className="pt-6 mt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-700">Total de la Venta:</span>
               <span className="text-2xl font-bold text-green-600">
                 {formatCurrency(sale.totalAmount)}
@@ -229,10 +229,10 @@ function SaleDetails() {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 flex justify-center">
+        <div className="flex justify-center mt-8">
           <button
             onClick={() => navigate('/sales-history')}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+            className="px-6 py-3 font-semibold text-white transition-colors bg-gray-600 rounded-lg hover:bg-gray-700"
           >
             Volver al Historial
           </button>

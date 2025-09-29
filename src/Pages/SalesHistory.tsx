@@ -11,7 +11,7 @@ function SalesHistory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const businessId = user?.businesses?.[0]?.businessId
+  const businessId = user?.businessId
 
   const loadSales = useCallback(async () => {
     if (!businessId) return
@@ -80,9 +80,9 @@ function SalesHistory() {
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-20">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error al cargar las ventas</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <div className="mb-4 text-6xl text-red-500">⚠️</div>
+          <h2 className="mb-2 text-xl font-semibold text-gray-800">Error al cargar las ventas</h2>
+          <p className="mb-4 text-gray-600">{error}</p>
           <button
             onClick={loadSales}
             className="px-6 py-3 bg-[#2563eb] text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -101,7 +101,7 @@ function SalesHistory() {
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold text-gray-900">Historial de Ventas</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="mt-1 text-sm text-gray-600">
               {sales.length} {sales.length === 1 ? 'venta registrada' : 'ventas registradas'}
             </p>
           </div>
@@ -118,9 +118,9 @@ function SalesHistory() {
       <div className="p-7">
         {sales.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <IoReceiptOutline size={64} className="text-gray-400 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">No hay ventas registradas</h2>
-            <p className="text-gray-600 text-center mb-6">
+            <IoReceiptOutline size={64} className="mb-4 text-gray-400" />
+            <h2 className="mb-2 text-xl font-semibold text-gray-800">No hay ventas registradas</h2>
+            <p className="mb-6 text-center text-gray-600">
               Las ventas que generes aparecerán aquí
             </p>
             <button
@@ -135,18 +135,18 @@ function SalesHistory() {
             {sales.map((sale) => (
               <div
                 key={sale.id}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
+                className="p-6 transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-lg"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="bg-blue-100 p-3 rounded-lg">
+                    <div className="p-3 bg-blue-100 rounded-lg">
                       <IoReceiptOutline size={24} className="text-[#2563eb]" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
                         Venta #{sale.id.substring(0, 8)}
                       </h3>
-                      <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
+                      <div className="flex items-center mt-1 space-x-4 text-sm text-gray-600">
                         <div className="flex items-center space-x-1">
                           <IoCalendarOutline size={16} />
                           <span>{formatDate(sale.occurredAt)}</span>
@@ -170,7 +170,7 @@ function SalesHistory() {
                     </div>
                     <button
                       onClick={() => handleViewDetails(sale.id)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                      className="flex items-center px-4 py-2 space-x-2 text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200"
                     >
                       <IoEyeOutline size={18} />
                       <span>Ver Detalles</span>
@@ -179,19 +179,19 @@ function SalesHistory() {
                 </div>
 
                 {/* Quick preview of items */}
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Productos vendidos:</h4>
+                <div className="pt-4 mt-4 border-t border-gray-100">
+                  <h4 className="mb-2 text-sm font-semibold text-gray-700">Productos vendidos:</h4>
                   <div className="flex flex-wrap gap-2">
                     {sale.items.slice(0, 3).map((item, index) => (
                       <div
                         key={index}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-blue-50 text-blue-700"
+                        className="inline-flex items-center px-3 py-1 text-xs text-blue-700 rounded-full bg-blue-50"
                       >
                         {item.productName} × {item.quantity}
                       </div>
                     ))}
                     {sale.items.length > 3 && (
-                      <div className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                      <div className="inline-flex items-center px-3 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
                         +{sale.items.length - 3} más
                       </div>
                     )}

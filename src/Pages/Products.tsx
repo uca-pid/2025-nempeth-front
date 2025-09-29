@@ -8,6 +8,14 @@ import ProductCard from '../components/Products/ProductCard'
 import CategoryManagementModal from '../components/Products/CategoryManagementModal'
 import { IoFilterCircle } from 'react-icons/io5'
 
+// Tipo para productos que vienen de la API con el objeto category anidado
+interface ProductWithCategory extends Omit<Product, 'categoryId'> {
+  category?: {
+    id: string;
+    name: string;
+  };
+}
+
 interface ProductModalProps {
   isOpen: boolean
   onClose: () => void
@@ -264,7 +272,7 @@ function Products() {
   const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([])
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
 
-  const businessId = user?.businesses?.[0]?.businessId
+  const businessId = user?.businessId
 
   const loadCategories = useCallback(async () => {
     if (!businessId) return
@@ -287,7 +295,7 @@ function Products() {
       const fetchedProducts = await productService.getProducts(businessId)
       
       // Transformar los productos para extraer el categoryId del objeto category
-      const transformedProducts = fetchedProducts.map((product: any) => ({
+      const transformedProducts = (fetchedProducts as ProductWithCategory[]).map((product) => ({
         ...product,
         categoryId: product.category?.id || ''
       })) as Product[]
@@ -573,12 +581,12 @@ function Products() {
               
               {/* Dropdown menu */}
               {showFilterDropdown && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50 py-2">
+                <div className="absolute left-0 z-50 w-64 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full rounded-xl">
                   <div className="px-4 py-2 border-b border-gray-100">
                     <h3 className="text-sm font-semibold text-gray-800">Filtrar por categoría</h3>
                   </div>
                   
-                  <div className="max-h-64 overflow-y-auto">
+                  <div className="overflow-y-auto max-h-64">
                     {categories.map(category => (
                       <button
                         key={category.id}
@@ -601,7 +609,7 @@ function Products() {
                   {selectedCategoryFilters.length > 0 && (
                     <div className="px-4 py-2 border-t border-gray-100">
                       <button
-                        className="w-full text-sm text-red-600 hover:text-red-800 font-medium"
+                        className="w-full text-sm font-medium text-red-600 hover:text-red-800"
                         onClick={handleClearAllFilters}
                         type="button"
                       >
@@ -622,12 +630,12 @@ function Products() {
                 return (
                   <div 
                     key={categoryId}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 rounded-full border border-blue-200"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 border border-blue-200 rounded-full"
                   >
                     <span>{category.icon}</span>
                     <span>{category.name}</span>
                     <button 
-                      className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                      className="ml-1 font-bold text-blue-600 hover:text-blue-800"
                       onClick={() => handleToggleCategoryFilter(categoryId)}
                       type="button"
                     >

@@ -8,12 +8,9 @@ export interface User {
   name?: string;
   lastName?: string;
   role: string;
-  businesses: Array<{
-    businessId: string;
-    businessName: string;
-    role: string;
-    status: string;
-  }>;
+  businessId: string;
+  businessName: string;
+  status: string;
 }
 
 export interface AuthContextType {
