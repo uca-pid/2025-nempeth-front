@@ -234,7 +234,7 @@ function CreateOrder() {
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex h-screen">
         {/* Panel izquierdo - Productos */}
         <div className="flex-1 p-6 pr-4 md:p-10">
           {/* Sección de filtros y categorías */}
@@ -346,9 +346,9 @@ function CreateOrder() {
                 </button>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <EmptyState onAddProduct={() => {}} />
+              <EmptyState  />
             ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {filteredProducts.map(product => (
                   <OrderProductCard
                     key={product.id}

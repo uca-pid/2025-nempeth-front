@@ -24,7 +24,7 @@ function AppRoutes() {
   if (isBootstrapping) {
     // Light placeholder while we restore the session
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-sm text-gray-500">
+      <div className="flex items-center justify-center min-h-screen text-sm text-gray-500 bg-white">
         Cargando sesión...
       </div>
     )
@@ -128,11 +128,11 @@ function AppRoutes() {
       <Route
         path="/sales-history"
         element={
-          <OwnerGuard>
+          <OwnerOrActiveEmployeeGuard>
             <Layout>
               <SalesHistory />
             </Layout>
-          </OwnerGuard>
+          </OwnerOrActiveEmployeeGuard>
         }
       />
 

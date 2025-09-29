@@ -101,7 +101,7 @@ function SalesHistory() {
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold text-gray-900">Historial de Ventas</h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="text-sm text-gray-600">
               {sales.length} {sales.length === 1 ? 'venta registrada' : 'ventas registradas'}
             </p>
           </div>

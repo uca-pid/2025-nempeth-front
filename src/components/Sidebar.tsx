@@ -58,7 +58,9 @@ const OWNER_NAVIGATION = [
 const EMPLOYEE_NAVIGATION = [
   { name: 'Home', path: '/home', icon: HomeIcon },
   { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
+  { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
   { name: 'Perfil', path: '/profile', icon: UserIcon },
+  
 ]
 
 interface SidebarProps {
@@ -107,11 +109,11 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
       <div className={`fixed left-0 top-0 z-50 h-full w-80 transform bg-white shadow-xl border-r border-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <div className="flex h-full flex-col">
+        <div className="flex flex-col h-full">
           {/* Header del Sidebar */}
-          <div className="border-b border-gray-200 p-6">
+          <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3 rounded-[13px] p-1">
-              <img src={korvenLogo} className="h-9 w-auto rounded-xl md:h-11" alt="Korven Logo" />
+              <img src={korvenLogo} className="w-auto h-9 rounded-xl md:h-11" alt="Korven Logo" />
               <div className="flex flex-col">
                 <h1 className="text-xl font-bold leading-tight text-gray-900 md:text-2xl">Korven</h1>
                 <span className="text-xs font-medium text-gray-600 md:text-sm">Sistema de Gestión</span>
@@ -146,12 +148,12 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
 
           {/* Cerrar Sesión */}
-          <div className="border-t border-gray-200 p-4">
+          <div className="p-4 border-t border-gray-200">
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600"
+              className="flex items-center w-full gap-3 px-4 py-3 text-left text-gray-700 transition-colors duration-200 rounded-lg hover:bg-red-50 hover:text-red-600"
             >
-              <ArrowRightOnRectangleIcon className="h-5 w-5 text-gray-400" />
+              <ArrowRightOnRectangleIcon className="w-5 h-5 text-gray-400" />
               <span className="font-medium">Cerrar Sesión</span>
             </button>
           </div>
