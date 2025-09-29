@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/useAuth'
 import { businessService, type BusinessDetailResponse, type BusinessMemberDetailResponse } from '../services/businessService'
-import { IoCopyOutline, IoCheckmarkCircle, IoBusinessOutline, IoCodeSlashOutline, IoPeopleOutline, IoPersonOutline } from 'react-icons/io5'
+import { IoCopyOutline, IoCheckmarkCircle, IoBusinessOutline, IoCodeSlashOutline, IoPeopleOutline, IoPersonOutline, IoChevronDownOutline, IoSaveOutline, IoCloseOutline } from 'react-icons/io5'
 
 function BusinessInfo() {
   const { user } = useAuth()
@@ -11,6 +11,9 @@ function BusinessInfo() {
   const [loading, setLoading] = useState(true)
   const [employeesLoading, setEmployeesLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(null)
+  const [newStatus, setNewStatus] = useState<'ACTIVE' | 'INACTIVE' | 'PENDING'>('ACTIVE')
+  const [updatingStatus, setUpdatingStatus] = useState(false)
 
   
   const businessId = user?.businessId
@@ -66,6 +69,43 @@ function BusinessInfo() {
       console.error('Error al copiar al portapapeles:', err)
     }
   }
+
+  const handleEditStatus = (employeeId: string, currentStatus: string) => {
+    setEditingEmployeeId(employeeId)
+    setNewStatus(currentStatus as 'ACTIVE' | 'INACTIVE' | 'PENDING')
+  }
+
+  const handleSaveStatus = async (employeeId: string) => {
+    if (!businessId) return
+
+    try {
+      setUpdatingStatus(true)
+      await businessService.updateMemberStatus(businessId, employeeId, newStatus)
+      
+      // Actualizar el estado local
+      setEmployees(prev => 
+        prev.map(emp => 
+          emp.userId === employeeId 
+            ? { ...emp, status: newStatus }
+            : emp
+        )
+      )
+      
+      setEditingEmployeeId(null)
+    } catch (err) {
+      console.error('Error al actualizar estado del empleado:', err)
+      // Aquí podrías mostrar un toast o mensaje de error
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingEmployeeId(null)
+  }
+
+  // Verificar si el usuario actual es owner y puede editar estados
+  const canEditStatus = user?.role === 'OWNER'
 
   if (loading) {
     return (
@@ -312,29 +352,71 @@ function BusinessInfo() {
                         
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 rounded-full ${
-                                employee.status === 'ACTIVE' 
-                                  ? 'bg-green-500' 
-                                  : employee.status === 'PENDING'
-                                  ? 'bg-yellow-500'
-                                  : 'bg-red-500'
-                              }`}></div>
-                              <span className={`text-sm font-medium ${
-                                employee.status === 'ACTIVE' 
-                                  ? 'text-green-700' 
-                                  : employee.status === 'PENDING'
-                                  ? 'text-yellow-700'
-                                  : 'text-red-700'
-                              }`}>
-                                {employee.status === 'ACTIVE' 
-                                  ? 'Activo' 
-                                  : employee.status === 'PENDING'
-                                  ? 'Pendiente'
-                                  : 'Inactivo'}
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-500 capitalize">
+                            {editingEmployeeId === employee.userId ? (
+                              // Modo edición
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={newStatus}
+                                  onChange={(e) => setNewStatus(e.target.value as 'ACTIVE' | 'INACTIVE' | 'PENDING')}
+                                  className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  disabled={updatingStatus}
+                                >
+                                  <option value="ACTIVE">Activo</option>
+                                  <option value="INACTIVE">Inactivo</option>
+                                  <option value="PENDING">Pendiente</option>
+                                </select>
+                                <button
+                                  onClick={() => handleSaveStatus(employee.userId)}
+                                  disabled={updatingStatus}
+                                  className="flex items-center justify-center w-8 h-8 text-green-600 bg-green-100 rounded-lg hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title="Guardar cambios"
+                                >
+                                  <IoSaveOutline className="text-sm" />
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  disabled={updatingStatus}
+                                  className="flex items-center justify-center w-8 h-8 text-red-600 bg-red-100 rounded-lg hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title="Cancelar"
+                                >
+                                  <IoCloseOutline className="text-sm" />
+                                </button>
+                              </div>
+                            ) : (
+                              // Modo visualización
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  employee.status === 'ACTIVE' 
+                                    ? 'bg-green-500' 
+                                    : employee.status === 'PENDING'
+                                    ? 'bg-yellow-500'
+                                    : 'bg-red-500'
+                                }`}></div>
+                                <span className={`text-sm font-medium ${
+                                  employee.status === 'ACTIVE' 
+                                    ? 'text-green-700' 
+                                    : employee.status === 'PENDING'
+                                    ? 'text-yellow-700'
+                                    : 'text-red-700'
+                                }`}>
+                                  {employee.status === 'ACTIVE' 
+                                    ? 'Activo' 
+                                    : employee.status === 'PENDING'
+                                    ? 'Pendiente'
+                                    : 'Inactivo'}
+                                </span>
+                                {canEditStatus && employee.userId !== user?.userId && (
+                                  <button
+                                    onClick={() => handleEditStatus(employee.userId, employee.status)}
+                                    className="ml-2 flex items-center justify-center w-6 h-6 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                    title="Editar estado"
+                                  >
+                                    <IoChevronDownOutline className="text-xs" />
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                            <p className="text-xs text-gray-500 capitalize mt-1">
                               {employee.role.toLowerCase()}
                             </p>
                           </div>

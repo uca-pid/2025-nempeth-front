@@ -60,5 +60,14 @@ export const businessService = {
       console.error('Error al obtener empleados del negocio:', error)
       throw error
     }
+  },
+
+  updateMemberStatus: async (businessId: string, userId: string, status: 'ACTIVE' | 'INACTIVE' | 'PENDING'): Promise<void> => {
+    try {
+      await api.put(`/users/businesses/${businessId}/members/${userId}/status`, { status })
+    } catch (error) {
+      console.error('Error al actualizar estado del empleado:', error)
+      throw error
+    }
   }
 }

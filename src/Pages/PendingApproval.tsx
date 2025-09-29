@@ -7,7 +7,7 @@ function PendingApproval() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 py-12">
       <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-semibold text-gray-900">Tu cuenta está pendiente</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Tu cuenta no está activa</h1>
         <p className="mt-4 text-sm text-gray-600">
           Un administrador debe confirmar tu acceso antes de poder usar la plataforma. Recibirás una notificación cuando estés activo.
         </p>
