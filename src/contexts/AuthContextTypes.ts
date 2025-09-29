@@ -16,6 +16,7 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isBootstrapping: boolean;
   isAuthenticated: boolean;
   login: (credentials: LoginRequest) => Promise<LoginResponse>;
   logout: () => void;

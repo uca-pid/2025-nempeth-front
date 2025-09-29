@@ -37,6 +37,32 @@ const decodeToken = (token: string): { userId: string; email: string } | null =>
 };
 
 // Función helper para obtener todos los datos del usuario desde el backend
+interface BusinessMembership {
+  businessId?: string;
+  businessName?: string;
+  role?: string;
+  status?: string;
+}
+
+const selectPrimaryBusiness = (payload: unknown): BusinessMembership | null => {
+  if (!payload || typeof payload !== 'object') return null;
+  const data = payload as { [key: string]: unknown };
+
+  if (Array.isArray(data.businesses) && data.businesses.length > 0) {
+    return (data.businesses as BusinessMembership[]).find(Boolean) ?? null;
+  }
+
+  if (Array.isArray(data.businessMemberships) && data.businessMemberships.length > 0) {
+    return (data.businessMemberships as BusinessMembership[]).find(Boolean) ?? null;
+  }
+
+  if (data.business && typeof data.business === 'object') {
+    return data.business as BusinessMembership;
+  }
+
+  return null;
+};
+
 const fetchCompleteUserData = async (authToken: string): Promise<User | null> => {
   try {
     const response = await api.get('/users/me', { 
@@ -47,18 +73,22 @@ const fetchCompleteUserData = async (authToken: string): Promise<User | null> =>
       const basicData = decodeToken(authToken);
       if (!basicData) return null;
 
-      console.log("Aca",response);
-      
+      const businessData = selectPrimaryBusiness(response.data);
+
+      const businessId = businessData?.businessId ?? response.data.businessId ?? '';
+      const businessName = businessData?.businessName ?? response.data.businessName ?? '';
+      const role = businessData?.role ?? response.data.role ?? 'EMPLOYEE';
+      const status = businessData?.status ?? response.data.status ?? 'PENDING';
 
       return {
         userId: basicData.userId,
         email: basicData.email,
         name: response.data.name,
         lastName: response.data.lastName,
-        businessId: response.data.businesses[0].businessId,
-        businessName: response.data.businesses[0].businessName,
-        role: response.data.businesses[0].role,
-        status: response.data.businesses[0].status
+        businessId,
+        businessName,
+        role,
+        status
       };
     }
     return null;
@@ -70,9 +100,10 @@ const fetchCompleteUserData = async (authToken: string): Promise<User | null> =>
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
 
   useEffect(() => {
     setIsAuthenticated(!!user && !!token);
@@ -82,25 +113,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const storedToken = AuthService.getToken();
     const init = async () => {
-      if (storedToken) {
-        const basicUserData = decodeToken(storedToken);
-        if (basicUserData) {
-          setToken(storedToken);
-          
-          // Obtener datos completos del usuario desde el backend
-          const completeUserData = await fetchCompleteUserData(storedToken);
-          if (completeUserData) {
-            setUser(completeUserData);
+      setIsLoading(true);
+      try {
+        if (storedToken) {
+          const basicUserData = decodeToken(storedToken);
+          if (basicUserData) {
+            setToken(storedToken);
+
+            // Obtener datos completos del usuario desde el backend
+            const completeUserData = await fetchCompleteUserData(storedToken);
+            if (completeUserData) {
+              setUser(completeUserData);
+            } else {
+              // Si no se pueden obtener los datos completos, limpiar todo
+              AuthService.logout();
+            }
           } else {
-            // Si no se pueden obtener los datos completos, limpiar todo
+            // Token inválido o expirado
             AuthService.logout();
           }
-        } else {
-          // Token inválido o expirado
-          AuthService.logout();
         }
+      } finally {
+        setIsLoading(false);
+        setIsBootstrapping(false);
       }
-      setIsLoading(false);
     };
     init();
   }, []);
@@ -154,6 +190,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         isLoading,
+        isBootstrapping,
         isAuthenticated,
         login,
         logout,
@@ -165,5 +202,3 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     </AuthContext.Provider>
   );
 };
-
-

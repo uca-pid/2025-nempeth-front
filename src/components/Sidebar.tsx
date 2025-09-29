@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
+import { isEmployeeActive, isOwner } from '../guards/getDefaultRoute'
 import korvenLogo from '../assets/bee.jpeg'
 
 // Iconos SVG simples
@@ -45,6 +46,21 @@ const ArrowRightOnRectangleIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const OWNER_NAVIGATION = [
+  { name: 'Home', path: '/home', icon: HomeIcon },
+  { name: 'Productos', path: '/products', icon: ShoppingBagIcon },
+  { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
+  { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
+  { name: 'Mi Negocio', path: '/business', icon: BuildingStorefrontIcon },
+  { name: 'Perfil', path: '/profile', icon: UserIcon },
+]
+
+const EMPLOYEE_NAVIGATION = [
+  { name: 'Home', path: '/home', icon: HomeIcon },
+  { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
+  { name: 'Perfil', path: '/profile', icon: UserIcon },
+]
+
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
@@ -53,40 +69,14 @@ interface SidebarProps {
 function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
 
-  const navigationItems = [
-    {
-      name: 'Home',
-      path: '/home',
-      icon: HomeIcon,
-    },
-    {
-      name: 'Productos',
-      path: '/products',
-      icon: ShoppingBagIcon,
-    },
-    {
-      name: 'Crear Orden',
-      path: '/orders/create',
-      icon: DocumentTextIcon,
-    },
-    {
-      name: 'Historial de Ventas',
-      path: '/sales-history',
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      name: 'Mi Negocio',
-      path: '/business',
-      icon: BuildingStorefrontIcon,
-    },
-    {
-      name: 'Perfil',
-      path: '/profile',
-      icon: UserIcon,
-    },
-  ]
+  // Build the menu based on the authenticated user role and status
+  const navigationItems = isOwner(user ?? null)
+    ? OWNER_NAVIGATION
+    : isEmployeeActive(user ?? null)
+      ? EMPLOYEE_NAVIGATION
+      : []
 
   const handleNavigation = (path: string) => {
     navigate(path)
@@ -95,6 +85,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleLogout = () => {
     logout()
+    navigate('/')
     onClose()
   }
 
