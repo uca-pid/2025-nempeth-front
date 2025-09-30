@@ -59,13 +59,13 @@ function SalesHistory() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="bg-white border-b border-gray-200 p-7">
+        <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Historial de Ventas</h1>
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
           </div>
         </div>
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#2563eb]"></div>
+        <div className="flex items-center justify-center py-12 sm:py-16 lg:py-20">
+          <div className="animate-spin rounded-full h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 border-b-2 border-[#2563eb]"></div>
         </div>
       </div>
     )
@@ -74,18 +74,18 @@ function SalesHistory() {
   if (error) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="bg-white border-b border-gray-200 p-7">
+        <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Historial de Ventas</h1>
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="mb-4 text-6xl text-red-500">⚠️</div>
-          <h2 className="mb-2 text-xl font-semibold text-gray-800">Error al cargar las ventas</h2>
-          <p className="mb-4 text-gray-600">{error}</p>
+        <div className="flex flex-col items-center justify-center py-12 sm:py-16 lg:py-20 px-4">
+          <div className="mb-4 text-4xl sm:text-5xl lg:text-6xl text-red-500">⚠️</div>
+          <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">Error al cargar las ventas</h2>
+          <p className="mb-4 text-sm sm:text-base text-gray-600 text-center max-w-md">{error}</p>
           <button
             onClick={loadSales}
-            className="px-6 py-3 bg-[#2563eb] text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-[#2563eb] text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
           >
             Reintentar
           </button>
@@ -97,17 +97,17 @@ function SalesHistory() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-7">
-        <div className="flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-gray-900">Historial de Ventas</h1>
-            <p className="text-sm text-gray-600">
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
+            <p className="text-xs sm:text-sm text-gray-600">
               {sales.length} {sales.length === 1 ? 'venta registrada' : 'ventas registradas'}
             </p>
           </div>
-          <div className="flex items-center space-x-2 text-gray-600">
-            <IoReceiptOutline size={24} />
-            <span className="text-lg font-semibold">
+          <div className="flex items-center space-x-2 text-gray-600 bg-gray-50 px-3 sm:px-4 py-2 rounded-lg">
+            <IoReceiptOutline size={20} className="sm:w-6 sm:h-6" />
+            <span className="text-sm sm:text-base lg:text-lg font-semibold">
               Total: {formatCurrency(sales.reduce((sum, sale) => sum + sale.totalAmount, 0))}
             </span>
           </div>
@@ -115,77 +115,78 @@ function SalesHistory() {
       </div>
 
       {/* Content */}
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         {sales.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <IoReceiptOutline size={64} className="mb-4 text-gray-400" />
-            <h2 className="mb-2 text-xl font-semibold text-gray-800">No hay ventas registradas</h2>
-            <p className="mb-6 text-center text-gray-600">
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16 lg:py-20 px-4">
+            <IoReceiptOutline size={48} className="mb-4 text-gray-400 sm:w-16 sm:h-16" />
+            <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">No hay ventas registradas</h2>
+            <p className="mb-6 text-center text-sm sm:text-base text-gray-600 max-w-md">
               Las ventas que generes aparecerán aquí
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {sales.map((sale) => (
               <div
                 key={sale.id}
-                className="p-6 transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-lg"
+                className="p-4 sm:p-5 lg:p-6 transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-lg"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-blue-100 rounded-lg">
-                      <IoReceiptOutline size={24} className="text-[#2563eb]" />
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0">
+                      <IoReceiptOutline size={20} className="text-[#2563eb] sm:w-6 sm:h-6" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                         Venta #{sale.id.substring(0, 8)}
                       </h3>
-                      <div className="flex items-center mt-1 space-x-4 text-sm text-gray-600">
+                      <div className="flex flex-col sm:flex-row sm:items-center mt-1 space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600">
                         <div className="flex items-center space-x-1">
-                          <IoCalendarOutline size={16} />
+                          <IoCalendarOutline size={14} className="sm:w-4 sm:h-4" />
                           <span>{formatDate(sale.occurredAt)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <IoPersonOutline size={16} />
-                          <span>{sale.createdByUserName}</span>
+                          <IoPersonOutline size={14} className="sm:w-4 sm:h-4" />
+                          <span className="truncate">{sale.createdByUserName}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <div className="flex items-center space-x-1 text-lg font-bold text-green-600">
-                        <IoCashOutline size={20} />
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                    <div className="text-left sm:text-right">
+                      <div className="flex items-center space-x-1 text-base sm:text-lg font-bold text-green-600">
+                        <IoCashOutline size={18} className="sm:w-5 sm:h-5" />
                         <span>{formatCurrency(sale.totalAmount)}</span>
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-xs sm:text-sm text-gray-600">
                         {sale.items.length} {sale.items.length === 1 ? 'producto' : 'productos'}
                       </p>
                     </div>
                     <button
                       onClick={() => handleViewDetails(sale.id)}
-                      className="flex items-center px-4 py-2 space-x-2 text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200"
+                      className="flex items-center justify-center px-3 sm:px-4 py-2 space-x-2 text-xs sm:text-sm text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 w-full sm:w-auto"
                     >
-                      <IoEyeOutline size={18} />
+                      <IoEyeOutline size={16} className="sm:w-[18px] sm:h-[18px]" />
                       <span>Ver Detalles</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Quick preview of items */}
-                <div className="pt-4 mt-4 border-t border-gray-100">
-                  <h4 className="mb-2 text-sm font-semibold text-gray-700">Productos vendidos:</h4>
-                  <div className="flex flex-wrap gap-2">
+                <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-gray-100">
+                  <h4 className="mb-2 text-xs sm:text-sm font-semibold text-gray-700">Productos vendidos:</h4>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {sale.items.slice(0, 3).map((item, index) => (
                       <div
                         key={index}
-                        className="inline-flex items-center px-3 py-1 text-xs text-blue-700 rounded-full bg-blue-50"
+                        className="inline-flex items-center px-2 sm:px-3 py-1 text-xs text-blue-700 rounded-full bg-blue-50"
                       >
-                        {item.productName} × {item.quantity}
+                        <span className="truncate max-w-24 sm:max-w-none">{item.productName}</span>
+                        <span className="ml-1">× {item.quantity}</span>
                       </div>
                     ))}
                     {sale.items.length > 3 && (
-                      <div className="inline-flex items-center px-3 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
+                      <div className="inline-flex items-center px-2 sm:px-3 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
                         +{sale.items.length - 3} más
                       </div>
                     )}
