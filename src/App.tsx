@@ -5,60 +5,138 @@ import Authentication from './Pages/Authentication'
 import Home from './Pages/Home'
 import EditProfile from './Pages/EditProfile'
 import Products from './Pages/Products'
+import BusinessInfo from './Pages/BusinessInfo'
+import CreateOrder from './Pages/CreateOrder'
+import SalesHistory from './Pages/SalesHistory'
+import SaleDetails from './Pages/SaleDetails'
 import ResetPassword from './Pages/ResetPassword'
-// import LoadingScreen from './components/LoadingScreen'
+import PendingApproval from './Pages/PendingApproval'
+import Layout from './components/Layout'
+import UnauthenticatedGuard from './guards/UnauthenticatedGuard'
+import OwnerGuard from './guards/OwnerGuard'
+import PendingEmployeeGuard from './guards/PendingEmployeeGuard'
+import OwnerOrActiveEmployeeGuard from './guards/OwnerOrActiveEmployeeGuard'
 
 // Componente interno que usa el contexto
 function AppRoutes() {
-  const { isAuthenticated } = useAuth()
+  const { isBootstrapping } = useAuth()
 
-  // if (isLoading) {
-  //   return <LoadingScreen />
-  // }
+  if (isBootstrapping) {
+    // Light placeholder while we restore the session
+    return (
+      <div className="flex items-center justify-center min-h-screen text-sm text-gray-500 bg-white">
+        Cargando sesión...
+      </div>
+    )
+  }
 
   return (
     <Routes>
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
-          isAuthenticated ? 
-          <Navigate to="/home" replace /> : 
-          <Authentication />
-        } 
+          <UnauthenticatedGuard>
+            <Authentication />
+          </UnauthenticatedGuard>
+        }
       />
-      
-      <Route 
-        path="/home" 
+
+      <Route
+        path="/reset-password"
         element={
-          isAuthenticated ? 
-          <Home /> : 
-          <Navigate to="/" replace />
-        } 
+          <UnauthenticatedGuard>
+            <ResetPassword />
+          </UnauthenticatedGuard>
+        }
       />
-      
-      <Route 
-        path="/profile" 
+
+      <Route
+        path="/pending"
         element={
-          isAuthenticated ? 
-          <EditProfile /> : 
-          <Navigate to="/" replace />
-        } 
+          <PendingEmployeeGuard>
+            <PendingApproval />
+          </PendingEmployeeGuard>
+        }
       />
-      
-      <Route 
-        path="/products" 
+
+      <Route
+        path="/home"
         element={
-          isAuthenticated ? 
-          <Products /> : 
-          <Navigate to="/" replace />
-        } 
+          <OwnerOrActiveEmployeeGuard>
+            <Layout>
+              <Home />
+            </Layout>
+          </OwnerOrActiveEmployeeGuard>
+        }
       />
-      
-      <Route 
-        path="/reset-password" 
-        element={<ResetPassword />} 
+
+      <Route
+        path="/orders/create"
+        element={
+          <OwnerOrActiveEmployeeGuard>
+            <Layout>
+              <CreateOrder />
+            </Layout>
+          </OwnerOrActiveEmployeeGuard>
+        }
       />
-      
+
+      <Route
+        path="/profile"
+        element={
+          <OwnerOrActiveEmployeeGuard>
+            <Layout>
+              <EditProfile />
+            </Layout>
+          </OwnerOrActiveEmployeeGuard>
+        }
+      />
+
+      <Route
+        path="/sales/:saleId"
+        element={
+          <OwnerOrActiveEmployeeGuard>
+            <Layout>
+              <SaleDetails />
+            </Layout>
+          </OwnerOrActiveEmployeeGuard>
+        }
+      />
+
+      <Route
+        path="/products"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <Products />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/business"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <BusinessInfo />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/sales-history"
+        element={
+          <OwnerOrActiveEmployeeGuard>
+            <Layout>
+              <SalesHistory />
+            </Layout>
+          </OwnerOrActiveEmployeeGuard>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

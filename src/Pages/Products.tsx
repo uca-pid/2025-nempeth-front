@@ -1,8 +1,20 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { productService, type Product } from '../services/productService'
+import { categoryService, type Category as CategoryType } from '../services/categoryService'
 import { useAuth } from '../contexts/useAuth'
-import { IoOptionsOutline, IoTrashSharp } from 'react-icons/io5'
+import EmptyState from '../components/Products/EmptyState'
+import DescriptionModal from '../components/Products/DescriptionModal'
+import ProductCard from '../components/Products/ProductCard'
+import CategoryManagementModal from '../components/Products/CategoryManagementModal'
+import { IoFilterCircle } from 'react-icons/io5'
+
+// Tipo para productos que vienen de la API con el objeto category anidado
+interface ProductWithCategory extends Omit<Product, 'categoryId'> {
+  category?: {
+    id: string;
+    name: string;
+  };
+}
 
 interface ProductModalProps {
   isOpen: boolean
@@ -10,10 +22,7 @@ interface ProductModalProps {
   onSave: (product: Omit<Product, 'id'> & { id?: string }) => Promise<void>
   product?: Product | null
   error?: string | null
-}
-
-interface ProductsProps {
-  onBack?: () => void
+  categories: CategoryType[]
 }
 
 interface ConfirmDeleteModalProps {
@@ -24,11 +33,12 @@ interface ConfirmDeleteModalProps {
   isDeleting: boolean
 }
 
-function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalProps) {
+function ProductModal({ isOpen, onClose, onSave, product, error, categories }: ProductModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: 0
+    price: 0,
+    categoryId: ''
   })
   const [saving, setSaving] = useState(false)
 
@@ -37,21 +47,23 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
       setFormData({
         name: product.name,
         description: product.description,
-        price: product.price
+        price: product.price,
+        categoryId: product.categoryId ? product.categoryId : ''
       })
     } else {
       setFormData({
         name: '',
         description: '',
-        price: 0
+        price: 0,
+        categoryId: categories.length > 0 ? categories[0].id : ''
       })
     }
     setSaving(false) // Resetear estado de guardado
-  }, [product, isOpen])
+  }, [product, isOpen, categories])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.name.trim() && formData.description.trim() && formData.price > 0) {
+    if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.categoryId) {
       setSaving(true)
       try {
         await onSave({
@@ -64,11 +76,18 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    
+    // Limitar descripción a 300 caracteres
+    let finalValue = value
+    if (name === 'description' && value.length > 300) {
+      finalValue = value.substring(0, 300)
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(value) || 0 : value
+      [name]: name === 'price' ? parseFloat(finalValue) || 0 : finalValue
     }))
   }
 
@@ -76,11 +95,11 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
+      <div className="w-full max-w-lg overflow-hidden bg-white shadow-2xl rounded-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h3 className="text-xl font-semibold text-gray-800">{product ? 'Editar Producto' : 'Agregar Producto'}</h3>
           <button
-            className="flex h-8 w-8 items-center justify-center rounded-md text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-700"
+            className="flex items-center justify-center w-8 h-8 text-2xl text-gray-500 transition rounded-md hover:bg-gray-200 hover:text-gray-700"
             onClick={onClose}
             type="button"
           >
@@ -88,9 +107,9 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 px-6 py-6">
+        <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
           {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            <div className="px-4 py-3 text-sm font-medium text-red-600 border border-red-200 rounded-md bg-red-50">
               {error}
             </div>
           )}
@@ -110,6 +129,25 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
           </div>
 
           <div className="space-y-1">
+            <label className="block text-sm font-semibold text-gray-700" htmlFor="categoryId">Categoría del Producto</label>
+            <select
+              id="categoryId"
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              required
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
+            >
+              <option value="">Selecciona una categoría</option>
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.icon} {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1">
             <label className="block text-sm font-semibold text-gray-700" htmlFor="description">Descripción</label>
             <textarea
               id="description"
@@ -121,6 +159,11 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
               placeholder="Describe el producto"
               className="w-full min-h-[4rem] rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
             />
+            <div className="flex justify-end">
+              <span className={`text-sm ${formData.description.length > 280 ? 'text-orange-600' : formData.description.length === 300 ? 'text-red-600' : 'text-gray-500'}`}>
+                {formData.description.length}/300
+              </span>
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -139,10 +182,10 @@ function ProductModal({ isOpen, onClose, onSave, product, error }: ProductModalP
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
+          <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
-              className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
+              className="px-4 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
               onClick={onClose}
               disabled={saving}
             >
@@ -167,11 +210,11 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
+      <div className="w-full max-w-sm overflow-hidden bg-white shadow-2xl rounded-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <h3 className="text-lg font-semibold text-gray-800">Confirmar eliminación</h3>
           <button
-            className="flex h-8 w-8 items-center justify-center rounded-md text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex items-center justify-center w-8 h-8 text-2xl text-gray-500 transition rounded-md hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={onClose}
             disabled={isDeleting}
             type="button"
@@ -180,7 +223,7 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
           </button>
         </div>
 
-        <div className="space-y-3 px-6 py-6 text-center">
+        <div className="px-6 py-6 space-y-3 text-center">
           <div className="text-4xl">⚠️</div>
           <p className="text-base text-gray-700">
             ¿Estás seguro de que deseas eliminar el producto <strong className="font-semibold text-gray-900">"{productName}"</strong>?
@@ -188,10 +231,10 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
           <p className="text-sm italic text-gray-500">Esta acción no se puede deshacer.</p>
         </div>
 
-        <div className="flex items-center justify-center gap-3 border-t border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-center gap-3 px-6 py-4 border-t border-gray-200">
           <button
             type="button"
-            className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
+            className="px-4 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={onClose}
             disabled={isDeleting}
           >
@@ -211,9 +254,8 @@ function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeletin
   )
 }
 
-function Products({ onBack }: ProductsProps = {}) {
+function Products() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [products, setProducts] = useState<Product[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -223,27 +265,80 @@ function Products({ onBack }: ProductsProps = {}) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false)
+  const [selectedProductDescription, setSelectedProductDescription] = useState({ name: '', description: '' })
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [categories, setCategories] = useState<CategoryType[]>([])
+  const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([])
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false)
+
+  const businessId = user?.businessId
+
+  const loadCategories = useCallback(async () => {
+    if (!businessId) return
+
+    try {
+      const fetchedCategories = await categoryService.getCategories(businessId)
+      setCategories(fetchedCategories)
+    } catch (err) {
+      console.error('Error cargando categorías:', err)
+      setError('Error al cargar las categorías')
+    }
+  }, [businessId])
 
   const loadProducts = useCallback(async () => {
-    if (!user?.userId) return
+    if (!businessId) return
 
     try {
       setLoading(true)
       setError(null)
-      const fetchedProducts = await productService.getProducts(user.userId)
-      setProducts(fetchedProducts)
+      const fetchedProducts = await productService.getProducts(businessId)
+      
+      // Transformar los productos para extraer el categoryId del objeto category
+      const transformedProducts = (fetchedProducts as ProductWithCategory[]).map((product) => ({
+        ...product,
+        categoryId: product.category?.id || ''
+      })) as Product[]
+      
+      setProducts(transformedProducts)
     } catch (err) {
       console.error('Error cargando productos:', err)
       setError('Error al cargar los productos')
     } finally {
       setLoading(false)
     }
-  }, [user?.userId])
+  }, [businessId])
 
-  // Cargar productos al montar el componente
+  // Filtrar productos basado en las categorías seleccionadas
+  const filteredProducts = useMemo(() => {
+    if (selectedCategoryFilters.length === 0) {
+      return products // Si no hay filtros, mostrar todos los productos
+    }
+    return products.filter(product => 
+      selectedCategoryFilters.includes(product.categoryId || '')
+    )
+  }, [products, selectedCategoryFilters])
+
+  // Cargar productos y categorías al montar el componente
   useEffect(() => {
     loadProducts()
-  }, [loadProducts])
+    loadCategories()
+  }, [loadProducts, loadCategories])
+
+  // Efecto para cerrar el dropdown cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (showFilterDropdown && !target.closest('.filter-dropdown-container')) {
+        setShowFilterDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showFilterDropdown])
 
   if (loading) {
     return (
@@ -283,19 +378,19 @@ function Products({ onBack }: ProductsProps = {}) {
   }
 
   const handleDeleteProduct = (product: Product) => {
-    if (!user?.userId || processing || isDeleting) return
+    if (!businessId || processing || isDeleting) return
     
     setProductToDelete(product)
     setShowDeleteModal(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (!productToDelete || !user?.userId || isDeleting) return
+    if (!productToDelete || !businessId || isDeleting) return
 
     try {
       setIsDeleting(true)
       setError(null)
-      await productService.deleteProduct(productToDelete.id, user.userId)
+      await productService.deleteProduct(businessId, productToDelete.id)
       // Recargar la lista para asegurar consistencia
       await loadProducts()
       // Cerrar modal
@@ -315,8 +410,13 @@ function Products({ onBack }: ProductsProps = {}) {
     setProductToDelete(null)
   }
 
+  const handleShowDescription = (product: Product) => {
+    setSelectedProductDescription({ name: product.name, description: product.description })
+    setShowDescriptionModal(true)
+  }
+
   const handleSaveProduct = async (productData: Omit<Product, 'id'> & { id?: string }) => {
-    if (!user?.userId || processing) return
+    if (!businessId || processing) return
 
     try {
       setProcessing(true)
@@ -325,20 +425,22 @@ function Products({ onBack }: ProductsProps = {}) {
       if (productData.id) {
         // Editar producto existente
         await productService.updateProduct(
+          businessId,
           productData.id, 
-          user.userId, 
           {
             name: productData.name,
             description: productData.description,
-            price: productData.price
+            price: productData.price,
+            categoryId: productData.categoryId!
           }
         )
       } else {
         // Agregar nuevo producto
-        await productService.createProduct(user.userId, {
+        await productService.createProduct(businessId, {
           name: productData.name,
           description: productData.description,
-          price: productData.price
+          price: productData.price,
+          categoryId: productData.categoryId!
         })
       }
       
@@ -358,117 +460,270 @@ function Products({ onBack }: ProductsProps = {}) {
     }
   }
 
+  // Funciones para manejar filtros de categorías
+  const handleToggleCategoryFilter = (categoryId: string) => {
+    setSelectedCategoryFilters(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    )
+  }
+
+  const handleClearAllFilters = () => {
+    setSelectedCategoryFilters([])
+  }
+
+  const handleToggleFilterDropdown = () => {
+    setShowFilterDropdown(!showFilterDropdown)
+  }
+
+  // Funciones para manejar categorías
+  const handleAddCategory = async (category: Omit<CategoryType, 'id'>) => {
+    if (!businessId) return
+    
+    try {
+      await categoryService.createCategory(businessId, category)
+      await loadCategories() // Recargar categorías
+    } catch (err) {
+      console.error('Error creando categoría:', err)
+      setError('Error al crear la categoría')
+    }
+  }
+
+  const handleEditCategory = async (id: string, category: Omit<CategoryType, 'id'>) => {
+    if (!businessId) return
+    
+    try {
+      await categoryService.updateCategory(businessId, id, category)
+      await loadCategories() // Recargar categorías
+    } catch (err) {
+      console.error('Error actualizando categoría:', err)
+      setError('Error al actualizar la categoría')
+    }
+  }
+
+  const handleDeleteCategory = async (id: string) => {
+    if (!businessId) return
+    
+    try {
+      await categoryService.deleteCategory(businessId, id)
+      await loadCategories() // Recargar categorías
+    } catch (err) {
+      console.error('Error eliminando categoría:', err)
+      setError('Error al eliminar la categoría')
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#f8f7fc] p-6 md:p-10">
-      {/* Header */}
-      <div className="flex flex-col gap-6 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 flex-col gap-3">
+    <div className="min-h-screen bg-white">
+      {/* Header que coincide con Sidebar */}
+      <div className="bg-white border-b border-gray-200 p-7">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold leading-tight text-gray-900 md:text-2xl">Gestión de Productos</h1>
+            <span className="text-xs font-medium text-gray-600 md:text-sm">
+              Administra tu carta y controla tus productos
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="p-1 md:p-10">
+
+        <div className="flex items-center justify-start gap-4">
+
+          <button
+            className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleAddProduct}
+            disabled={processing}
+            type="button"
+          >
+            <span className="text-xl font-bold">+</span>
+            {processing ? 'Procesando...' : 'Agregar Producto'}
+          </button>
+
+          <button
+            className="inline-flex items-center gap-2 rounded-xl bg-[#ff5804] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => setShowCategoryModal(true)}
+            disabled={processing}
+            type="button"
+          >
+            <span className="text-xl font-bold">+</span>
+            {processing ? 'Procesando...' : 'Administrar categorías'}
+          </button>
+          
+        </div>
+
+        {/* Sección de filtros y categorías */}
+        <div className="mt-6">
           <div className="flex flex-wrap items-center gap-4">
-            <button
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:-translate-x-0.5 hover:border-gray-300 hover:bg-gray-50"
-              onClick={() => (onBack ? onBack() : navigate('/home'))}
-              type="button"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="15,18 9,12 15,6"></polyline>
-              </svg>
-              Volver
-            </button>
-            <div className="flex flex-col gap-1">
-              <h1 className="text-4xl font-bold text-gray-800">Gestión de Productos</h1>
-              <p className="text-lg text-gray-600">
-                Administra tu carta y controla tus productos
-              </p>
+            {/* Dropdown de filtros */}
+            <div className="relative filter-dropdown-container">
+              <button
+                className="
+                  flex h-12 w-12 items-center justify-center 
+                  rounded-full 
+                  bg-white
+                  border border-gray-500  
+                  text-gray-700 shadow-md 
+                  transition-all duration-200
+                  hover:-translate-y-0.5 hover:shadow-xl
+                  hover:from-rose-100 hover:to-rose-200 hover:text-rose-600
+                  hover:border-rose-300 
+                  disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60
+                "
+                disabled={processing}
+                type="button"
+                onClick={handleToggleFilterDropdown}
+              >
+                <IoFilterCircle className="text-xl" />
+              </button>
+              
+              {/* Dropdown menu */}
+              {showFilterDropdown && (
+                <div className="absolute left-0 z-50 w-64 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full rounded-xl">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <h3 className="text-sm font-semibold text-gray-800">Filtrar por categoría</h3>
+                  </div>
+                  
+                  <div className="overflow-y-auto max-h-64">
+                    {categories.map(category => (
+                      <button
+                        key={category.id}
+                        className={`
+                          w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 transition-colors
+                          ${selectedCategoryFilters.includes(category.id) ? 'bg-blue-50 text-blue-800' : 'text-gray-700'}
+                        `}
+                        onClick={() => handleToggleCategoryFilter(category.id)}
+                        type="button"
+                      >
+                        <span className="text-lg">{category.icon}</span>
+                        <span className="flex-1 text-sm font-medium">{category.name}</span>
+                        {selectedCategoryFilters.includes(category.id) && (
+                          <span className="text-blue-600">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {selectedCategoryFilters.length > 0 && (
+                    <div className="px-4 py-2 border-t border-gray-100">
+                      <button
+                        className="w-full text-sm font-medium text-red-600 hover:text-red-800"
+                        onClick={handleClearAllFilters}
+                        type="button"
+                      >
+                        Limpiar filtros
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Categorías seleccionadas como filtros */}
+            <div className="flex flex-wrap items-center gap-2">
+              {selectedCategoryFilters.map(categoryId => {
+                const category = categories.find(cat => cat.id === categoryId)
+                if (!category) return null
+                
+                return (
+                  <div 
+                    key={categoryId}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 border border-blue-200 rounded-full"
+                  >
+                    <span>{category.icon}</span>
+                    <span>{category.name}</span>
+                    <button 
+                      className="ml-1 font-bold text-blue-600 hover:text-blue-800"
+                      onClick={() => handleToggleCategoryFilter(categoryId)}
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
 
-        <button
-          className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={handleAddProduct}
-          disabled={processing}
-          type="button"
-        >
-          <span className="text-xl font-bold">+</span>
-          {processing ? 'Procesando...' : 'Agregar Producto'}
-        </button>
-      </div>
-
-      {/* Grid de productos */}
-      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 xl:max-w-[1400px] xl:mx-auto">
-        {products.map(product => (
-          <div
-            key={product.id}
-            className="flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition hover:-translate-y-1 hover:border-[#2563eb] hover:shadow-xl"
-          >
-            <div className="flex flex-1 flex-col">
-              <h3 className="text-2xl font-semibold text-gray-800">{product.name}</h3>
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600">{product.description}</p>
-              <div className="mt-4 w-fit rounded-md bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-600">
-                ${product.price.toFixed(2)}
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-end gap-3 border-t border-gray-200 pt-4">
+        {/* Productos */}
+        <div className="mt-8 xl:max-w-[1400px] xl:mx-auto">
+          {filteredProducts.length === 0 && products.length > 0 ? (
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
+              <div className="text-6xl opacity-50">🔍</div>
+              <h3 className="text-xl font-semibold text-gray-700">No se encontraron productos</h3>
+              <p className="text-gray-500">No hay productos que coincidan con los filtros seleccionados.</p>
               <button
-                className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-100 text-amber-500 transition hover:scale-105 hover:bg-amber-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => handleEditProduct(product)}
-                title="Editar producto"
-                disabled={processing}
+                className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
+                onClick={handleClearAllFilters}
                 type="button"
               >
-                <IoOptionsOutline size={20} />
-              </button>
-              <button
-                className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-100 text-red-500 transition hover:scale-105 hover:bg-red-500 hover:text-white disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => handleDeleteProduct(product)}
-                title="Eliminar producto"
-                disabled={processing || isDeleting}
-                type="button"
-              >
-                <IoTrashSharp size={20} />
+                Limpiar filtros
               </button>
             </div>
-          </div>
-        ))}
+          ) : filteredProducts.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {filteredProducts.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                  onShowDescription={handleShowDescription}
+                  processing={processing}
+                  isDeleting={isDeleting}
+                  categories={categories}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-        {products.length === 0 && (
-          <div className="col-span-full rounded-2xl border-2 border-dashed border-gray-300 bg-white p-10 text-center">
-            <div className="text-6xl">📦</div>
-            <h3 className="mt-4 text-2xl font-semibold text-gray-700">No hay productos registrados</h3>
-            <p className="mt-2 text-base text-gray-500">Comienza agregando tu primer producto</p>
-            <button
-              className="mt-6 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
-              onClick={handleAddProduct}
-              type="button"
-            >
-              Agregar Primer Producto
-            </button>
-          </div>
-        )}
+        {/* Modal */}
+        <ProductModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false)
+            setEditingProduct(null)
+            setError(null) // Limpiar errores al cerrar
+          }}
+          onSave={handleSaveProduct}
+          product={editingProduct}
+          error={error}
+          categories={categories}
+        />
+
+        {/* Modal de confirmación de eliminación */}
+        <ConfirmDeleteModal
+          isOpen={showDeleteModal}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDelete}
+          productName={productToDelete?.name || ''}
+          isDeleting={isDeleting}
+        />
+
+        {/* Modal de descripción completa */}
+        <DescriptionModal
+          isOpen={showDescriptionModal}
+          onClose={() => setShowDescriptionModal(false)}
+          productName={selectedProductDescription.name}
+          description={selectedProductDescription.description}
+        />
+
+        {/* Modal de gestión de categorías */}
+        <CategoryManagementModal
+          isOpen={showCategoryModal}
+          onClose={() => setShowCategoryModal(false)}
+          categories={categories}
+          onAddCategory={handleAddCategory}
+          onEditCategory={handleEditCategory}
+          onDeleteCategory={handleDeleteCategory}
+        />
       </div>
-
-      {/* Modal */}
-      <ProductModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setEditingProduct(null)
-          setError(null) // Limpiar errores al cerrar
-        }}
-        onSave={handleSaveProduct}
-        product={editingProduct}
-        error={error}
-      />
-
-      {/* Modal de confirmación de eliminación */}
-      <ConfirmDeleteModal
-        isOpen={showDeleteModal}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
-        productName={productToDelete?.name || ''}
-        isDeleting={isDeleting}
-      />
     </div>
   )
 }
