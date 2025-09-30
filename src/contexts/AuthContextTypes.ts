@@ -5,14 +5,18 @@ import type { LoginRequest, LoginResponse } from '../services/loginService';
 export interface User {
   userId: string;
   email: string;
-  role: 'OWNER' | 'USER';
   name?: string;
   lastName?: string;
+  role: string;
+  businessId: string;
+  businessName: string;
+  status: string;
 }
 
 export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isBootstrapping: boolean;
   isAuthenticated: boolean;
   login: (credentials: LoginRequest) => Promise<LoginResponse>;
   logout: () => void;

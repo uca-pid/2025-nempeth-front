@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
+import { isEmployeeActive, isOwner } from '../guards/getDefaultRoute'
 import korvenLogo from '../assets/bee.jpeg'
 
 // Iconos SVG simples
@@ -21,11 +22,46 @@ const UserIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const BuildingStorefrontIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.001 3.001 0 01-3.75-.614C.75 8.737.75 8.737.75 8.737s-.75 0-.75 0v10.5z" />
+  </svg>
+)
+
+const DocumentTextIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+)
+
+const ClipboardDocumentListIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+  </svg>
+)
+
 const ArrowRightOnRectangleIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
   </svg>
 )
+
+const OWNER_NAVIGATION = [
+  { name: 'Home', path: '/home', icon: HomeIcon },
+  { name: 'Productos', path: '/products', icon: ShoppingBagIcon },
+  { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
+  { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
+  { name: 'Mi Negocio', path: '/business', icon: BuildingStorefrontIcon },
+  { name: 'Perfil', path: '/profile', icon: UserIcon },
+]
+
+const EMPLOYEE_NAVIGATION = [
+  { name: 'Home', path: '/home', icon: HomeIcon },
+  { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
+  { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
+  { name: 'Perfil', path: '/profile', icon: UserIcon },
+  
+]
 
 interface SidebarProps {
   isOpen: boolean
@@ -35,25 +71,14 @@ interface SidebarProps {
 function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
 
-  const navigationItems = [
-    {
-      name: 'Home',
-      path: '/home',
-      icon: HomeIcon,
-    },
-    {
-      name: 'Productos',
-      path: '/products',
-      icon: ShoppingBagIcon,
-    },
-    {
-      name: 'Perfil',
-      path: '/profile',
-      icon: UserIcon,
-    },
-  ]
+  // Build the menu based on the authenticated user role and status
+  const navigationItems = isOwner(user ?? null)
+    ? OWNER_NAVIGATION
+    : isEmployeeActive(user ?? null)
+      ? EMPLOYEE_NAVIGATION
+      : []
 
   const handleNavigation = (path: string) => {
     navigate(path)
@@ -62,6 +87,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleLogout = () => {
     logout()
+    navigate('/')
     onClose()
   }
 
@@ -83,11 +109,11 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
       <div className={`fixed left-0 top-0 z-50 h-full w-80 transform bg-white shadow-xl border-r border-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <div className="flex h-full flex-col">
+        <div className="flex flex-col h-full">
           {/* Header del Sidebar */}
-          <div className="border-b border-gray-200 p-6">
+          <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3 rounded-[13px] p-1">
-              <img src={korvenLogo} className="h-9 w-auto rounded-xl md:h-11" alt="Korven Logo" />
+              <img src={korvenLogo} className="w-auto h-9 rounded-xl md:h-11" alt="Korven Logo" />
               <div className="flex flex-col">
                 <h1 className="text-xl font-bold leading-tight text-gray-900 md:text-2xl">Korven</h1>
                 <span className="text-xs font-medium text-gray-600 md:text-sm">Sistema de Gestión</span>
@@ -122,12 +148,12 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
 
           {/* Cerrar Sesión */}
-          <div className="border-t border-gray-200 p-4">
+          <div className="p-4 border-t border-gray-200">
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600"
+              className="flex items-center w-full gap-3 px-4 py-3 text-left text-gray-700 transition-colors duration-200 rounded-lg hover:bg-red-50 hover:text-red-600"
             >
-              <ArrowRightOnRectangleIcon className="h-5 w-5 text-gray-400" />
+              <ArrowRightOnRectangleIcon className="w-5 h-5 text-gray-400" />
               <span className="font-medium">Cerrar Sesión</span>
             </button>
           </div>

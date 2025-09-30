@@ -5,25 +5,27 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  categoryId?: string;
 }
 
 export interface CreateProductRequest {
   name: string;
   description: string;
   price: number;
+  categoryId: string;
 }
 
 export interface UpdateProductRequest {
   name: string;
   description: string;
   price: number;
+  categoryId: string;
 }
 
 export const productService = {
-  // Obtener todos los productos de un owner
-  getProducts: async (ownerId: string): Promise<Product[]> => {
+  getProducts: async (businessId: string): Promise<Product[]> => {
     try {
-      const response = await api.get(`/products?ownerId=${ownerId}`);
+      const response = await api.get(`/businesses/${businessId}/products`);
       return response.data;
     } catch (error) {
       console.error('Error al obtener productos:', error);
@@ -31,14 +33,18 @@ export const productService = {
     }
   },
 
-  // Crear un nuevo producto
   createProduct: async (
-    ownerId: string,
+    businessId: string,
     productData: CreateProductRequest,
   ): Promise<Product> => {
     try {
+      // Validar longitud de descripción
+      if (productData.description.length > 300) {
+        throw new Error('La descripción no puede exceder 300 caracteres');
+      }
+      
       const response = await api.post(
-        `/products?ownerId=${ownerId}`,
+        `/businesses/${businessId}/products`,
         productData,
       );
       return response.data;
@@ -48,15 +54,19 @@ export const productService = {
     }
   },
 
-  // Actualizar un producto existente
   updateProduct: async (
+    businessId: string,
     productId: string,
-    ownerId: string,
     productData: UpdateProductRequest,
   ): Promise<Product> => {
     try {
+      // Validar longitud de descripción
+      if (productData.description.length > 300) {
+        throw new Error('La descripción no puede exceder 300 caracteres');
+      }
+      
       const response = await api.put(
-        `/products/${productId}?ownerId=${ownerId}`,
+        `/businesses/${businessId}/products/${productId}`,
         productData,
       );
       return response.data;
@@ -66,10 +76,12 @@ export const productService = {
     }
   },
 
-  // Eliminar un producto
-  deleteProduct: async (productId: string, ownerId: string): Promise<void> => {
+  deleteProduct: async (
+    businessId: string,
+    productId: string,
+  ): Promise<void> => {
     try {
-      await api.delete(`/products/${productId}?ownerId=${ownerId}`);
+      await api.delete(`/businesses/${businessId}/products/${productId}`);
     } catch (error) {
       console.error('Error al eliminar producto:', error);
       throw error;
