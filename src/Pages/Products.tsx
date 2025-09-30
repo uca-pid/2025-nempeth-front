@@ -319,6 +319,11 @@ function Products() {
     )
   }, [products, selectedCategoryFilters])
 
+  // Función para contar productos por categoría
+  const getProductCountByCategory = useCallback((categoryId: string) => {
+    return products.filter(product => product.categoryId === categoryId).length
+  }, [products])
+
   // Cargar productos y categorías al montar el componente
   useEffect(() => {
     loadProducts()
@@ -504,6 +509,14 @@ function Products() {
 
   const handleDeleteCategory = async (id: string) => {
     if (!businessId) return
+    
+    // Verificar si hay productos asociados a esta categoría
+    const productsWithCategory = products.filter(product => product.categoryId === id)
+    
+    if (productsWithCategory.length > 0) {
+      setError(`No se puede eliminar la categoría porque tiene ${productsWithCategory.length} producto(s) asociado(s). Primero debe reasignar o eliminar estos productos.`)
+      return
+    }
     
     try {
       await categoryService.deleteCategory(businessId, id)
@@ -717,11 +730,16 @@ function Products() {
         {/* Modal de gestión de categorías */}
         <CategoryManagementModal
           isOpen={showCategoryModal}
-          onClose={() => setShowCategoryModal(false)}
+          onClose={() => {
+            setShowCategoryModal(false)
+            setError(null)
+          }}
           categories={categories}
           onAddCategory={handleAddCategory}
           onEditCategory={handleEditCategory}
           onDeleteCategory={handleDeleteCategory}
+          getProductCountByCategory={getProductCountByCategory}
+          error={error}
         />
       </div>
     </div>

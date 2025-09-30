@@ -16,6 +16,8 @@ interface CategoryManagementModalProps {
   onAddCategory: (category: Omit<Category, 'id'>) => Promise<void>
   onEditCategory: (id: string, category: Omit<Category, 'id'>) => Promise<void>
   onDeleteCategory: (id: string) => Promise<void>
+  getProductCountByCategory?: (categoryId: string) => number
+  error?: string | null
 }
 
 // Iconos disponibles para las categorías
@@ -32,7 +34,9 @@ function CategoryManagementModal({
   categories,
   onAddCategory,
   onEditCategory,
-  onDeleteCategory
+  onDeleteCategory,
+  getProductCountByCategory,
+  error
 }: CategoryManagementModalProps) {
   const [categoryName, setCategoryName] = useState('')
   const [selectedIcon, setSelectedIcon] = useState('')
@@ -133,8 +137,15 @@ function CategoryManagementModal({
           </button>
         </div>
 
-        <div className="px-6 py-6 space-y-6">
-          {/* Formulario para agregar/editar categoría */}
+                <div className="px-6 py-6 space-y-6">
+          {/* Mostrar error si existe */}
+          {error && (
+            <div className="px-4 py-3 text-sm font-medium text-red-600 border border-red-200 rounded-md bg-red-50">
+              {error}
+            </div>
+          )}
+
+          {/* Formulario añadir/editar categoría */}
           <div className="p-4 border border-gray-200 rounded-xl bg-gray-50">
             <h4 className="mb-4 text-lg font-semibold text-gray-800">
               {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
@@ -206,20 +217,30 @@ function CategoryManagementModal({
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {categories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="flex items-center justify-between p-4 transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{category.icon}</span>
-                      <span className="font-medium text-gray-800">{category.name}</span>
-                    </div>
+                {categories.map((category) => {
+                  const productCount = getProductCountByCategory ? getProductCountByCategory(category.id) : 0
+                  const hasProducts = productCount > 0
+                  
+                  return (
+                    <div
+                      key={category.id}
+                      className="flex items-center justify-between p-4 transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-sm"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{category.icon}</span>
+                          <span className="font-medium text-gray-800">{category.name}</span>
+                        </div>
+                        {hasProducts && (
+                          <span className="text-xs text-gray-500 ml-11">
+                            {productCount} producto{productCount !== 1 ? 's' : ''} asociado{productCount !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
 
-                    {category.type === "CUSTOM" && (
-                      <div className="flex items-center gap-2">
-                        
-                        
+                      {category.type === "CUSTOM" && (
+                        <div className="flex items-center gap-2">
+                          
                           <button
                             type="button"
                             onClick={() => handleEditCategory(category)}
@@ -233,22 +254,30 @@ function CategoryManagementModal({
                               className="text-indigo-600 transition-all duration-200 hover:text-indigo-700 group-hover:rotate-3"
                             />
                           </button>
-                        
-                        
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCategory(category.id)}
-                          disabled={processing}
-                          className="flex items-center justify-center w-10 h-10 text-red-700 transition rounded-full ring-1 ring-red-200/70 hover:bg-red-50 hover:ring-red-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Eliminar categoría"
-                          aria-label="Eliminar categoría"
-                        >
-                          <IoTrashSharp size={20} className="transition-all duration-200 text-rose-600 hover:text-rose-700 group-hover:-rotate-3" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                          
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(category.id)}
+                            disabled={processing || hasProducts}
+                            className={`flex items-center justify-center w-10 h-10 transition rounded-full ring-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              hasProducts 
+                                ? 'text-gray-400 ring-gray-200 bg-gray-50' 
+                                : 'text-red-700 ring-red-200/70 hover:bg-red-50 hover:ring-red-300'
+                            }`}
+                            title={hasProducts ? `No se puede eliminar: tiene ${productCount} producto(s) asociado(s)` : "Eliminar categoría"}
+                            aria-label="Eliminar categoría"
+                          >
+                            <IoTrashSharp size={20} className={`transition-all duration-200 ${
+                              hasProducts 
+                                ? 'text-gray-400' 
+                                : 'text-rose-600 hover:text-rose-700 group-hover:-rotate-3'
+                            }`} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
