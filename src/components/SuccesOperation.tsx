@@ -43,7 +43,7 @@ const SuccesOperation: React.FC<SuccesOperationProps> = ({
             />
           </svg>
         </div>
-        <h2 className="succes-title">Cuenta creada de manera exitosa</h2>
+        <h2 className="succes-title">Operación exitosa</h2>
         {message && (
           <p className="succes-message">{message}</p>
         )}
