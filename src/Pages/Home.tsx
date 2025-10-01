@@ -38,6 +38,11 @@ function Home() {
         loadBusinessDetail()
       }, [businessId])
 
+      function capitalize(word?: string) {
+          if (!word) return ''
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      }
+
       // Mostrar pantalla de carga
       if (loading) {
         return <LoadingScreen message="Cargando información del negocio..." />
@@ -71,7 +76,7 @@ function Home() {
     <div className="relative min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white overflow-hidden">
       <div className="absolute inset-x-0 top-0 flex justify-center pt-6">
         <span className="rounded-full bg-[#f74116]/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-[#f74116]">
-          Bienvenido a Koven
+          Bienvenido a Korven
         </span>
       </div>
 
@@ -79,7 +84,7 @@ function Home() {
         <div className="flex-1 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116]">
             <span className="h-2 w-2 rounded-full bg-[#f74116]" />
-            Korven te da la bienvenida {user?.name?.toLocaleUpperCase()} {user?.lastName?.toLocaleUpperCase()}
+            Korven te da la bienvenida {capitalize(user?.name)} {capitalize(user?.lastName)}
           </div>
 
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-gray-900 sm:text-4xl lg:text-5xl">
