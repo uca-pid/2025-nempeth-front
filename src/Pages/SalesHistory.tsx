@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { salesManagementService, type SaleResponse } from '../services/salesManagementService'
 import { useAuth } from '../contexts/useAuth'
-import { IoReceiptOutline, IoCalendarOutline, IoPersonOutline, IoCashOutline, IoEyeOutline, IoSwapVerticalOutline } from 'react-icons/io5'
+import { IoReceiptOutline, IoCalendarOutline, IoPersonOutline, IoCashOutline, IoEyeOutline, IoSwapVerticalOutline, IoFunnelOutline } from 'react-icons/io5'
 
 type SortField = 'date' | 'amount'
 type SortOrder = 'asc' | 'desc'
@@ -15,6 +15,9 @@ function SalesHistory() {
   const [error, setError] = useState<string | null>(null)
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  const [showDateFilter, setShowDateFilter] = useState(false)
 
   const businessId = user?.businessId
 
@@ -70,8 +73,45 @@ function SalesHistory() {
     }
   }
 
+  // Función para convertir fecha local a UTC-3 (Argentina)
+  const toLocalDate = (date: Date) => {
+    const utcDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000))
+    const argentinaOffset = -3 * 60 * 60000 // UTC-3 en milisegundos
+    return new Date(utcDate.getTime() + argentinaOffset)
+  }
+
+  // Función para filtrar ventas por rango de fechas
+  const getFilteredSales = () => {
+    if (!startDate && !endDate) {
+      return sales
+    }
+
+    return sales.filter(sale => {
+      const saleDate = new Date(sale.occurredAt)
+      const saleDateLocal = toLocalDate(saleDate)
+      
+      // Obtener solo la fecha (sin hora) para comparación
+      const saleDateOnly = new Date(saleDateLocal.getFullYear(), saleDateLocal.getMonth(), saleDateLocal.getDate())
+      
+      let isWithinRange = true
+      
+      if (startDate) {
+        const startDateObj = new Date(startDate)
+        isWithinRange = isWithinRange && saleDateOnly >= startDateObj
+      }
+      
+      if (endDate) {
+        const endDateObj = new Date(endDate)
+        isWithinRange = isWithinRange && saleDateOnly <= endDateObj
+      }
+      
+      return isWithinRange
+    })
+  }
+
   const getSortedSales = () => {
-    const sorted = [...sales].sort((a, b) => {
+    const filteredSales = getFilteredSales()
+    const sorted = [...filteredSales].sort((a, b) => {
       if (sortField === 'date') {
         const dateA = new Date(a.occurredAt).getTime()
         const dateB = new Date(b.occurredAt).getTime()
@@ -83,6 +123,11 @@ function SalesHistory() {
       }
     })
     return sorted
+  }
+
+  const clearDateFilter = () => {
+    setStartDate('')
+    setEndDate('')
   }
 
   if (loading) {
@@ -127,21 +172,83 @@ function SalesHistory() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-col">
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
-            <p className="text-xs sm:text-sm text-gray-600">
-              {sales.length} {sales.length === 1 ? 'venta registrada' : 'ventas registradas'}
-            </p>
+        <div className="flex flex-col gap-4">
+          {/* Título y controles principales */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
+              <p className="text-xs sm:text-sm text-gray-600">
+                {getSortedSales().length} de {sales.length} {sales.length === 1 ? 'venta' : 'ventas'} 
+                {(startDate || endDate) && ' (filtrado)'}
+              </p>
+            </div>
+            
+            {/* Total de ventas - posición prominente */}
+            <div className="flex items-center space-x-2 text-gray-600 bg-green-50 border border-green-200 px-4 py-3 rounded-lg">
+              <IoReceiptOutline size={20} className="text-green-600" />
+              <span className="text-sm sm:text-base lg:text-lg font-semibold text-green-700">
+                Total: {formatCurrency(getSortedSales().reduce((sum, sale) => sum + sale.totalAmount, 0))}
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+
+          {/* Barra de filtros y controles */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            {/* Filtro por fechas - inline */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowDateFilter(!showDateFilter)}
+                className={`flex items-center space-x-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                  showDateFilter || startDate || endDate
+                    ? 'bg-[#2563eb] text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <IoFunnelOutline size={16} />
+                <span>Filtrar por fecha</span>
+              </button>
+              
+              {/* Inputs de fecha inline cuando está activo */}
+              {showDateFilter && (
+                <>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    placeholder="Desde"
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent w-36"
+                  />
+                  <span className="text-gray-400 text-sm">hasta</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    placeholder="Hasta"
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent w-36"
+                  />
+                </>
+              )}
+              
+              {(startDate || endDate) && (
+                <button
+                  onClick={clearDateFilter}
+                  className="text-sm text-gray-600 hover:text-red-600 transition-colors px-2 py-1 hover:bg-red-50 rounded"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            {/* Separador visual */}
+            <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
+
             {/* Controles de ordenamiento */}
             <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
-              <IoSwapVerticalOutline size={18} className="text-gray-600" />
-              <span className="text-xs sm:text-sm text-gray-600 mr-2">Ordenar por:</span>
+              <IoSwapVerticalOutline size={16} className="text-gray-600" />
+              <span className="text-sm text-gray-600 mr-2">Ordenar:</span>
               <button
                 onClick={() => handleSort('date')}
-                className={`flex items-center space-x-1 px-2 py-1 text-xs sm:text-sm rounded-md transition-colors ${
+                className={`flex items-center space-x-1 px-2 py-1 text-sm rounded-md transition-colors ${
                   sortField === 'date' 
                     ? 'bg-[#2563eb] text-white' 
                     : 'text-gray-600 hover:bg-gray-200'
@@ -157,7 +264,7 @@ function SalesHistory() {
               </button>
               <button
                 onClick={() => handleSort('amount')}
-                className={`flex items-center space-x-1 px-2 py-1 text-xs sm:text-sm rounded-md transition-colors ${
+                className={`flex items-center space-x-1 px-2 py-1 text-sm rounded-md transition-colors ${
                   sortField === 'amount' 
                     ? 'bg-[#2563eb] text-white' 
                     : 'text-gray-600 hover:bg-gray-200'
@@ -172,26 +279,34 @@ function SalesHistory() {
                 )}
               </button>
             </div>
-            {/* Total de ventas */}
-            <div className="flex items-center space-x-2 text-gray-600 bg-gray-50 px-3 sm:px-4 py-2 rounded-lg">
-              <IoReceiptOutline size={20} className="sm:w-6 sm:h-6" />
-              <span className="text-sm sm:text-base lg:text-lg font-semibold">
-                Total: {formatCurrency(sales.reduce((sum, sale) => sum + sale.totalAmount, 0))}
-              </span>
-            </div>
           </div>
         </div>
-      </div>
-
-      {/* Content */}
+      </div>      {/* Content */}
       <div className="p-4 sm:p-6 lg:p-7">
-        {sales.length === 0 ? (
+        {getSortedSales().length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 sm:py-16 lg:py-20 px-4">
             <IoReceiptOutline size={48} className="mb-4 text-gray-400 sm:w-16 sm:h-16" />
-            <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">No hay ventas registradas</h2>
-            <p className="mb-6 text-center text-sm sm:text-base text-gray-600 max-w-md">
-              Las ventas que generes aparecerán aquí
-            </p>
+            {sales.length === 0 ? (
+              <>
+                <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">No hay ventas registradas</h2>
+                <p className="mb-6 text-center text-sm sm:text-base text-gray-600 max-w-md">
+                  Las ventas que generes aparecerán aquí
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">No hay ventas en el rango seleccionado</h2>
+                <p className="mb-6 text-center text-sm sm:text-base text-gray-600 max-w-md">
+                  Intenta ajustar las fechas del filtro para ver más resultados
+                </p>
+                <button
+                  onClick={clearDateFilter}
+                  className="px-4 sm:px-6 py-2 sm:py-3 bg-[#2563eb] text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Limpiar filtro
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
