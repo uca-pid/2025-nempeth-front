@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { salesManagementService, type SaleResponse } from '../services/salesManagementService'
 import { useAuth } from '../contexts/useAuth'
-import { IoReceiptOutline, IoCalendarOutline, IoPersonOutline, IoCashOutline, IoEyeOutline } from 'react-icons/io5'
+import { IoReceiptOutline, IoCalendarOutline, IoPersonOutline, IoCashOutline, IoEyeOutline, IoSwapVerticalOutline } from 'react-icons/io5'
+
+type SortField = 'date' | 'amount'
+type SortOrder = 'asc' | 'desc'
 
 function SalesHistory() {
   const { user } = useAuth()
@@ -10,6 +13,8 @@ function SalesHistory() {
   const [sales, setSales] = useState<SaleResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [sortField, setSortField] = useState<SortField>('date')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
   const businessId = user?.businessId
 
@@ -54,6 +59,30 @@ function SalesHistory() {
 
   const handleViewDetails = (saleId: string) => {
     navigate(`/sales/${saleId}`)
+  }
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortOrder('desc')
+    }
+  }
+
+  const getSortedSales = () => {
+    const sorted = [...sales].sort((a, b) => {
+      if (sortField === 'date') {
+        const dateA = new Date(a.occurredAt).getTime()
+        const dateB = new Date(b.occurredAt).getTime()
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
+      } else {
+        return sortOrder === 'asc' 
+          ? a.totalAmount - b.totalAmount 
+          : b.totalAmount - a.totalAmount
+      }
+    })
+    return sorted
   }
 
   if (loading) {
@@ -105,11 +134,51 @@ function SalesHistory() {
               {sales.length} {sales.length === 1 ? 'venta registrada' : 'ventas registradas'}
             </p>
           </div>
-          <div className="flex items-center space-x-2 text-gray-600 bg-gray-50 px-3 sm:px-4 py-2 rounded-lg">
-            <IoReceiptOutline size={20} className="sm:w-6 sm:h-6" />
-            <span className="text-sm sm:text-base lg:text-lg font-semibold">
-              Total: {formatCurrency(sales.reduce((sum, sale) => sum + sale.totalAmount, 0))}
-            </span>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Controles de ordenamiento */}
+            <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
+              <IoSwapVerticalOutline size={18} className="text-gray-600" />
+              <span className="text-xs sm:text-sm text-gray-600 mr-2">Ordenar por:</span>
+              <button
+                onClick={() => handleSort('date')}
+                className={`flex items-center space-x-1 px-2 py-1 text-xs sm:text-sm rounded-md transition-colors ${
+                  sortField === 'date' 
+                    ? 'bg-[#2563eb] text-white' 
+                    : 'text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <IoCalendarOutline size={14} />
+                <span>Fecha</span>
+                {sortField === 'date' && (
+                  <span className="text-xs">
+                    {sortOrder === 'desc' ? '↓' : '↑'}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => handleSort('amount')}
+                className={`flex items-center space-x-1 px-2 py-1 text-xs sm:text-sm rounded-md transition-colors ${
+                  sortField === 'amount' 
+                    ? 'bg-[#2563eb] text-white' 
+                    : 'text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <IoCashOutline size={14} />
+                <span>Monto</span>
+                {sortField === 'amount' && (
+                  <span className="text-xs">
+                    {sortOrder === 'desc' ? '↓' : '↑'}
+                  </span>
+                )}
+              </button>
+            </div>
+            {/* Total de ventas */}
+            <div className="flex items-center space-x-2 text-gray-600 bg-gray-50 px-3 sm:px-4 py-2 rounded-lg">
+              <IoReceiptOutline size={20} className="sm:w-6 sm:h-6" />
+              <span className="text-sm sm:text-base lg:text-lg font-semibold">
+                Total: {formatCurrency(sales.reduce((sum, sale) => sum + sale.totalAmount, 0))}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -126,7 +195,7 @@ function SalesHistory() {
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
-            {sales.map((sale) => (
+            {getSortedSales().map((sale) => (
               <div
                 key={sale.id}
                 className="p-4 sm:p-5 lg:p-6 transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-lg"
