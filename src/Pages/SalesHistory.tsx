@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { salesManagementService, type SaleResponse } from '../services/salesManagementService'
 import { useAuth } from '../contexts/useAuth'
 import { IoReceiptOutline, IoCalendarOutline, IoPersonOutline, IoCashOutline, IoEyeOutline, IoSwapVerticalOutline, IoFunnelOutline } from 'react-icons/io5'
+import LoadingScreen from '../components/LoadingScreen'
 
 type SortField = 'date' | 'amount'
 type SortOrder = 'asc' | 'desc'
@@ -131,37 +132,25 @@ function SalesHistory() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
-          </div>
-        </div>
-        <div className="flex items-center justify-center py-12 sm:py-16 lg:py-20">
-          <div className="animate-spin rounded-full h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32 border-b-2 border-[#2563eb]"></div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Cargando historial de ventas..." />
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+        <div className="text-center">
+          <div className="mb-4 text-red-500">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
-        </div>
-        <div className="flex flex-col items-center justify-center py-12 sm:py-16 lg:py-20 px-4">
-          <div className="mb-4 text-4xl sm:text-5xl lg:text-6xl text-red-500">⚠️</div>
-          <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">Error al cargar las ventas</h2>
-          <p className="mb-4 text-sm sm:text-base text-gray-600 text-center max-w-md">{error}</p>
+          <h2 className="mb-2 text-xl font-semibold text-gray-900">Error al cargar las ventas</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={loadSales}
-            className="px-4 sm:px-6 py-2 sm:py-3 bg-[#2563eb] text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors"
           >
-            Reintentar
+            Intentar de nuevo
           </button>
         </div>
       </div>
@@ -169,217 +158,243 @@ function SalesHistory() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
-        <div className="flex flex-col gap-4">
-          {/* Título y controles principales */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Historial de Ventas</h1>
-              <p className="text-xs sm:text-sm text-gray-600">
-                {getSortedSales().length} de {sales.length} {sales.length === 1 ? 'venta' : 'ventas'} 
-                {(startDate || endDate) && ' (filtrado)'}
-              </p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
+            <span className="h-2 w-2 rounded-full bg-[#f74116]" />
+            Historial de Ventas
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Registro de Ventas
+          </h1>
+          <p className="text-gray-600 mt-2">
+            {getSortedSales().length} de {sales.length} {sales.length === 1 ? 'venta' : 'ventas'} 
+            {(startDate || endDate) && ' (filtrado)'}
+          </p>
+        </div>
+
+        {/* Tarjeta de Resumen */}
+        <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             
-            {/* Total de ventas - posición prominente */}
-            <div className="flex items-center space-x-2 text-gray-600 bg-green-50 border border-green-200 px-4 py-3 rounded-lg">
-              <IoReceiptOutline size={20} className="text-green-600" />
-              <span className="text-sm sm:text-base lg:text-lg font-semibold text-green-700">
-                Total: {formatCurrency(getSortedSales().reduce((sum, sale) => sum + sale.totalAmount, 0))}
-              </span>
+            {/* Total de ventas */}
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                <IoCashOutline className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Total de Ventas</h2>
+                <p className="text-3xl font-bold text-green-600">
+                  {formatCurrency(getSortedSales().reduce((sum, sale) => sum + sale.totalAmount, 0))}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {getSortedSales().length} {getSortedSales().length === 1 ? 'venta registrada' : 'ventas registradas'}
+                </p>
+              </div>
+            </div>
+
+            {/* Controles de filtros y ordenamiento */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              
+              {/* Filtros de fecha */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowDateFilter(!showDateFilter)}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                      showDateFilter || startDate || endDate
+                        ? 'bg-[#f74116] text-white' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <IoFunnelOutline className="w-4 h-4" />
+                    <span>Filtrar por fecha</span>
+                  </button>
+                  
+                  {(startDate || endDate) && (
+                    <button
+                      onClick={clearDateFilter}
+                      className="text-sm text-gray-600 hover:text-red-600 transition-colors px-2 py-1 hover:bg-red-50 rounded"
+                    >
+                      Limpiar
+                    </button>
+                  )}
+                </div>
+                
+                {showDateFilter && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
+                    />
+                    <span className="text-gray-500">hasta</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Controles de ordenamiento */}
+              <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
+                <IoSwapVerticalOutline className="w-4 h-4 text-gray-600" />
+                <span className="text-sm text-gray-600">Ordenar:</span>
+                <button
+                  onClick={() => handleSort('date')}
+                  className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors ${
+                    sortField === 'date' 
+                      ? 'bg-[#f74116] text-white' 
+                      : 'text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <IoCalendarOutline className="w-4 h-4" />
+                  <span>Fecha</span>
+                  {sortField === 'date' && (
+                    <span className="text-xs">
+                      {sortOrder === 'desc' ? '↓' : '↑'}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => handleSort('amount')}
+                  className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors ${
+                    sortField === 'amount' 
+                      ? 'bg-[#f74116] text-white' 
+                      : 'text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <IoCashOutline className="w-4 h-4" />
+                  <span>Monto</span>
+                  {sortField === 'amount' && (
+                    <span className="text-xs">
+                      {sortOrder === 'desc' ? '↓' : '↑'}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* Barra de filtros y controles */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-            {/* Filtro por fechas - inline */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowDateFilter(!showDateFilter)}
-                className={`flex items-center space-x-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                  showDateFilter || startDate || endDate
-                    ? 'bg-[#2563eb] text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <IoFunnelOutline size={16} />
-                <span>Filtrar por fecha</span>
-              </button>
-              
-              {/* Inputs de fecha inline cuando está activo */}
-              {showDateFilter && (
+        </div>        {/* Lista de Ventas */}
+        <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200">
+          {getSortedSales().length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <IoReceiptOutline className="w-10 h-10 text-gray-400" />
+              </div>
+              {sales.length === 0 ? (
                 <>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    placeholder="Desde"
-                    className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent w-36"
-                  />
-                  <span className="text-gray-400 text-sm">hasta</span>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    placeholder="Hasta"
-                    className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent w-36"
-                  />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay ventas registradas</h3>
+                  <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                    Las ventas que generes aparecerán aquí
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay ventas en el rango seleccionado</h3>
+                  <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                    Intenta ajustar las fechas del filtro para ver más resultados
+                  </p>
+                  <button
+                    onClick={clearDateFilter}
+                    className="px-4 py-2 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors"
+                  >
+                    Limpiar filtro
+                  </button>
                 </>
               )}
-              
-              {(startDate || endDate) && (
-                <button
-                  onClick={clearDateFilter}
-                  className="text-sm text-gray-600 hover:text-red-600 transition-colors px-2 py-1 hover:bg-red-50 rounded"
-                >
-                  Limpiar
-                </button>
-              )}
             </div>
-
-            {/* Separador visual */}
-            <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
-
-            {/* Controles de ordenamiento */}
-            <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
-              <IoSwapVerticalOutline size={16} className="text-gray-600" />
-              <span className="text-sm text-gray-600 mr-2">Ordenar:</span>
-              <button
-                onClick={() => handleSort('date')}
-                className={`flex items-center space-x-1 px-2 py-1 text-sm rounded-md transition-colors ${
-                  sortField === 'date' 
-                    ? 'bg-[#2563eb] text-white' 
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <IoCalendarOutline size={14} />
-                <span>Fecha</span>
-                {sortField === 'date' && (
-                  <span className="text-xs">
-                    {sortOrder === 'desc' ? '↓' : '↑'}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => handleSort('amount')}
-                className={`flex items-center space-x-1 px-2 py-1 text-sm rounded-md transition-colors ${
-                  sortField === 'amount' 
-                    ? 'bg-[#2563eb] text-white' 
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <IoCashOutline size={14} />
-                <span>Monto</span>
-                {sortField === 'amount' && (
-                  <span className="text-xs">
-                    {sortOrder === 'desc' ? '↓' : '↑'}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>      {/* Content */}
-      <div className="p-4 sm:p-6 lg:p-7">
-        {getSortedSales().length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 sm:py-16 lg:py-20 px-4">
-            <IoReceiptOutline size={48} className="mb-4 text-gray-400 sm:w-16 sm:h-16" />
-            {sales.length === 0 ? (
-              <>
-                <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">No hay ventas registradas</h2>
-                <p className="mb-6 text-center text-sm sm:text-base text-gray-600 max-w-md">
-                  Las ventas que generes aparecerán aquí
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Ventas Registradas</h2>
+                <p className="text-sm text-gray-500">
+                  Mostrando {getSortedSales().length} {getSortedSales().length === 1 ? 'resultado' : 'resultados'}
                 </p>
-              </>
-            ) : (
-              <>
-                <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-800 text-center">No hay ventas en el rango seleccionado</h2>
-                <p className="mb-6 text-center text-sm sm:text-base text-gray-600 max-w-md">
-                  Intenta ajustar las fechas del filtro para ver más resultados
-                </p>
-                <button
-                  onClick={clearDateFilter}
-                  className="px-4 sm:px-6 py-2 sm:py-3 bg-[#2563eb] text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Limpiar filtro
-                </button>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-3 sm:space-y-4">
-            {getSortedSales().map((sale) => (
-              <div
-                key={sale.id}
-                className="p-4 sm:p-5 lg:p-6 transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-lg"
-              >
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0">
-                      <IoReceiptOutline size={20} className="text-[#2563eb] sm:w-6 sm:h-6" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-                        Venta #{sale.id.substring(0, 8)}
-                      </h3>
-                      <div className="flex flex-col sm:flex-row sm:items-center mt-1 space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600">
-                        <div className="flex items-center space-x-1">
-                          <IoCalendarOutline size={14} className="sm:w-4 sm:h-4" />
-                          <span>{formatDate(sale.occurredAt)}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <IoPersonOutline size={14} className="sm:w-4 sm:h-4" />
-                          <span className="truncate">{sale.createdByUserName}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                    <div className="text-left sm:text-right">
-                      <div className="flex items-center space-x-1 text-base sm:text-lg font-bold text-green-600">
-                        <IoCashOutline size={18} className="sm:w-5 sm:h-5" />
-                        <span>{formatCurrency(sale.totalAmount)}</span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        {sale.items.length} {sale.items.length === 1 ? 'producto' : 'productos'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleViewDetails(sale.id)}
-                      className="flex items-center justify-center px-3 sm:px-4 py-2 space-x-2 text-xs sm:text-sm text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 w-full sm:w-auto"
-                    >
-                      <IoEyeOutline size={16} className="sm:w-[18px] sm:h-[18px]" />
-                      <span>Ver Detalles</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Quick preview of items */}
-                <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-gray-100">
-                  <h4 className="mb-2 text-xs sm:text-sm font-semibold text-gray-700">Productos vendidos:</h4>
-                  <div className="flex flex-wrap gap-1 sm:gap-2">
-                    {sale.items.slice(0, 3).map((item, index) => (
-                      <div
-                        key={index}
-                        className="inline-flex items-center px-2 sm:px-3 py-1 text-xs text-blue-700 rounded-full bg-blue-50"
-                      >
-                        <span className="truncate max-w-24 sm:max-w-none">{item.productName}</span>
-                        <span className="ml-1">× {item.quantity}</span>
-                      </div>
-                    ))}
-                    {sale.items.length > 3 && (
-                      <div className="inline-flex items-center px-2 sm:px-3 py-1 text-xs text-gray-600 bg-gray-100 rounded-full">
-                        +{sale.items.length - 3} más
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
-            ))}
-          </div>
-        )}
+              
+              {getSortedSales().map((sale) => (
+                <div
+                  key={sale.id}
+                  className="group p-5 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 hover:shadow-sm transform hover:scale-[1.01]"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[#f74116]/10 to-[#f74116]/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <IoReceiptOutline className="w-6 h-6 text-[#f74116]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Venta #{sale.id.substring(0, 8)}
+                          </h3>
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-[#f74116] bg-[#f74116]/10 rounded-full">
+                            {sale.items.length} {sale.items.length === 1 ? 'producto' : 'productos'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <IoCalendarOutline className="w-4 h-4" />
+                            <span>{formatDate(sale.occurredAt)}</span>
+                          </div>
+                          <span className="hidden sm:inline text-gray-400">•</span>
+                          <div className="flex items-center gap-1">
+                            <IoPersonOutline className="w-4 h-4" />
+                            <span>{sale.createdByUserName}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-2xl font-bold text-green-600 mb-1">
+                          <IoCashOutline className="w-5 h-5" />
+                          <span>{formatCurrency(sale.totalAmount)}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleViewDetails(sale.id)}
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors group-hover:bg-white group-hover:shadow-sm"
+                      >
+                        <IoEyeOutline className="w-4 h-4" />
+                        <span>Ver Detalles</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Vista previa de productos */}
+                  <div className="pt-4 mt-4 border-t border-gray-100">
+                    <h4 className="mb-2 text-sm font-semibold text-gray-700">Productos vendidos:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {sale.items.slice(0, 3).map((item, index) => (
+                        <div
+                          key={index}
+                          className="inline-flex items-center px-3 py-1 text-sm text-blue-700 rounded-full bg-blue-50 border border-blue-200"
+                        >
+                          <span className="truncate max-w-32">{item.productName}</span>
+                          <span className="ml-2 font-medium">× {item.quantity}</span>
+                        </div>
+                      ))}
+                      {sale.items.length > 3 && (
+                        <div className="inline-flex items-center px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full border border-gray-200">
+                          +{sale.items.length - 3} más
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
