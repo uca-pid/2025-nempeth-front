@@ -165,7 +165,7 @@ function SalesHistory() {
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
             <span className="h-2 w-2 rounded-full bg-[#f74116]" />
-            Historial de Ventas
+            Historial de ventas
           </div>
           <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
             Registro de Ventas
