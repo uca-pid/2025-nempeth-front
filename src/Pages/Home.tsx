@@ -398,15 +398,12 @@ function Home() {
             </div>
           ) : (
             <div className="space-y-3">
-              {recentSales.map((sale, index) => (
+              {recentSales.map((sale) => (
                 <div key={sale.id} className="group p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center">
-                          <div className="w-8 h-8 bg-[#f74116]/10 rounded-lg flex items-center justify-center mr-3">
-                            <span className="text-xs font-bold text-[#f74116]">#{index + 1}</span>
-                          </div>
                           <div>
                             <h3 className="text-sm font-semibold text-gray-900">
                               Venta #{sale.id.slice(-6)}

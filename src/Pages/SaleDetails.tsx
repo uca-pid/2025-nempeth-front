@@ -150,7 +150,6 @@ function SaleDetails() {
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900">Información de la Venta</h2>
-                <p className="text-sm sm:text-base text-gray-600 break-all sm:break-normal">ID: {sale.id}</p>
               </div>
             </div>
             <div className="text-left lg:text-right">
