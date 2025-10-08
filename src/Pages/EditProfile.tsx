@@ -3,7 +3,6 @@ import { UserService } from '../services/userService'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
 import PasswordValidationList from '../components/PasswordValidationList'
-import LoadingScreen from '../components/LoadingScreen'
 import { IoEye, IoEyeOff } from 'react-icons/io5'
 
 function EditProfile() {

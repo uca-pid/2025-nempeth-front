@@ -5,6 +5,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  cost: number;
   categoryId?: string;
 }
 
@@ -12,6 +13,7 @@ export interface CreateProductRequest {
   name: string;
   description: string;
   price: number;
+  cost: number;
   categoryId: string;
 }
 
@@ -19,6 +21,7 @@ export interface UpdateProductRequest {
   name: string;
   description: string;
   price: number;
+  cost: number;
   categoryId: string;
 }
 

@@ -39,6 +39,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
     name: '',
     description: '',
     price: 0,
+    cost: 0,
     categoryId: ''
   })
   const [saving, setSaving] = useState(false)
@@ -49,6 +50,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
         name: product.name,
         description: product.description,
         price: product.price,
+        cost: product.cost,
         categoryId: product.categoryId ? product.categoryId : ''
       })
     } else {
@@ -56,6 +58,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
         name: '',
         description: '',
         price: 0,
+        cost: 0,
         categoryId: categories.length > 0 ? categories[0].id : ''
       })
     }
@@ -64,7 +67,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.categoryId) {
+    if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.cost >= 0 && formData.categoryId) {
       setSaving(true)
       try {
         await onSave({
@@ -88,7 +91,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
     
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(finalValue) || 0 : finalValue
+      [name]: (name === 'price' || name === 'cost') ? parseFloat(finalValue) || 0 : finalValue
     }))
   }
 
@@ -165,6 +168,22 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
                 {formData.description.length}/300
               </span>
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-sm font-semibold text-gray-700" htmlFor="cost">Costo ($)</label>
+            <input
+              type="number"
+              id="cost"
+              name="cost"
+              value={formData.cost}
+              onChange={handleChange}
+              required
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+            />
           </div>
 
           <div className="space-y-1">
@@ -438,6 +457,7 @@ function Products() {
             name: productData.name,
             description: productData.description,
             price: productData.price,
+            cost: productData.cost,
             categoryId: productData.categoryId!
           }
         )
@@ -447,6 +467,7 @@ function Products() {
           name: productData.name,
           description: productData.description,
           price: productData.price,
+          cost: productData.cost,
           categoryId: productData.categoryId!
         })
       }
