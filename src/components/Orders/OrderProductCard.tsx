@@ -30,100 +30,83 @@ function OrderProductCard({
   }
 
   return (
-    <div className="group flex min-h-[260px] sm:min-h-[280px] flex-col overflow-hidden rounded-2xl border bg-white p-0 shadow-md ring-1 ring-gray-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-gray-300">
-      {/* Contenido con divisores para mantener separación */}
-      <div className="flex flex-col flex-1 divide-y divide-gray-100">
-        
-        {/* Header: Título e icono de categoría */}
-        <div className="relative items-center px-4 pt-5 pb-4 sm:px-5 sm:pb-5 sm:pt-7">
-          {productCategory && (
-            <div className="absolute right-2 sm:right-3 top-2 sm:top-3">
-              <div 
-                className="flex items-center justify-center w-10 h-10 transition-all duration-300 rounded-full sm:w-12 sm:h-12 bg-amber-100/90 ring-1 ring-amber-200/90 hover:scale-110 hover:bg-amber-200 hover:ring-amber-300"
-                title={productCategory.name}
-              >
-                <span className="text-lg sm:text-xl" role="img" aria-label={productCategory.name}>
-                  {productCategory.icon}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Truncado con "…" si es muy largo */}
-          <h3 className="pr-12 text-lg font-bold tracking-tight text-gray-900 truncate transition-colors sm:pr-16 sm:text-xl">
-            {product.name}
-          </h3>
-        </div>
-
-        {/* Descripción (clamp 3 líneas) */}
-        <div className="px-4 py-4 sm:py-5 sm:px-7">
-          <div
-            className="p-3 overflow-hidden text-xs leading-relaxed text-gray-700 transition-all duration-300 border shadow-inner cursor-pointer sm:p-4 sm:text-sm rounded-xl border-gray-200/50 bg-gray-50/50 group-hover:bg-gray-100/80 group-hover:shadow-md"
-            onClick={() => onShowDescription(product)}
-          >
-            <div
-              className="overflow-hidden"
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
-              }}
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#f74116]/30 min-w-[280px]">
+      {/* Header: Título e icono de categoría */}
+      <div className="relative px-6 pt-5 pb-4 bg-gradient-to-br from-gray-50 to-white">
+        {productCategory && (
+          <div className="absolute top-4 right-4">
+            <div 
+              className="flex items-center justify-center w-10 h-10 transition-all duration-300 rounded-full bg-amber-100 ring-2 ring-amber-200 hover:scale-110 hover:bg-amber-200"
+              title={productCategory.name}
             >
-              {product.description}
+              <span className="text-lg" role="img" aria-label={productCategory.name}>
+                {productCategory.icon}
+              </span>
             </div>
           </div>
+        )}
+
+        <h3 className="pr-14 text-lg font-bold tracking-tight text-gray-900 line-clamp-2">
+          {product.name}
+        </h3>
+      </div>
+
+      {/* Descripción */}
+      <div className="px-6 py-4 flex-1">
+        <div
+          className="p-3 text-sm leading-relaxed text-gray-700 transition-all duration-200 border border-gray-200 rounded-lg cursor-pointer bg-gray-50/50 hover:bg-gray-100 hover:border-gray-300 line-clamp-3"
+          onClick={() => onShowDescription(product)}
+          title="Click para ver descripción completa"
+        >
+          {product.description}
         </div>
+      </div>
 
-        {/* Precio y cantidad */}
-        <div className="px-4 py-4 sm:py-5 sm:px-7">
-          <div className="flex flex-col items-center justify-center gap-3 sm:gap-4">
-            {/* Price */}
-            <div className="flex justify-center w-full">
-              <div className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base font-semibold transition-all rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 ring-1 ring-emerald-200 group-hover:ring-emerald-300">
-                ${product.price.toFixed(2)}
-              </div>
-            </div>
-
+      {/* Footer: Controles de cantidad y botón agregar */}
+      <div className="px-6 py-4 border-t border-gray-100 bg-gradient-to-br from-white to-gray-50">
+        <div className="flex flex-col gap-3">
+          {/* Fila superior: Controles de cantidad y precio */}
+          <div className="flex items-center justify-between gap-3">
             {/* Quantity controls */}
-            <div className="flex items-center justify-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2">
               <button
-                className="flex items-center justify-center w-8 h-8 text-gray-600 transition-all duration-200 bg-gray-100 rounded-full sm:h-9 sm:w-9 hover:scale-105 hover:bg-gray-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex items-center justify-center w-9 h-9 text-gray-600 transition-all duration-200 bg-white border-2 border-gray-300 rounded-lg hover:scale-105 hover:bg-gray-50 hover:border-gray-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                 onClick={() => handleQuantityChange(quantity - 1)}
                 disabled={quantity <= 1}
                 type="button"
               >
-                <IoRemoveOutline className="text-sm sm:text-base" />
+                <IoRemoveOutline className="text-base" />
               </button>
 
-              <div className="flex items-center justify-center w-12 h-8 border-2 border-gray-200 rounded-lg sm:h-9 sm:w-14 bg-gray-50">
-                <span className="text-sm font-semibold text-gray-900 sm:text-base">{quantity}</span>
+              <div className="flex items-center justify-center w-12 h-9 font-bold text-gray-900 bg-white border-2 border-gray-300 rounded-lg">
+                {quantity}
               </div>
 
               <button
-                className="flex items-center justify-center w-8 h-8 text-gray-600 transition-all duration-200 bg-gray-100 rounded-full sm:h-9 sm:w-9 hover:scale-105 hover:bg-gray-200 active:scale-95"
+                className="flex items-center justify-center w-9 h-9 text-gray-600 transition-all duration-200 bg-white border-2 border-gray-300 rounded-lg hover:scale-105 hover:bg-gray-50 hover:border-gray-400 active:scale-95"
                 onClick={() => handleQuantityChange(quantity + 1)}
                 type="button"
               >
-                <IoAddOutline className="text-sm sm:text-base" />
+                <IoAddOutline className="text-base" />
               </button>
             </div>
-          </div>
-        </div>
 
-        {/* Add to cart button */}
-        <div className="px-4 py-5 sm:px-7 sm:py-7">
+            {/* Precio */}
+            <div className="inline-flex items-center px-3 py-1.5 text-base font-bold rounded-lg bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 ring-1 ring-emerald-200">
+              ${product.price.toFixed(2)}
+            </div>
+          </div>
+
+          {/* Fila inferior: Botón agregar al carrito - ancho completo */}
           <button
-            className="flex items-center justify-center w-full gap-2 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white transition-all duration-200 bg-blue-600 rounded-lg shadow-md hover:scale-105 hover:bg-blue-700 hover:shadow-lg active:scale-95"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 bg-[#f74116] rounded-lg shadow-sm hover:bg-[#f74116]/90 hover:shadow-md active:scale-[0.98]"
             onClick={handleAddToCart}
             type="button"
           >
-            <IoCartOutline className="text-base sm:text-lg" />
-            <span className="hidden sm:inline">Agregar al carrito</span>
-            <span className="sm:hidden">Agregar</span>
+            <IoCartOutline className="text-lg" />
+            <span>Agregar al carrito</span>
           </button>
         </div>
-
       </div>
     </div>
   )
