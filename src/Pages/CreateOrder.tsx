@@ -330,7 +330,7 @@ function CreateOrder() {
             </div>
 
             {/* Grid de Productos */}
-            <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 overflow-hidden">
               {filteredProducts.length === 0 && products.length > 0 ? (
                 <div className="py-16 text-center">
                   <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full">
@@ -365,15 +365,16 @@ function CreateOrder() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-fr">
                     {filteredProducts.map(product => (
-                      <OrderProductCard
-                        key={product.id}
-                        product={product}
-                        categories={categories}
-                        onAddToCart={handleAddToCart}
-                        onShowDescription={handleShowDescription}
-                      />
+                      <div key={product.id} className="w-full flex">
+                        <OrderProductCard
+                          product={product}
+                          categories={categories}
+                          onAddToCart={handleAddToCart}
+                          onShowDescription={handleShowDescription}
+                        />
+                      </div>
                     ))}
                   </div>
                 </>

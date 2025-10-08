@@ -30,7 +30,7 @@ function OrderProductCard({
   }
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#f74116]/30 min-w-[280px]">
+    <div className="group flex flex-col h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:border-[#f74116]/30 w-full max-w-none">
       {/* Header: Título e icono de categoría */}
       <div className="relative px-6 pt-5 pb-4 bg-gradient-to-br from-gray-50 to-white">
         {productCategory && (
@@ -65,36 +65,35 @@ function OrderProductCard({
       {/* Footer: Controles de cantidad y botón agregar */}
       <div className="px-6 py-4 border-t border-gray-100 bg-gradient-to-br from-white to-gray-50">
         <div className="flex flex-col gap-3">
-          {/* Fila superior: Controles de cantidad y precio */}
-          <div className="flex items-center justify-between gap-3">
-            {/* Quantity controls */}
-            <div className="flex items-center gap-2">
-              <button
-                className="flex items-center justify-center w-9 h-9 text-gray-600 transition-all duration-200 bg-white border-2 border-gray-300 rounded-lg hover:scale-105 hover:bg-gray-50 hover:border-gray-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
-                onClick={() => handleQuantityChange(quantity - 1)}
-                disabled={quantity <= 1}
-                type="button"
-              >
-                <IoRemoveOutline className="text-base" />
-              </button>
-
-              <div className="flex items-center justify-center w-12 h-9 font-bold text-gray-900 bg-white border-2 border-gray-300 rounded-lg">
-                {quantity}
-              </div>
-
-              <button
-                className="flex items-center justify-center w-9 h-9 text-gray-600 transition-all duration-200 bg-white border-2 border-gray-300 rounded-lg hover:scale-105 hover:bg-gray-50 hover:border-gray-400 active:scale-95"
-                onClick={() => handleQuantityChange(quantity + 1)}
-                type="button"
-              >
-                <IoAddOutline className="text-base" />
-              </button>
-            </div>
-
-            {/* Precio */}
-            <div className="inline-flex items-center px-3 py-1.5 text-base font-bold rounded-lg bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 ring-1 ring-emerald-200">
+          {/* Precio - Primera fila */}
+          <div className="flex justify-center">
+            <div className="inline-flex items-center px-4 py-2 text-lg font-bold rounded-lg bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 ring-1 ring-emerald-200">
               ${product.price.toFixed(2)}
             </div>
+          </div>
+
+          {/* Controles de cantidad - Segunda fila */}
+          <div className="flex items-center justify-center gap-2">
+            <button
+              className="flex items-center justify-center w-9 h-9 text-gray-600 transition-all duration-200 bg-white border-2 border-gray-300 rounded-lg hover:scale-105 hover:bg-gray-50 hover:border-gray-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+              onClick={() => handleQuantityChange(quantity - 1)}
+              disabled={quantity <= 1}
+              type="button"
+            >
+              <IoRemoveOutline className="text-base" />
+            </button>
+
+            <div className="flex items-center justify-center w-12 h-9 font-bold text-gray-900 bg-white border-2 border-gray-300 rounded-lg">
+              {quantity}
+            </div>
+
+            <button
+              className="flex items-center justify-center w-9 h-9 text-gray-600 transition-all duration-200 bg-white border-2 border-gray-300 rounded-lg hover:scale-105 hover:bg-gray-50 hover:border-gray-400 active:scale-95"
+              onClick={() => handleQuantityChange(quantity + 1)}
+              type="button"
+            >
+              <IoAddOutline className="text-base" />
+            </button>
           </div>
 
           {/* Fila inferior: Botón agregar al carrito - ancho completo */}
