@@ -6,6 +6,7 @@ export interface SaleItemResponse {
   productName: string
   quantity: number
   unitPrice: number
+  unitCost: number
   totalPrice: number
 }
 

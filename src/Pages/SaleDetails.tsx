@@ -198,10 +198,17 @@ function SaleDetails() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.productName}</h3>
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <span>Precio unitario:</span>
-                      <span className="font-medium text-gray-900">{formatCurrency(item.unitPrice)}</span>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">{item.productName}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <span>Precio de venta:</span>
+                        <span className="font-medium text-gray-900">{formatCurrency(item.unitPrice)}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <span>Costo unitario:</span>
+                        <span className="font-medium text-gray-900">{formatCurrency(item.unitCost || 0)}</span>
+                      </div>
+        
                     </div>
                   </div>
                   
@@ -214,10 +221,36 @@ function SaleDetails() {
                     </div>
                     
                     <div className="text-center">
+                      <p className="text-xs font-semibold text-gray-600 mb-1">Costo Total</p>
+                      <div className="bg-orange-50 px-3 py-2 rounded-lg border border-orange-200">
+                        <span className="text-sm font-bold text-orange-600">
+                          {formatCurrency(item.quantity * (item.unitCost || 0))}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center">
                       <p className="text-xs font-semibold text-gray-600 mb-1">Subtotal</p>
-                      <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-                        <span className="text-lg font-bold text-green-600">
+                      <div className="bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+                        <span className="text-sm font-bold text-green-600">
                           {formatCurrency(item.quantity * item.unitPrice)}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center">
+                      <p className="text-xs font-semibold text-gray-600 mb-1">Ganancia</p>
+                      <div className={`px-3 py-2 rounded-lg border ${
+                        (item.quantity * (item.unitPrice - (item.unitCost || 0))) >= 0 
+                          ? 'bg-blue-50 border-blue-200' 
+                          : 'bg-red-50 border-red-200'
+                      }`}>
+                        <span className={`text-sm font-bold ${
+                          (item.quantity * (item.unitPrice - (item.unitCost || 0))) >= 0 
+                            ? 'text-blue-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {formatCurrency(item.quantity * (item.unitPrice - (item.unitCost || 0)))}
                         </span>
                       </div>
                     </div>
@@ -229,17 +262,70 @@ function SaleDetails() {
 
           {/* Total Summary */}
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center">
-                    <IoCashOutline className="w-5 h-5 text-green-700" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Costo Total */}
+              <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-orange-200 rounded-lg flex items-center justify-center">
+                      <IoCashOutline className="w-4 h-4 text-orange-700" />
+                    </div>
+                    <span className="text-sm font-bold text-orange-800">Costo Total</span>
                   </div>
-                  <span className="text-lg font-bold text-green-800">Total de la Venta</span>
+                  <span className="text-lg font-bold text-orange-700">
+                    {formatCurrency(sale.items.reduce((total, item) => total + (item.quantity * (item.unitCost || 0)), 0))}
+                  </span>
                 </div>
-                <span className="text-2xl font-bold text-green-700">
-                  {formatCurrency(sale.totalAmount)}
-                </span>
+              </div>
+
+              {/* Venta Total */}
+              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center">
+                      <IoCashOutline className="w-4 h-4 text-green-700" />
+                    </div>
+                    <span className="text-sm font-bold text-green-800">Total Venta</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-700">
+                    {formatCurrency(sale.totalAmount)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Ganancia Total */}
+              <div className={`bg-gradient-to-r p-4 rounded-xl border ${
+                (sale.totalAmount - sale.items.reduce((total, item) => total + (item.quantity * (item.unitCost || 0)), 0)) >= 0
+                  ? 'from-blue-50 to-blue-100 border-blue-200'
+                  : 'from-red-50 to-red-100 border-red-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      (sale.totalAmount - sale.items.reduce((total, item) => total + (item.quantity * (item.unitCost || 0)), 0)) >= 0
+                        ? 'bg-blue-200'
+                        : 'bg-red-200'
+                    }`}>
+                      <IoCashOutline className={`w-4 h-4 ${
+                        (sale.totalAmount - sale.items.reduce((total, item) => total + (item.quantity * (item.unitCost || 0)), 0)) >= 0
+                          ? 'text-blue-700'
+                          : 'text-red-700'
+                      }`} />
+                    </div>
+                    <span className={`text-sm font-bold ${
+                      (sale.totalAmount - sale.items.reduce((total, item) => total + (item.quantity * (item.unitCost || 0)), 0)) >= 0
+                        ? 'text-blue-800'
+                        : 'text-red-800'
+                    }`}>Ganancia Total</span>
+                  </div>
+                  <span className={`text-lg font-bold ${
+                    (sale.totalAmount - sale.items.reduce((total, item) => total + (item.quantity * (item.unitCost || 0)), 0)) >= 0
+                      ? 'text-blue-700'
+                      : 'text-red-700'
+                  }`}>
+                    {formatCurrency(sale.totalAmount - sale.items.reduce((total, item) => total + (item.quantity * (item.unitCost || 0)), 0))}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
