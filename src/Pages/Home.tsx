@@ -332,7 +332,7 @@ function Home() {
             )}
             
             <button 
-              onClick={() => navigate('/sales-history')}
+              onClick={() => navigate('/analytics')}
               className="group bg-white border border-gray-200 text-gray-900 rounded-xl p-6 text-left hover:border-[#f74116]/40 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200"
             >
               <div className="flex items-center justify-between">

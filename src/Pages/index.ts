@@ -1,3 +1,4 @@
+export { default as Analytics } from './Analytics'
 export { default as Authentication } from './Authentication'
 export { default as BusinessInfo } from './BusinessInfo'
 export { default as CreateOrder } from './CreateOrder'
