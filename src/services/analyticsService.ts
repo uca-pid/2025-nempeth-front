@@ -12,14 +12,12 @@ interface MonthlyProfitResponse {
 
 interface RevenueByCategoryResponse {
   month: string
-  categoryId: string
   categoryName: string
   revenue: number
 }
 
 interface ProfitByCategoryResponse {
   month: string
-  categoryId: string
   categoryName: string
   profit: number
 }
