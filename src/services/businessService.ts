@@ -21,6 +21,7 @@ export interface ProductResponse {
   name: string
   description: string
   price: number
+  cost: number
   categoryId: string
 }
 

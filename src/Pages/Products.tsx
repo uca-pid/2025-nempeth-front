@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { productService, type Product } from '../services/productService'
 import { categoryService, type Category as CategoryType } from '../services/categoryService'
 import { useAuth } from '../contexts/useAuth'
+import LoadingScreen from '../components/LoadingScreen'
 import EmptyState from '../components/Products/EmptyState'
 import DescriptionModal from '../components/Products/DescriptionModal'
 import ProductCard from '../components/Products/ProductCard'
@@ -38,6 +39,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
     name: '',
     description: '',
     price: 0,
+    cost: 0,
     categoryId: ''
   })
   const [saving, setSaving] = useState(false)
@@ -48,6 +50,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
         name: product.name,
         description: product.description,
         price: product.price,
+        cost: product.cost,
         categoryId: product.categoryId ? product.categoryId : ''
       })
     } else {
@@ -55,6 +58,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
         name: '',
         description: '',
         price: 0,
+        cost: 0,
         categoryId: categories.length > 0 ? categories[0].id : ''
       })
     }
@@ -63,7 +67,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.categoryId) {
+    if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.cost >= 0 && formData.categoryId) {
       setSaving(true)
       try {
         await onSave({
@@ -87,7 +91,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
     
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(finalValue) || 0 : finalValue
+      [name]: (name === 'price' || name === 'cost') ? parseFloat(finalValue) || 0 : finalValue
     }))
   }
 
@@ -124,7 +128,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
               onChange={handleChange}
               required
               placeholder="Ingresa el nombre del producto"
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
             />
           </div>
 
@@ -136,7 +140,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
               value={formData.categoryId}
               onChange={handleChange}
               required
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
             >
               <option value="">Selecciona una categoría</option>
               {categories.map(category => (
@@ -157,13 +161,29 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
               required
               rows={3}
               placeholder="Describe el producto"
-              className="w-full min-h-[4rem] rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
+              className="w-full min-h-[4rem] rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
             />
             <div className="flex justify-end">
               <span className={`text-sm ${formData.description.length > 280 ? 'text-orange-600' : formData.description.length === 300 ? 'text-red-600' : 'text-gray-500'}`}>
                 {formData.description.length}/300
               </span>
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-sm font-semibold text-gray-700" htmlFor="cost">Costo ($)</label>
+            <input
+              type="number"
+              id="cost"
+              name="cost"
+              value={formData.cost}
+              onChange={handleChange}
+              required
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
+            />
           </div>
 
           <div className="space-y-1">
@@ -178,7 +198,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
               min="0"
               step="0.01"
               placeholder="0.00"
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#2563eb] focus:outline-none focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
             />
           </div>
 
@@ -193,7 +213,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-[#2563eb] px-5 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-[#f74116] px-5 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#f74116]/90 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={saving}
             >
               {saving ? 'Guardando...' : (product ? 'Actualizar' : 'Guardar')}
@@ -346,27 +366,28 @@ function Products() {
   }, [showFilterDropdown])
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f8f7fc] p-6 md:p-10">
-        <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/70">
-          <p className="text-base font-medium text-gray-600">Cargando productos...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Cargando productos..." />
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f8f7fc] p-6 md:p-10">
-        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
-          <p className="text-base font-semibold text-red-600">Error: {error}</p>
-          <button
-            onClick={loadProducts}
-            className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
-            type="button"
-          >
-            Reintentar
-          </button>
+      <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-8 text-center hover:shadow-lg transition-all duration-200">
+            <div className="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">Error al cargar productos</h2>
+            <p className="text-gray-600 mb-8">{error}</p>
+            <button
+              onClick={loadProducts}
+              className="px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium"
+            >
+              Reintentar
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -436,6 +457,7 @@ function Products() {
             name: productData.name,
             description: productData.description,
             price: productData.price,
+            cost: productData.cost,
             categoryId: productData.categoryId!
           }
         )
@@ -445,6 +467,7 @@ function Products() {
           name: productData.name,
           description: productData.description,
           price: productData.price,
+          cost: productData.cost,
           categoryId: productData.categoryId!
         })
       }
@@ -528,25 +551,25 @@ function Products() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header que coincide con Sidebar */}
-      <div className="bg-white border-b border-gray-200 p-7">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <h1 className="text-xl font-bold leading-tight text-gray-900 md:text-2xl">Gestión de Productos</h1>
-            <span className="text-xs font-medium text-gray-600 md:text-sm">
-              Administra tu carta y controla tus productos
-            </span>
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
+            <span className="h-2 w-2 rounded-full bg-[#f74116]" />
+            Gestión de Inventario
           </div>
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-2">
+            Productos
+          </h1>
+          <p className="text-gray-600">Administra tu catálogo y controla tu inventario</p>
         </div>
-      </div>
-      
-      <div className="p-1 md:p-10">
 
-        <div className="flex items-center justify-start gap-4">
-
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-4 mb-8">
           <button
-            className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#f74116] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[#f74116]/90 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
             onClick={handleAddProduct}
             disabled={processing}
             type="button"
@@ -556,64 +579,50 @@ function Products() {
           </button>
 
           <button
-            className="inline-flex items-center gap-2 rounded-xl bg-[#ff5804] px-6 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-xl disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
             onClick={() => setShowCategoryModal(true)}
             disabled={processing}
             type="button"
           >
-            <span className="text-xl font-bold">+</span>
-            {processing ? 'Procesando...' : 'Administrar categorías'}
+            <span className="text-xl font-bold">⚙️</span>
+            {processing ? 'Procesando...' : 'Gestionar Categorías'}
           </button>
-          
         </div>
 
-        {/* Sección de filtros y categorías */}
-        <div className="mt-6">
+        {/* Filters Section */}
+        <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 mb-8 hover:shadow-lg transition-all duration-200">
           <div className="flex flex-wrap items-center gap-4">
             {/* Dropdown de filtros */}
             <div className="relative filter-dropdown-container">
               <button
-                className="
-                  flex h-12 w-12 items-center justify-center 
-                  rounded-full 
-                  bg-white
-                  border border-gray-500  
-                  text-gray-700 shadow-md 
-                  transition-all duration-200
-                  hover:-translate-y-0.5 hover:shadow-xl
-                  hover:from-rose-100 hover:to-rose-200 hover:text-rose-600
-                  hover:border-rose-300 
-                  disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60
-                "
+                className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 disabled={processing}
                 type="button"
                 onClick={handleToggleFilterDropdown}
               >
-                <IoFilterCircle className="text-xl" />
+                <IoFilterCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">Filtrar por categoría</span>
               </button>
               
               {/* Dropdown menu */}
               {showFilterDropdown && (
                 <div className="absolute left-0 z-50 w-64 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full rounded-xl">
                   <div className="px-4 py-2 border-b border-gray-100">
-                    <h3 className="text-sm font-semibold text-gray-800">Filtrar por categoría</h3>
+                    <h4 className="text-sm font-semibold text-gray-800">Seleccionar categorías</h4>
                   </div>
                   
                   <div className="overflow-y-auto max-h-64">
                     {categories.map(category => (
                       <button
                         key={category.id}
-                        className={`
-                          w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 transition-colors
-                          ${selectedCategoryFilters.includes(category.id) ? 'bg-blue-50 text-blue-800' : 'text-gray-700'}
-                        `}
+                        className={`w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 transition-colors ${selectedCategoryFilters.includes(category.id) ? 'bg-[#f74116]/10 text-[#f74116]' : 'text-gray-700'}`}
                         onClick={() => handleToggleCategoryFilter(category.id)}
                         type="button"
                       >
                         <span className="text-lg">{category.icon}</span>
                         <span className="flex-1 text-sm font-medium">{category.name}</span>
                         {selectedCategoryFilters.includes(category.id) && (
-                          <span className="text-blue-600">✓</span>
+                          <span className="text-[#f74116]">✓</span>
                         )}
                       </button>
                     ))}
@@ -635,41 +644,45 @@ function Products() {
             </div>
 
             {/* Categorías seleccionadas como filtros */}
-            <div className="flex flex-wrap items-center gap-2">
-              {selectedCategoryFilters.map(categoryId => {
-                const category = categories.find(cat => cat.id === categoryId)
-                if (!category) return null
-                
-                return (
-                  <div 
-                    key={categoryId}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 border border-blue-200 rounded-full"
+            {selectedCategoryFilters.map(categoryId => {
+              const category = categories.find(cat => cat.id === categoryId)
+              if (!category) return null
+              
+              return (
+                <div 
+                  key={categoryId}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#f74116] bg-[#f74116]/10 border border-[#f74116]/20 rounded-full"
+                >
+                  <span>{category.icon}</span>
+                  <span>{category.name}</span>
+                  <button 
+                    className="ml-1 font-bold text-[#f74116] hover:text-[#f74116]/80"
+                    onClick={() => handleToggleCategoryFilter(categoryId)}
+                    type="button"
                   >
-                    <span>{category.icon}</span>
-                    <span>{category.name}</span>
-                    <button 
-                      className="ml-1 font-bold text-blue-600 hover:text-blue-800"
-                      onClick={() => handleToggleCategoryFilter(categoryId)}
-                      type="button"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
+                    ×
+                  </button>
+                </div>
+              )
+            })}
           </div>
         </div>
 
-        {/* Productos */}
-        <div className="mt-8 xl:max-w-[1400px] xl:mx-auto">
+        {/* Products Grid */}
+        <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200">
           {filteredProducts.length === 0 && products.length > 0 ? (
-            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
-              <div className="text-6xl opacity-50">🔍</div>
-              <h3 className="text-xl font-semibold text-gray-700">No se encontraron productos</h3>
-              <p className="text-gray-500">No hay productos que coincidan con los filtros seleccionados.</p>
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">No se encontraron productos</h3>
+              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                No hay productos que coincidan con los filtros seleccionados
+              </p>
               <button
-                className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
+                className="px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium"
                 onClick={handleClearAllFilters}
                 type="button"
               >
@@ -677,32 +690,45 @@ function Products() {
               </button>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onEdit={handleEditProduct}
-                  onDelete={handleDeleteProduct}
-                  onShowDescription={handleShowDescription}
-                  processing={processing}
-                  isDeleting={isDeleting}
-                  categories={categories}
-                />
-              ))}
+            <div className="text-center py-16">
+              <EmptyState />
             </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Catálogo de Productos</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Mostrando {filteredProducts.length} de {products.length} productos
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onEdit={handleEditProduct}
+                    onDelete={handleDeleteProduct}
+                    onShowDescription={handleShowDescription}
+                    processing={processing}
+                    isDeleting={isDeleting}
+                    categories={categories}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
 
-        {/* Modal */}
+        {/* Modals */}
         <ProductModal
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false)
             setEditingProduct(null)
-            setError(null) // Limpiar errores al cerrar
+            setError(null)
           }}
           onSave={handleSaveProduct}
           product={editingProduct}
@@ -710,7 +736,6 @@ function Products() {
           categories={categories}
         />
 
-        {/* Modal de confirmación de eliminación */}
         <ConfirmDeleteModal
           isOpen={showDeleteModal}
           onClose={handleCloseDeleteModal}
@@ -719,7 +744,6 @@ function Products() {
           isDeleting={isDeleting}
         />
 
-        {/* Modal de descripción completa */}
         <DescriptionModal
           isOpen={showDescriptionModal}
           onClose={() => setShowDescriptionModal(false)}
@@ -727,7 +751,6 @@ function Products() {
           description={selectedProductDescription.description}
         />
 
-        {/* Modal de gestión de categorías */}
         <CategoryManagementModal
           isOpen={showCategoryModal}
           onClose={() => {

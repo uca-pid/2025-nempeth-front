@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { useAuth } from './contexts/useAuth'
+import Analytics from './Pages/Analytics'
 import Authentication from './Pages/Authentication'
 import Home from './Pages/Home'
 import EditProfile from './Pages/EditProfile'
@@ -133,6 +134,17 @@ function AppRoutes() {
               <SalesHistory />
             </Layout>
           </OwnerOrActiveEmployeeGuard>
+        }
+      />
+
+      <Route
+        path="/analytics"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <Analytics />
+            </Layout>
+          </OwnerGuard>
         }
       />
 

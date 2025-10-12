@@ -11,6 +11,7 @@ interface ProductWithCategory extends Omit<Product, 'categoryId'> {
 }
 import { salesService, type CreateSaleRequest } from '../services/salesService'
 import { useAuth } from '../contexts/useAuth'
+import LoadingScreen from '../components/LoadingScreen'
 import EmptyState from '../components/Products/EmptyState'
 import DescriptionModal from '../components/Products/DescriptionModal'
 import SuccessOperation from '../components/SuccesOperation'
@@ -101,27 +102,29 @@ function CreateOrder() {
   }, [showFilterDropdown])
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f8f7fc] p-4 sm:p-6 lg:p-10">
-        <div className="flex min-h-[40vh] sm:min-h-[50vh] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/70">
-          <p className="text-sm sm:text-base font-medium text-gray-600">Cargando productos...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Cargando catálogo de productos..." />
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f8f7fc] p-4 sm:p-6 lg:p-10">
-        <div className="flex min-h-[40vh] sm:min-h-[50vh] flex-col items-center justify-center gap-4 rounded-2xl border border-red-200 bg-red-50 p-6 sm:p-8 text-center">
-          <p className="text-sm sm:text-base font-semibold text-red-600">Error: {error}</p>
-          <button
-            onClick={loadProducts}
-            className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
-            type="button"
-          >
-            Reintentar
-          </button>
+      <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+        <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="p-8 text-center transition-all duration-200 bg-white border border-red-200 shadow-sm rounded-2xl hover:shadow-lg">
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full">
+              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="mb-3 text-xl font-bold text-gray-900">Error al cargar productos</h2>
+            <p className="mb-8 text-gray-600">{error}</p>
+            <button
+              onClick={loadProducts}
+              className="px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium"
+              type="button"
+            >
+              Reintentar
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -225,167 +228,182 @@ function CreateOrder() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4 sm:p-6 lg:p-7">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <h1 className="text-lg font-bold leading-tight text-gray-900 sm:text-xl lg:text-2xl">Crear Orden de Venta</h1>
-            <span className="text-xs font-medium text-gray-600 sm:text-sm">
-              Selecciona productos para crear una nueva orden
-            </span>
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
+            <span className="h-2 w-2 rounded-full bg-[#f74116]" />
+            Gestión de Ventas
           </div>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+            Crear Orden de Venta
+          </h1>
+          <p className="text-gray-600">Selecciona productos para crear una nueva orden</p>
         </div>
-      </div>
 
-      <div className="flex flex-col lg:flex-row lg:h-screen">
-        {/* Panel izquierdo - Productos */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-10 lg:pr-4 pb-20 lg:pb-6">
-          {/* Sección de filtros y categorías */}
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4">
-              {/* Dropdown de filtros */}
-              <div className="relative filter-dropdown-container">
-                <button
-                  className="
-                    flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center 
-                    rounded-full 
-                    bg-white
-                    border border-gray-500  
-                    text-gray-700 shadow-md 
-                    transition-all duration-200
-                    hover:-translate-y-0.5 hover:shadow-xl
-                    hover:from-rose-100 hover:to-rose-200 hover:text-rose-600
-                    hover:border-rose-300 
-                    disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60
-                  "
-                  type="button"
-                  onClick={handleToggleFilterDropdown}
-                >
-                  <IoFilterCircle className="text-lg sm:text-xl" />
-                </button>
-                
-                {/* Dropdown menu */}
-                {showFilterDropdown && (
-                  <div className="absolute left-0 z-50 w-72 sm:w-64 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full rounded-xl max-h-80 overflow-hidden">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <h3 className="text-sm font-semibold text-gray-800">Filtrar por categoría</h3>
+        <div className="flex flex-col lg:flex-row lg:gap-8">
+          {/* Panel izquierdo - Productos */}
+          <div className="flex-1 pb-20 lg:pb-0">
+            {/* Sección de filtros */}
+            <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 mb-8 hover:shadow-lg transition-all duration-200">
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                {/* Dropdown de filtros */}
+                <div className="relative filter-dropdown-container">
+                  <button
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 transition-colors border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                    type="button"
+                    onClick={handleToggleFilterDropdown}
+                  >
+                    <IoFilterCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">Filtrar por categoría</span>
+                  </button>
+                  
+                  {/* Dropdown menu */}
+                  {showFilterDropdown && (
+                    <div className="absolute left-0 z-50 py-2 mt-2 overflow-hidden bg-white border border-gray-200 shadow-xl w-72 sm:w-64 top-full rounded-xl max-h-80">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <h3 className="text-sm font-semibold text-gray-800">Filtrar por categoría</h3>
+                      </div>
+                      
+                      <div className="overflow-y-auto max-h-60 sm:max-h-64">
+                        {categories.map(category => (
+                          <button
+                            key={category.id}
+                            className={`
+                              w-full flex items-center gap-3 px-4 py-3 sm:py-2 text-left hover:bg-gray-50 transition-colors
+                              ${selectedCategoryFilters.includes(category.id) ? 'bg-[#f74116]/10 text-[#f74116]' : 'text-gray-700'}
+                            `}
+                            onClick={() => handleToggleCategoryFilter(category.id)}
+                            type="button"
+                          >
+                            <span className="text-base sm:text-lg">{category.icon}</span>
+                            <span className="flex-1 text-sm font-medium">{category.name}</span>
+                            {selectedCategoryFilters.includes(category.id) && (
+                              <span className="text-[#f74116]">✓</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      
+                      {selectedCategoryFilters.length > 0 && (
+                        <div className="px-4 py-2 border-t border-gray-100">
+                          <button
+                            className="w-full py-1 text-sm font-medium text-red-600 hover:text-red-800"
+                            onClick={handleClearAllFilters}
+                            type="button"
+                          >
+                            Limpiar filtros
+                          </button>
+                        </div>
+                      )}
                     </div>
+                  )}
+                </div>
+
+                {/* Categorías seleccionadas como filtros */}
+                <div className="flex flex-wrap items-center w-full gap-2 sm:w-auto">
+                  {selectedCategoryFilters.map(categoryId => {
+                    const category = categories.find(cat => cat.id === categoryId)
+                    if (!category) return null
                     
-                    <div className="overflow-y-auto max-h-60 sm:max-h-64">
-                      {categories.map(category => (
-                        <button
-                          key={category.id}
-                          className={`
-                            w-full flex items-center gap-3 px-4 py-3 sm:py-2 text-left hover:bg-gray-50 transition-colors
-                            ${selectedCategoryFilters.includes(category.id) ? 'bg-blue-50 text-blue-800' : 'text-gray-700'}
-                          `}
-                          onClick={() => handleToggleCategoryFilter(category.id)}
+                    return (
+                      <div 
+                        key={categoryId}
+                        className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#f74116] bg-[#f74116]/10 border border-[#f74116]/20 rounded-full"
+                      >
+                        <span className="text-sm sm:text-base">{category.icon}</span>
+                        <span className="truncate max-w-24 sm:max-w-none">{category.name}</span>
+                        <button 
+                          className="ml-1 font-bold text-[#f74116] hover:text-[#f74116]/80"
+                          onClick={() => handleToggleCategoryFilter(categoryId)}
                           type="button"
                         >
-                          <span className="text-base sm:text-lg">{category.icon}</span>
-                          <span className="flex-1 text-sm font-medium">{category.name}</span>
-                          {selectedCategoryFilters.includes(category.id) && (
-                            <span className="text-blue-600">✓</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    {selectedCategoryFilters.length > 0 && (
-                      <div className="px-4 py-2 border-t border-gray-100">
-                        <button
-                          className="w-full text-sm font-medium text-red-600 hover:text-red-800 py-1"
-                          onClick={handleClearAllFilters}
-                          type="button"
-                        >
-                          Limpiar filtros
+                          ×
                         </button>
                       </div>
-                    )}
-                  </div>
-                )}
+                    )
+                  })}
+                </div>
               </div>
+            </div>
 
-              {/* Categorías seleccionadas como filtros */}
-              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                {selectedCategoryFilters.map(categoryId => {
-                  const category = categories.find(cat => cat.id === categoryId)
-                  if (!category) return null
-                  
-                  return (
-                    <div 
-                      key={categoryId}
-                      className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-blue-800 bg-blue-100 border border-blue-200 rounded-full"
-                    >
-                      <span className="text-sm sm:text-base">{category.icon}</span>
-                      <span className="truncate max-w-24 sm:max-w-none">{category.name}</span>
-                      <button 
-                        className="ml-1 font-bold text-blue-600 hover:text-blue-800 text-sm sm:text-base"
-                        onClick={() => handleToggleCategoryFilter(categoryId)}
-                        type="button"
-                      >
-                        ×
-                      </button>
+            {/* Grid de Productos */}
+            <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 overflow-hidden">
+              {filteredProducts.length === 0 && products.length > 0 ? (
+                <div className="py-16 text-center">
+                  <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full">
+                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">No se encontraron productos</h3>
+                  <p className="max-w-sm mx-auto mb-6 text-gray-600">
+                    No hay productos que coincidan con los filtros seleccionados.
+                  </p>
+                  <button
+                    className="px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium"
+                    onClick={handleClearAllFilters}
+                    type="button"
+                  >
+                    Limpiar filtros
+                  </button>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="py-16 text-center">
+                  <EmptyState  />
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Catálogo de Productos</h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Selecciona productos para agregar al carrito
+                      </p>
                     </div>
-                  )
-                })}
-              </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-fr">
+                    {filteredProducts.map(product => (
+                      <div key={product.id} className="w-full flex">
+                        <OrderProductCard
+                          product={product}
+                          categories={categories}
+                          onAddToCart={handleAddToCart}
+                          onShowDescription={handleShowDescription}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Productos */}
-          <div className="w-full max-w-none sm:max-w-full xl:max-w-[1200px]">
-            {filteredProducts.length === 0 && products.length > 0 ? (
-              <div className="flex min-h-[40vh] sm:min-h-[50vh] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 sm:p-8 text-center">
-                <div className="text-4xl sm:text-6xl opacity-50">🔍</div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-700">No se encontraron productos</h3>
-                <p className="text-sm sm:text-base text-gray-500">No hay productos que coincidan con los filtros seleccionados.</p>
-                <button
-                  className="rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-600"
-                  onClick={handleClearAllFilters}
-                  type="button"
-                >
-                  Limpiar filtros
-                </button>
+          {/* Panel derecho - Carrito (oculto en móvil) */}
+          <div className="hidden lg:block lg:w-[420px] lg:shrink-0">
+            <div className="sticky top-8">
+              <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200">
+                <ShoppingCart
+                  items={cartItems}
+                  onUpdateQuantity={handleUpdateCartQuantity}
+                  onRemoveItem={handleRemoveFromCart}
+                  onCreateOrder={handleCreateOrder}
+                  isCreatingOrder={isCreatingOrder}
+                />
               </div>
-            ) : filteredProducts.length === 0 ? (
-              <EmptyState  />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                {filteredProducts.map(product => (
-                  <OrderProductCard
-                    key={product.id}
-                    product={product}
-                    categories={categories}
-                    onAddToCart={handleAddToCart}
-                    onShowDescription={handleShowDescription}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Panel derecho - Carrito (oculto en móvil) */}
-        <div className="hidden lg:block lg:w-96 lg:max-w-md lg:border-l border-gray-200 bg-gray-50">
-          <div className="p-4 sm:p-6">
-            <ShoppingCart
-              items={cartItems}
-              onUpdateQuantity={handleUpdateCartQuantity}
-              onRemoveItem={handleRemoveFromCart}
-              onCreateOrder={handleCreateOrder}
-              isCreatingOrder={isCreatingOrder}
-            />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Botón flotante del carrito (solo visible en móvil cuando hay items) */}
       {cartItems.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-40 lg:hidden">
+        <div className="fixed z-40 bottom-6 right-6 lg:hidden">
           <button
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-200 hover:scale-105"
+            className="flex items-center gap-2 bg-[#f74116] text-white px-5 py-3.5 rounded-full shadow-lg hover:bg-[#f74116]/90 transition-all duration-200 hover:scale-105"
             onClick={() => setShowMobileCart(true)}
             type="button"
           >
@@ -399,14 +417,14 @@ function CreateOrder() {
       {showMobileCart && (
         <>
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
+            className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden"
             onClick={() => setShowMobileCart(false)}
           />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] overflow-hidden z-50 lg:hidden transform transition-transform duration-300 ease-out">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] overflow-hidden z-50 lg:hidden transform transition-transform duration-300 ease-out shadow-2xl border-t border-[#f74116]/10">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-[#fff1eb] to-white">
               <h2 className="text-lg font-bold text-gray-900">Carrito de Ventas</h2>
               <button
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 transition-colors rounded-full hover:bg-gray-100"
                 onClick={() => setShowMobileCart(false)}
                 type="button"
               >

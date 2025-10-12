@@ -68,11 +68,16 @@ function ProductCard({
         </div>
       </div>
 
-      {/* Footer: Improved layout with price and actions, enhanced hover effects */}
+      {/* Footer: Improved layout with price, cost and actions, enhanced hover effects */}
       <div className="mt-4 flex items-center justify-between px-6 pb-6">
-        {/* Price: Larger, more prominent with gradient background */}
-        <div className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-2 text-base font-semibold text-emerald-800 ring-1 ring-emerald-200 transition-all group-hover:ring-emerald-300">
-          ${product.price.toFixed(2)}
+        {/* Price and Cost: Display both values */}
+        <div className="flex flex-col gap-2">
+          <div className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-200 transition-all group-hover:ring-emerald-300">
+            Precio: ${product.price.toFixed(2)}
+          </div>
+          <div className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 px-3 py-1 text-sm font-medium text-blue-800 ring-1 ring-blue-200 transition-all group-hover:ring-blue-300">
+            Costo: ${product.cost.toFixed(2)}
+          </div>
         </div>
 
         {/* Actions: Refined buttons with beautiful, color-matched icons */}
