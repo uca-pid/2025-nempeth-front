@@ -31,8 +31,8 @@ ChartJS.register(
 interface AnalyticsData {
   monthlyRevenue: { month: string; revenue: number }[]
   monthlyProfit: { month: string; profit: number }[]
-  revenueByCategoryAllMonths: { month: string; categoryId: string; categoryName: string; revenue: number }[]
-  profitByCategoryAllMonths: { month: string; categoryId: string; categoryName: string; profit: number }[]
+  revenueByCategoryAllMonths: { month: string; categoryName: string; revenue: number }[]
+  profitByCategoryAllMonths: { month: string; categoryName: string; profit: number }[]
 }
 
 function Analytics() {
@@ -91,13 +91,11 @@ function Analytics() {
         })),
         revenueByCategoryAllMonths: revenueByCategoryData.map(item => ({
           month: formatMonthName(item.month),
-          categoryId: item.categoryId,
           categoryName: item.categoryName,
           revenue: item.revenue
         })),
         profitByCategoryAllMonths: profitByCategoryData.map(item => ({
           month: formatMonthName(item.month),
-          categoryId: item.categoryId,
           categoryName: item.categoryName,
           profit: item.profit
         }))
@@ -190,7 +188,7 @@ function Analytics() {
     
     // Aplicar filtro de categorías si hay categorías seleccionadas
     if (selectedCategoryFilters.length > 0) {
-      filteredData = filteredData.filter(item => selectedCategoryFilters.includes(item.categoryId))
+      filteredData = filteredData.filter(item => selectedCategoryFilters.includes(item.categoryName))
     }
     
     return filteredData
@@ -205,7 +203,7 @@ function Analytics() {
     
     // Aplicar filtro de categorías si hay categorías seleccionadas
     if (selectedCategoryFilters.length > 0) {
-      filteredData = filteredData.filter(item => selectedCategoryFilters.includes(item.categoryId))
+      filteredData = filteredData.filter(item => selectedCategoryFilters.includes(item.categoryName))
     }
     
     return filteredData
@@ -220,15 +218,14 @@ function Analytics() {
     const monthData = analyticsData.revenueByCategoryAllMonths.filter(item => item.month === selectedMonthFormatted)
     
     const uniqueCategories = monthData.reduce((acc, item) => {
-      if (!acc.find(cat => cat.categoryId === item.categoryId)) {
+      if (!acc.find(cat => cat.categoryName === item.categoryName)) {
         acc.push({
-          categoryId: item.categoryId,
           categoryName: item.categoryName
         })
       }
       return acc
-    }, [] as { categoryId: string; categoryName: string }[])
-    
+    }, [] as { categoryName: string }[])
+
     return uniqueCategories
   }
 
@@ -325,11 +322,11 @@ function Analytics() {
   ]
 
   // Funciones para manejar el filtro de categorías
-  const handleToggleCategoryFilter = (categoryId: string) => {
+  const handleToggleCategoryFilter = (categoryName: string) => {
     setSelectedCategoryFilters(prev => 
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
+      prev.includes(categoryName)
+        ? prev.filter(name => name !== categoryName)
+        : [...prev, categoryName]
     )
   }
 
@@ -499,13 +496,13 @@ function Analytics() {
                         <div className="overflow-y-auto max-h-32">
                           {availableCategories.map(category => (
                             <button
-                              key={category.categoryId}
-                              className={`w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-50 transition-colors ${selectedCategoryFilters.includes(category.categoryId) ? 'bg-[#f74116]/10 text-[#f74116]' : 'text-gray-700'}`}
-                              onClick={() => handleToggleCategoryFilter(category.categoryId)}
+                              key={category.categoryName}
+                              className={`w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-50 transition-colors ${selectedCategoryFilters.includes(category.categoryName) ? 'bg-[#f74116]/10 text-[#f74116]' : 'text-gray-700'}`}
+                              onClick={() => handleToggleCategoryFilter(category.categoryName)}
                               type="button"
                             >
                               <span className="flex-1 text-xs font-medium">{category.categoryName}</span>
-                              {selectedCategoryFilters.includes(category.categoryId) && (
+                              {selectedCategoryFilters.includes(category.categoryName) && (
                                 <span className="text-[#f74116]">✓</span>
                               )}
                             </button>
