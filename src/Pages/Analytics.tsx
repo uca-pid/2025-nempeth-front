@@ -15,6 +15,7 @@ import { Line, Doughnut } from 'react-chartjs-2'
 import { useAuth } from '../contexts/useAuth'
 import { analyticsService } from '../services/analyticsService'
 import { IoFilterCircle } from 'react-icons/io5'
+import LoadingScreen from '../components/LoadingScreen'
 
 ChartJS.register(
   CategoryScale,
@@ -344,16 +345,7 @@ function Analytics() {
   const profitCategoryData = getSelectedMonthProfitData()
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f74116] mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando analytics...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Cargando analíticas..." />
   }
 
   if (error) {
@@ -382,18 +374,18 @@ function Analytics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
             <span className="h-2 w-2 rounded-full bg-[#f74116]" />
-            Analytics de Ventas
+            Analíticas de Ventas
           </div>
           <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
             Análisis detallado del rendimiento
           </h1>
-          <p className="text-gray-600 mt-2">Métricas y estadísticas de tu negocio</p>
+          <p className="mt-2 text-gray-600">Métricas y estadísticas de tu negocio</p>
         </div>
 
 
@@ -455,7 +447,7 @@ function Analytics() {
             <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-4 hover:shadow-lg transition-all duration-200">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center mr-3">
+                  <div className="flex items-center justify-center w-8 h-8 mr-3 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200">
                     <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                     </svg>
@@ -554,12 +546,12 @@ function Analytics() {
             </div>
 
             {/* Gráficos de torta apilados más compactos */}
-            <div className="flex-1 flex flex-col gap-3">
+            <div className="flex flex-col flex-1 gap-3">
               
               {/* Gráfico de Ingresos */}
               <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200 flex-2">
                 <div className="flex items-center mb-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mr-2">
+                  <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200">
                     <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
@@ -619,7 +611,7 @@ function Analytics() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+                    <div className="flex items-center justify-center w-8 h-8 mb-2 bg-gray-100 rounded-full">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6" />
                       </svg>
@@ -632,7 +624,7 @@ function Analytics() {
               {/* Gráfico de Ganancias */}
               <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200 flex-2">
                 <div className="flex items-center mb-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center mr-2">
+                  <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-lg bg-gradient-to-br from-green-100 to-green-200">
                     <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
@@ -692,7 +684,7 @@ function Analytics() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-40 text-gray-500">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+                    <div className="flex items-center justify-center w-8 h-8 mb-2 bg-gray-100 rounded-full">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6" />
                       </svg>
