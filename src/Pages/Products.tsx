@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/useAuth'
 import LoadingScreen from '../components/LoadingScreen'
 import EmptyState from '../components/Products/EmptyState'
 import DescriptionModal from '../components/Products/DescriptionModal'
-import ProductCard from '../components/Products/ProductCard'
+import TestingCard from '../components/Products/ProductCard'
 import CategoryManagementModal from '../components/Products/CategoryManagementModal'
 import { IoFilterCircle } from 'react-icons/io5'
 
@@ -372,15 +372,15 @@ function Products() {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-8 text-center hover:shadow-lg transition-all duration-200">
-            <div className="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+        <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="p-8 text-center transition-all duration-200 bg-white border border-red-200 shadow-sm rounded-2xl hover:shadow-lg">
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full">
               <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Error al cargar productos</h2>
-            <p className="text-gray-600 mb-8">{error}</p>
+            <h2 className="mb-3 text-xl font-bold text-gray-900">Error al cargar productos</h2>
+            <p className="mb-8 text-gray-600">{error}</p>
             <button
               onClick={loadProducts}
               className="px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium"
@@ -552,7 +552,7 @@ function Products() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="mb-8">
@@ -560,7 +560,7 @@ function Products() {
             <span className="h-2 w-2 rounded-full bg-[#f74116]" />
             Gestión de Inventario
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-2">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
             Productos
           </h1>
           <p className="text-gray-600">Administra tu catálogo y controla tu inventario</p>
@@ -595,7 +595,7 @@ function Products() {
             {/* Dropdown de filtros */}
             <div className="relative filter-dropdown-container">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 transition-colors border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed"
                 disabled={processing}
                 type="button"
                 onClick={handleToggleFilterDropdown}
@@ -671,14 +671,14 @@ function Products() {
         {/* Products Grid */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200">
           {filteredProducts.length === 0 && products.length > 0 ? (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full">
                 <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">No se encontraron productos</h3>
-              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+              <h3 className="mb-3 text-xl font-bold text-gray-900">No se encontraron productos</h3>
+              <p className="max-w-sm mx-auto mb-6 text-gray-600">
                 No hay productos que coincidan con los filtros seleccionados
               </p>
               <button
@@ -690,7 +690,7 @@ function Products() {
               </button>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="py-16 text-center">
               <EmptyState />
             </div>
           ) : (
@@ -698,7 +698,7 @@ function Products() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">Catálogo de Productos</h2>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="mt-1 text-sm text-gray-500">
                     Mostrando {filteredProducts.length} de {products.length} productos
                   </p>
                 </div>
@@ -706,7 +706,7 @@ function Products() {
               
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredProducts.map(product => (
-                  <ProductCard
+                  <TestingCard
                     key={product.id}
                     product={product}
                     onEdit={handleEditProduct}
