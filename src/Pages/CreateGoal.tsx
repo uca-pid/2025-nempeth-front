@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/useAuth'
 import { categoryService } from '../services/categoryService'
 import type { Category } from '../services/categoryService'
 import LoadingScreen from '../components/LoadingScreen'
+import DateRangePicker from '../components/DateRangePicker'
 
 interface CategoryAmount {
   categoryName: string
@@ -23,6 +24,7 @@ function CreateGoal() {
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [newCategoryAmount, setNewCategoryAmount] = useState('')
+  const [showDatePicker, setShowDatePicker] = useState(false)
 
   // Cargar categorías disponibles
   useEffect(() => {
@@ -89,6 +91,12 @@ function CreateGoal() {
 
   // Calcular el total
   const totalAmount = categories.reduce((sum, cat) => sum + cat.amount, 0)
+
+  // Manejar selección de fechas
+  const handleDateSelection = (start: string, end: string) => {
+    setStartDate(start)
+    setEndDate(end)
+  }
 
   // Guardar la meta
   const handleSave = () => {
@@ -157,32 +165,45 @@ function CreateGoal() {
                 />
               </div>
 
-              {/* Fecha de inicio */}
-              <div>
+              {/* Selector de Rango de Fechas */}
+              <div className="md:col-span-2">
                 <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Fecha de Inicio *
+                  Período de la Meta *
                 </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] transition-colors"
-                  required
-                />
-              </div>
-
-              {/* Fecha de fin */}
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Fecha de Fin *
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] transition-colors"
-                  required
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(true)}
+                  className="w-full px-4 py-3 text-left border border-gray-300 rounded-lg hover:border-[#f74116] focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] transition-colors group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#f74116]/10 text-[#f74116] group-hover:bg-[#f74116]/20 transition-colors">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        {!startDate || !endDate ? (
+                          <span className="text-gray-500">Seleccionar período de la meta</span>
+                        ) : (
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-900">
+                              {new Date(startDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              {' → '}
+                              {new Date(endDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} días
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -340,6 +361,25 @@ function CreateGoal() {
           </div>
         </div>
       </div>
+
+      {/* Modal de selección de fechas */}
+      <DateRangePicker
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSelect={handleDateSelection}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+        blockedRanges={[
+          // Mock de fechas bloqueadas para testing
+          { start: new Date('2025-11-01'), end: new Date('2025-11-07'), label: 'Meta Q4 - Noviembre' },
+          { start: new Date('2025-11-15'), end: new Date('2025-11-20'), label: 'Meta Black Friday' },
+          { start: new Date('2025-12-10'), end: new Date('2025-12-25'), label: 'Meta Navidad' },
+          { start: new Date('2026-01-01'), end: new Date('2026-01-15'), label: 'Meta Año Nuevo' },
+          { start: new Date('2025-10-28'), end: new Date('2025-10-31'), label: 'Meta Halloween' },
+          { start: new Date('2025-09-15'), end: new Date('2025-09-22'), label: 'Meta Septiembre' },
+          { start: new Date('2026-02-01'), end: new Date('2026-02-14'), label: 'Meta San Valentín' },
+        ]}
+      />
     </div>
   )
 }
