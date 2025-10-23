@@ -207,25 +207,25 @@ export default function Authentication() {
 return (
   <div className="flex flex-col w-screen min-h-screen p-0 m-0 md:h-screen md:flex-row md:overflow-hidden">
     {/* Left */}
-    <div className="relative flex items-center justify-center flex-1 overflow-hidden md:basis-3/5 bg-gradient-to-br from-rose-600 via-orange-500 to-amber-500 min-h-[35vh] md:min-h-0">
+    <div className="relative flex items-center justify-center flex-1 overflow-hidden md:basis-3/5 bg-gradient-to-br from-rose-600 via-orange-500 to-amber-500 min-h-[40vh] md:min-h-0">
       {/* radial glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(253,118,0,0.12)_0%,transparent_70%)]" />
       <div className="relative z-10 flex flex-col items-center justify-center h-full max-w-full px-6 pt-6 pb-4 text-white sm:px-8 md:pt-12 md:pb-6">
         <img
           src={korvenLogo}
           alt="Logo Korven"
-          className="max-w-full h-auto w-[180px] sm:w-[280px] md:w-[520px] lg:w-[720px] drop-shadow-lg animate-gentle-float mb-4 md:mb-8"
+          className="max-w-full h-auto w-[180px] sm:w-[280px] md:w-[520px] lg:w-[720px] xl:w-[800px] 2xl:w-[900px] drop-shadow-lg animate-gentle-float mb-4 md:mb-8"
         />
-        <h4 className="w-full max-w-[70ch] text-xs sm:text-sm md:text-lg font-normal leading-relaxed tracking-wide text-center text-white/95 drop-shadow px-1">
+        <h4 className="w-full max-w-[70ch] text-xs sm:text-sm md:text-lg lg:text-xl xl:text-2xl font-normal leading-relaxed tracking-wide text-center text-white/95 drop-shadow px-1">
           En la tradición europea, mucho antes de las colmenas modernas, las abejas vivían en cestas de mimbre, donde cada abeja encontraba su rol y la comunidad prosperaba. Esas cestas no eran solo un contenedor, eran símbolo de orden, cooperación y productividad. Inspirados en esa historia, nace Korven, la aplicación que convierte cada bar y restaurante en una colmena digital perfectamente organizada.
         </h4>
       </div>
     </div>
 
     {/* Right */}
-    <div className="flex items-start justify-center flex-1 p-4 overflow-y-auto bg-white sm:p-6 md:basis-2/5 md:items-center">
-      <div className="w-full max-w-sm p-2 my-4 sm:max-w-md sm:p-6 md:my-0">
-        <h1 className="mb-6 text-2xl font-semibold text-center sm:mb-8 sm:text-3xl text-neutral-800">
+    <div className="flex items-start justify-center flex-1 p-4 overflow-y-auto bg-white sm:p-6 lg:p-8 xl:p-10 md:basis-2/5 md:items-center">
+      <div className="w-full max-w-sm p-2 my-4 sm:max-w-md sm:p-6 lg:max-w-lg xl:max-w-xl md:my-0">
+        <h1 className="mb-6 text-2xl font-semibold text-center sm:mb-8 sm:text-3xl lg:text-4xl xl:text-5xl text-neutral-800">
           {isForgotPasswordMode ? 'Recuperar Contraseña' : isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta'}
         </h1>
 

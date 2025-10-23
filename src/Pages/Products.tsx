@@ -7,7 +7,8 @@ import EmptyState from '../components/Products/EmptyState'
 import DescriptionModal from '../components/Products/DescriptionModal'
 import ProductCard from '../components/Products/ProductCard'
 import CategoryManagementModal from '../components/Products/CategoryManagementModal'
-import { IoFilterCircle } from 'react-icons/io5'
+import ProductModal from '../components/Products/ProductModal'
+import { IoFilterCircle, IoSearchOutline } from 'react-icons/io5'
 
 // Tipo para productos que vienen de la API con el objeto category anidado
 interface ProductWithCategory extends Omit<Product, 'categoryId'> {
@@ -17,212 +18,12 @@ interface ProductWithCategory extends Omit<Product, 'categoryId'> {
   };
 }
 
-interface ProductModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (product: Omit<Product, 'id'> & { id?: string }) => Promise<void>
-  product?: Product | null
-  error?: string | null
-  categories: CategoryType[]
-}
-
 interface ConfirmDeleteModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
   productName: string
   isDeleting: boolean
-}
-
-function ProductModal({ isOpen, onClose, onSave, product, error, categories }: ProductModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: 0,
-    cost: 0,
-    categoryId: ''
-  })
-  const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        cost: product.cost,
-        categoryId: product.categoryId ? product.categoryId : ''
-      })
-    } else {
-      setFormData({
-        name: '',
-        description: '',
-        price: 0,
-        cost: 0,
-        categoryId: categories.length > 0 ? categories[0].id : ''
-      })
-    }
-    setSaving(false) // Resetear estado de guardado
-  }, [product, isOpen, categories])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (formData.name.trim() && formData.description.trim() && formData.price > 0 && formData.cost >= 0 && formData.categoryId) {
-      setSaving(true)
-      try {
-        await onSave({
-          ...formData,
-          ...(product && { id: product.id })
-        })
-      } finally {
-        setSaving(false)
-      }
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    
-    // Limitar descripción a 300 caracteres
-    let finalValue = value
-    if (name === 'description' && value.length > 300) {
-      finalValue = value.substring(0, 300)
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: (name === 'price' || name === 'cost') ? parseFloat(finalValue) || 0 : finalValue
-    }))
-  }
-
-  if (!isOpen) return null
-
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-lg overflow-hidden bg-white shadow-2xl rounded-2xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h3 className="text-xl font-semibold text-gray-800">{product ? 'Editar Producto' : 'Agregar Producto'}</h3>
-          <button
-            className="flex items-center justify-center w-8 h-8 text-2xl text-gray-500 transition rounded-md hover:bg-gray-200 hover:text-gray-700"
-            onClick={onClose}
-            type="button"
-          >
-            ×
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
-          {error && (
-            <div className="px-4 py-3 text-sm font-medium text-red-600 border border-red-200 rounded-md bg-red-50">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="name">Nombre del Producto</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="Ingresa el nombre del producto"
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="categoryId">Categoría del Producto</label>
-            <select
-              id="categoryId"
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              required
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            >
-              <option value="">Selecciona una categoría</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.icon} {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="description">Descripción</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              rows={3}
-              placeholder="Describe el producto"
-              className="w-full min-h-[4rem] rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            />
-            <div className="flex justify-end">
-              <span className={`text-sm ${formData.description.length > 280 ? 'text-orange-600' : formData.description.length === 300 ? 'text-red-600' : 'text-gray-500'}`}>
-                {formData.description.length}/300
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="cost">Costo ($)</label>
-            <input
-              type="number"
-              id="cost"
-              name="cost"
-              value={formData.cost}
-              onChange={handleChange}
-              required
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="price">Precio ($)</label>
-            <input
-              type="number"
-              id="price"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              required
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              className="w-full rounded-lg border-2 border-gray-200 px-3 py-3 text-base transition focus:border-[#f74116] focus:outline-none focus:ring-4 focus:ring-[#f74116]/20"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              className="px-4 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={onClose}
-              disabled={saving}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="rounded-lg bg-[#f74116] px-5 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#f74116]/90 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={saving}
-            >
-              {saving ? 'Guardando...' : (product ? 'Actualizar' : 'Guardar')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
 }
 
 function ConfirmDeleteModal({ isOpen, onClose, onConfirm, productName, isDeleting }: ConfirmDeleteModalProps) {
@@ -291,6 +92,7 @@ function Products() {
   const [categories, setCategories] = useState<CategoryType[]>([])
   const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([])
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const businessId = user?.businessId
 
@@ -329,15 +131,28 @@ function Products() {
     }
   }, [businessId])
 
-  // Filtrar productos basado en las categorías seleccionadas
+  // Filtrar productos basado en las categorías seleccionadas y búsqueda
   const filteredProducts = useMemo(() => {
-    if (selectedCategoryFilters.length === 0) {
-      return products // Si no hay filtros, mostrar todos los productos
+    let filtered = products
+
+    // Filtrar por categoría
+    if (selectedCategoryFilters.length > 0) {
+      filtered = filtered.filter(product => 
+        selectedCategoryFilters.includes(product.categoryId || '')
+      )
     }
-    return products.filter(product => 
-      selectedCategoryFilters.includes(product.categoryId || '')
-    )
-  }, [products, selectedCategoryFilters])
+
+    // Filtrar por búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query)
+      )
+    }
+
+    return filtered
+  }, [products, selectedCategoryFilters, searchQuery])
 
   // Función para contar productos por categoría
   const getProductCountByCategory = useCallback((categoryId: string) => {
@@ -372,15 +187,15 @@ function Products() {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-8 text-center hover:shadow-lg transition-all duration-200">
-            <div className="w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+        <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="p-8 text-center transition-all duration-200 bg-white border border-red-200 shadow-sm rounded-2xl hover:shadow-lg">
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full">
               <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Error al cargar productos</h2>
-            <p className="text-gray-600 mb-8">{error}</p>
+            <h2 className="mb-3 text-xl font-bold text-gray-900">Error al cargar productos</h2>
+            <p className="mb-8 text-gray-600">{error}</p>
             <button
               onClick={loadProducts}
               className="px-6 py-3 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium"
@@ -499,10 +314,15 @@ function Products() {
 
   const handleClearAllFilters = () => {
     setSelectedCategoryFilters([])
+    setSearchQuery('')
   }
 
   const handleToggleFilterDropdown = () => {
     setShowFilterDropdown(!showFilterDropdown)
+  }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
   }
 
   // Funciones para manejar categorías
@@ -552,7 +372,7 @@ function Products() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="mb-8">
@@ -560,7 +380,7 @@ function Products() {
             <span className="h-2 w-2 rounded-full bg-[#f74116]" />
             Gestión de Inventario
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-2">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
             Productos
           </h1>
           <p className="text-gray-600">Administra tu catálogo y controla tu inventario</p>
@@ -591,11 +411,23 @@ function Products() {
 
         {/* Filters Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 mb-8 hover:shadow-lg transition-all duration-200">
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            {/* Buscador */}
+            <div className="relative flex-1 min-w-[250px]">
+              <IoSearchOutline className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
+              <input
+                type="text"
+                placeholder="Buscar productos por nombre o descripción..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] transition-all"
+              />
+            </div>
+
             {/* Dropdown de filtros */}
             <div className="relative filter-dropdown-container">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 transition-colors border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed"
                 disabled={processing}
                 type="button"
                 onClick={handleToggleFilterDropdown}
@@ -642,8 +474,10 @@ function Products() {
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Categorías seleccionadas como filtros */}
+          {/* Categorías seleccionadas como filtros */}
+          <div className="flex flex-wrap items-center gap-3">
             {selectedCategoryFilters.map(categoryId => {
               const category = categories.find(cat => cat.id === categoryId)
               if (!category) return null
@@ -671,14 +505,14 @@ function Products() {
         {/* Products Grid */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200">
           {filteredProducts.length === 0 && products.length > 0 ? (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full">
                 <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">No se encontraron productos</h3>
-              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+              <h3 className="mb-3 text-xl font-bold text-gray-900">No se encontraron productos</h3>
+              <p className="max-w-sm mx-auto mb-6 text-gray-600">
                 No hay productos que coincidan con los filtros seleccionados
               </p>
               <button
@@ -690,7 +524,7 @@ function Products() {
               </button>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="py-16 text-center">
               <EmptyState />
             </div>
           ) : (
@@ -698,7 +532,7 @@ function Products() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">Catálogo de Productos</h2>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="mt-1 text-sm text-gray-500">
                     Mostrando {filteredProducts.length} de {products.length} productos
                   </p>
                 </div>

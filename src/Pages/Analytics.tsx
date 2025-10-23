@@ -374,7 +374,7 @@ function Analytics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <div className="px-4 py-8 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="mb-8">
