@@ -12,6 +12,9 @@ import SalesHistory from './Pages/SalesHistory'
 import SaleDetails from './Pages/SaleDetails'
 import ResetPassword from './Pages/ResetPassword'
 import PendingApproval from './Pages/PendingApproval'
+import Goals from './Pages/Goals'
+import CreateGoal from './Pages/CreateGoal'
+import GoalDetails from './Pages/GoalDetails'
 import Layout from './components/Layout'
 import UnauthenticatedGuard from './guards/UnauthenticatedGuard'
 import OwnerGuard from './guards/OwnerGuard'
@@ -143,6 +146,39 @@ function AppRoutes() {
           <OwnerGuard>
             <Layout>
               <Analytics />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/goals"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <Goals />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/goals/create"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <CreateGoal />
+            </Layout>
+          </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/goals/:goalId"
+        element={
+          <OwnerGuard>
+            <Layout>
+              <GoalDetails />
             </Layout>
           </OwnerGuard>
         }
