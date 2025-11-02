@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
 import { categoryService } from '../services/categoryService'
 import type { Category } from '../services/categoryService'
+import { GoalsService } from '../services/goalsService'
 import LoadingScreen from '../components/LoadingScreen'
 import DateRangePicker from '../components/DateRangePicker'
 
 interface CategoryAmount {
+  categoryId: string
   categoryName: string
   amount: number
 }
@@ -25,6 +27,7 @@ function CreateGoal() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [newCategoryAmount, setNewCategoryAmount] = useState('')
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [blockedDateRanges, setBlockedDateRanges] = useState<Array<{ start: Date; end: Date; label: string }>>([])
 
   // Cargar categorías disponibles
   useEffect(() => {
@@ -47,6 +50,35 @@ function CreateGoal() {
     loadCategories()
   }, [user?.businessId])
 
+  // Cargar metas existentes para bloquear sus fechas
+  useEffect(() => {
+    const loadExistingGoals = async () => {
+      if (!user?.businessId) return
+
+      try {
+        const existingGoals = await GoalsService.getActiveGoalsSummary(user.businessId)
+        const blockedRanges = existingGoals.map(goal => {
+          // Parseamos las fechas como fechas locales (sin conversión UTC)
+          const [startYear, startMonth, startDay] = goal.periodStart.split('-').map(Number)
+          const [endYear, endMonth, endDay] = goal.periodEnd.split('-').map(Number)
+          
+          return {
+            start: new Date(startYear, startMonth - 1, startDay),
+            end: new Date(endYear, endMonth - 1, endDay),
+            label: goal.name
+          }
+        })
+        setBlockedDateRanges(blockedRanges)
+      } catch (error) {
+        console.error('Error loading existing goals:', error)
+        // Si hay error, continuamos sin fechas bloqueadas
+        setBlockedDateRanges([])
+      }
+    }
+
+    loadExistingGoals()
+  }, [user?.businessId])
+
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,26 +99,30 @@ function CreateGoal() {
     if (!category) return
 
     // Verificar si ya está agregada
-    if (categories.find(cat => cat.categoryName === category.displayName)) return
+    if (categories.find(cat => cat.categoryId === category.id)) return
 
     const amount = parseFloat(newCategoryAmount)
     if (isNaN(amount) || amount <= 0) return
 
-    setCategories([...categories, { categoryName: category.displayName, amount: amount }])
+    setCategories([...categories, { 
+      categoryId: category.id,
+      categoryName: category.displayName, 
+      amount: amount 
+    }])
     setSelectedCategoryId('')
     setNewCategoryAmount('')
   }
 
   // Actualizar el monto de una categoría
-  const updateCategoryAmount = (categoryName: string, amount: number) => {
+  const updateCategoryAmount = (categoryId: string, amount: number) => {
     setCategories(categories.map(cat =>
-      cat.categoryName === categoryName ? { ...cat, amount } : cat
+      cat.categoryId === categoryId ? { ...cat, amount } : cat
     ))
   }
 
   // Remover una categoría
-  const removeCategory = (categoryName: string) => {
-    setCategories(categories.filter(cat => cat.categoryName !== categoryName))
+  const removeCategory = (categoryId: string) => {
+    setCategories(categories.filter(cat => cat.categoryId !== categoryId))
   }
 
   // Calcular el total
@@ -99,7 +135,7 @@ function CreateGoal() {
   }
 
   // Guardar la meta
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!goalName.trim() || !startDate || !endDate || categories.length === 0) {
       alert('Por favor complete todos los campos requeridos')
       return
@@ -110,16 +146,35 @@ function CreateGoal() {
       return
     }
 
-    // Aquí iría la lógica para guardar la meta
-    console.log('Guardando meta:', {
-      name: goalName,
-      startDate,
-      endDate,
-      categories
-    })
+    if (!user?.businessId) {
+      alert('No se encontró el ID del negocio')
+      return
+    }
 
-    // Por ahora solo navegamos de vuelta
-    navigate('/goals')
+    setLoading(true)
+
+    try {
+      const goalData = {
+        name: goalName.trim(),
+        periodStart: startDate,
+        periodEnd: endDate,
+        totalRevenueGoal: totalAmount,
+        categoryTargets: categories.map(cat => ({
+          categoryId: cat.categoryId,
+          revenueTarget: cat.amount
+        }))
+      }
+
+      await GoalsService.createGoal(user.businessId, goalData)
+      
+      // Navegar de vuelta a la página de metas
+      navigate('/goals')
+    } catch (error) {
+      console.error('Error creating goal:', error)
+      alert('Error al crear la meta. Por favor, intenta nuevamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (loading || categoriesLoading) {
@@ -188,12 +243,22 @@ function CreateGoal() {
                         ) : (
                           <div className="flex flex-col">
                             <span className="text-sm font-medium text-gray-900">
-                              {new Date(startDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-                              {' → '}
-                              {new Date(endDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              {(() => {
+                                const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+                                const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+                                const start = new Date(startYear, startMonth - 1, startDay)
+                                const end = new Date(endYear, endMonth - 1, endDay)
+                                return `${start.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })} → ${end.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                              })()}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} días
+                              {(() => {
+                                const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+                                const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+                                const start = new Date(startYear, startMonth - 1, startDay)
+                                const end = new Date(endYear, endMonth - 1, endDay)
+                                return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+                              })()} días
                             </span>
                           </div>
                         )}
@@ -244,7 +309,7 @@ function CreateGoal() {
                   {showCategoryDropdown && (
                     <div className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg max-h-60">
                       {availableCategories
-                        .filter(cat => !categories.find(selected => selected.categoryName === cat.displayName))
+                        .filter(cat => !categories.find(selected => selected.categoryId === cat.id))
                         .map(category => (
                           <button
                             key={category.id}
@@ -259,7 +324,7 @@ function CreateGoal() {
                             <span className="text-sm text-gray-900">{category.displayName}</span>
                           </button>
                         ))}
-                      {availableCategories.filter(cat => !categories.find(selected => selected.categoryName === cat.displayName)).length === 0 && (
+                      {availableCategories.filter(cat => !categories.find(selected => selected.categoryId === cat.id)).length === 0 && (
                         <div className="px-3 py-2 text-sm text-center text-gray-500">
                           No hay categorías disponibles
                         </div>
@@ -292,7 +357,7 @@ function CreateGoal() {
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700">Categorías Seleccionadas</h3>
                 {categories.map(category => (
-                  <div key={category.categoryName} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                  <div key={category.categoryId} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
                     <div className="flex-1">
                       <span className="text-sm font-medium text-gray-900">{category.categoryName}</span>
                     </div>
@@ -301,7 +366,7 @@ function CreateGoal() {
                       <input
                         type="number"
                         value={category.amount || ''}
-                        onChange={(e) => updateCategoryAmount(category.categoryName, parseFloat(e.target.value) || 0)}
+                        onChange={(e) => updateCategoryAmount(category.categoryId, parseFloat(e.target.value) || 0)}
                         placeholder="0.00"
                         min="0"
                         step="0.01"
@@ -309,7 +374,7 @@ function CreateGoal() {
                       />
                     </div>
                     <button
-                      onClick={() => removeCategory(category.categoryName)}
+                      onClick={() => removeCategory(category.categoryId)}
                       className="p-1 text-red-500 transition-colors hover:text-red-700"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,16 +434,7 @@ function CreateGoal() {
         onSelect={handleDateSelection}
         initialStartDate={startDate}
         initialEndDate={endDate}
-        blockedRanges={[
-          // Mock de fechas bloqueadas para testing
-          { start: new Date('2025-11-01'), end: new Date('2025-11-07'), label: 'Meta Q4 - Noviembre' },
-          { start: new Date('2025-11-15'), end: new Date('2025-11-20'), label: 'Meta Black Friday' },
-          { start: new Date('2025-12-10'), end: new Date('2025-12-25'), label: 'Meta Navidad' },
-          { start: new Date('2026-01-01'), end: new Date('2026-01-15'), label: 'Meta Año Nuevo' },
-          { start: new Date('2025-10-28'), end: new Date('2025-10-31'), label: 'Meta Halloween' },
-          { start: new Date('2025-09-15'), end: new Date('2025-09-22'), label: 'Meta Septiembre' },
-          { start: new Date('2026-02-01'), end: new Date('2026-02-14'), label: 'Meta San Valentín' },
-        ]}
+        blockedRanges={blockedDateRanges}
       />
     </div>
   )

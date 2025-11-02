@@ -1,95 +1,92 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoadingScreen from '../components/LoadingScreen'
-
-interface Goal {
-  id: string
-  name: string
-  startDate: string
-  endDate: string
-  currentProgress: number
-  targetProgress: number
-  totalAmount: number
-  categoriesCompleted: number
-  totalCategories: number
-}
-
-// Mock data para las metas
-const mockGoals: Goal[] = [
-  {
-    id: '1',
-    name: 'Aumentar ventas mensuales',
-    startDate: '2025-01-01',
-    endDate: '2025-03-31',
-    currentProgress: 110000,
-    targetProgress: 100000,
-    totalAmount: 110000,
-    categoriesCompleted: 2,
-    totalCategories: 3
-  },
-  {
-    id: '2',
-    name: 'Reducir costos de inventario',
-    startDate: '2025-02-01',
-    endDate: '2025-04-15',
-    currentProgress: 8500,
-    targetProgress: 12000,
-    totalAmount: 12000,
-    categoriesCompleted: 1,
-    totalCategories: 3
-  },
-  {
-    id: '3',
-    name: 'Incrementar clientes recurrentes',
-    startDate: '2025-01-15',
-    endDate: '2025-05-30',
-    currentProgress: 450,
-    targetProgress: 600,
-    totalAmount: 600,
-    categoriesCompleted: 3,
-    totalCategories: 3
-  },
-  {
-    id: '4',
-    name: 'Mejorar rating promedio',
-    startDate: '2025-03-01',
-    endDate: '2025-06-30',
-    currentProgress: 4.2,
-    targetProgress: 4.8,
-    totalAmount: 4.8,
-    categoriesCompleted: 1,
-    totalCategories: 3
-  },
-  {
-    id: '5',
-    name: 'Expandir catálogo de productos',
-    startDate: '2025-07-15',
-    endDate: '2025-11-15',
-    currentProgress: 25,
-    targetProgress: 50,
-    totalAmount: 50,
-    categoriesCompleted: 0,
-    totalCategories: 3
-  }
-]
+import { GoalsService, type ActiveGoalSummaryResponse } from '../services/goalsService'
+import { useAuth } from '../contexts/useAuth'
 
 function Goals() {
   const navigate = useNavigate()
-  const [loading] = useState(false)
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [goals, setGoals] = useState<ActiveGoalSummaryResponse[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null)
+
+  // Cargar las metas del negocio
+  useEffect(() => {
+    const fetchGoals = async () => {
+      if (!user?.businessId) {
+        setError('No se encontró el ID del negocio')
+        return
+      }
+
+      setLoading(true)
+      setError(null)
+
+      try {
+        const data = await GoalsService.getActiveGoalsSummary(user.businessId)
+        setGoals(data)
+      } catch (err) {
+        console.error('Error fetching goals:', err)
+        setError('Error al cargar las metas. Por favor, intenta nuevamente.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGoals()
+  }, [user?.businessId])
+
+  // Función para eliminar una meta
+  const handleDeleteGoal = async (goalId: string, goalName: string) => {
+    if (!user?.businessId) {
+      alert('No se encontró el ID del negocio')
+      return
+    }
+
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar la meta "${goalName}"?\n\nEsta acción no se puede deshacer.`
+    )
+
+    if (!confirmDelete) return
+
+    setDeletingGoalId(goalId)
+
+    try {
+      await GoalsService.deleteGoal(user.businessId, goalId)
+      
+      // Actualizar la lista de metas eliminando la meta borrada
+      setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId))
+      
+      // Opcional: Mostrar mensaje de éxito
+      alert('Meta eliminada exitosamente')
+    } catch (err) {
+      console.error('Error deleting goal:', err)
+      alert('Error al eliminar la meta. Por favor, intenta nuevamente.')
+    } finally {
+      setDeletingGoalId(null)
+    }
+  }
 
   // Función para calcular días restantes
-  const calculateDaysRemaining = (endDate: string): number => {
-    const today = new Date()
-    const end = new Date(endDate)
-    const diffTime = end.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
+  const calculateDaysRemaining = (daysRemainingStr: string): { days: number; text: string } => {
+    // El backend envía el string "X días" o puede estar vencida
+    const match = daysRemainingStr.match(/(-?\d+)\s*días?/i)
+    if (match) {
+      const days = parseInt(match[1], 10)
+      return { days, text: days < 0 ? 'Vencida' : `${days} días` }
+    }
+    return { days: 0, text: daysRemainingStr }
   }
 
   // Función para formatear fechas
   const formatDateRange = (startDate: string, endDate: string): string => {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    // Parseamos las fechas como fechas locales (sin conversión UTC)
+    const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+    const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+    
+    const start = new Date(startYear, startMonth - 1, startDay)
+    const end = new Date(endYear, endMonth - 1, endDay)
 
     const formatDate = (date: Date) => {
       return date.toLocaleDateString('es-ES', {
@@ -102,7 +99,7 @@ function Goals() {
   }
 
   // Función para formatear valores según el tipo de meta
-  const formatValue = (value: number, goal: Goal): string => {
+  const formatValue = (value: number, goal: ActiveGoalSummaryResponse): string => {
     if (goal.name.toLowerCase().includes('ventas') || goal.name.toLowerCase().includes('costos') || goal.name.toLowerCase().includes('monto')) {
       return `$${value.toLocaleString()}`
     }
@@ -114,6 +111,32 @@ function Goals() {
 
   if (loading) {
     return <LoadingScreen message="Cargando metas..." />
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
+        <div className="px-4 py-8 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+            <div className="flex items-center gap-3">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-red-900">Error al cargar las metas</h3>
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -177,56 +200,71 @@ function Goals() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {mockGoals.map((goal) => {
-                  const daysRemaining = calculateDaysRemaining(goal.endDate)
+                {goals.map((goal) => {
+                  const daysRemaining = calculateDaysRemaining(goal.daysRemaining)
 
                   return (
                     <tr key={goal.id} className="transition-colors hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{goal.name}</div>
                         <div className="text-sm text-gray-500">
-                          Meta: <span className="font-semibold text-[#f74116]">{formatValue(goal.totalAmount, goal)}</span>
+                          Meta: <span className="font-semibold text-[#f74116]">{formatValue(goal.totalTarget, goal)}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {formatDateRange(goal.startDate, goal.endDate)}
+                          {formatDateRange(goal.periodStart, goal.periodEnd)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className={`text-sm font-medium ${
-                          daysRemaining < 0 ? 'text-red-600' :
-                          daysRemaining <= 7 ? 'text-orange-600' :
+                          daysRemaining.days < 0 ? 'text-red-600' :
+                          daysRemaining.days <= 7 ? 'text-orange-600' :
                           'text-gray-900'
                         }`}>
-                          {daysRemaining < 0 ? 'Vencida' : `${daysRemaining} días`}
+                          {daysRemaining.text}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className={`text-sm font-medium ${
-                          goal.categoriesCompleted === goal.totalCategories ? 'text-green-600' :
+                          goal.categoriesCompleted === goal.categoriesTotal ? 'text-green-600' :
                           goal.categoriesCompleted > 0 ? 'text-orange-600' :
                           'text-red-600'
                         }`}>
-                          {goal.categoriesCompleted}/{goal.totalCategories}
+                          {goal.categoriesCompleted}/{goal.categoriesTotal}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {goal.categoriesCompleted === goal.totalCategories ? 'Completado' :
-                           goal.categoriesCompleted > 0 ? 'En progreso' : 'Sin iniciar'}
+                          {goal.completionStatus}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          ${goal.totalAmount.toLocaleString()}
+                          ${goal.totalTarget.toLocaleString()}
                         </div>
                       </td>
                       <td className="flex items-center justify-center px-6 py-4 text-sm font-medium whitespace-nowrap">
-                        <button
-                          onClick={() => navigate(`/goals/${goal.id}`)}
-                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-[#f74116] bg-[#f74116]/10 rounded-lg hover:bg-[#f74116]/20 transition-colors"
-                        >
-                          Ver
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/goals/${goal.id}`)}
+                            className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-[#f74116] bg-[#f74116]/10 rounded-lg hover:bg-[#f74116]/20 transition-colors"
+                          >
+                            Ver
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGoal(goal.id, goal.name)}
+                            disabled={deletingGoalId === goal.id}
+                            className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Eliminar meta"
+                          >
+                            {deletingGoalId === goal.id ? (
+                              <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -235,7 +273,7 @@ function Goals() {
             </table>
           </div>
 
-          {mockGoals.length === 0 && (
+          {goals.length === 0 && (
             <div className="px-6 py-12 text-center">
               <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full">
                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
