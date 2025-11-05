@@ -35,6 +35,8 @@ function GoalDetails() {
   const [newCategoryAmount, setNewCategoryAmount] = useState('')
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [blockedDateRanges, setBlockedDateRanges] = useState<Array<{ start: Date; end: Date; label: string }>>([])
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
 
   useEffect(() => {
@@ -211,7 +213,19 @@ function GoalDetails() {
       setShowEditModal(false)
     } catch (error) {
       console.error('Error updating goal:', error)
-      alert('Error al actualizar la meta. Por favor, intenta nuevamente.')
+      
+      // Verificar si es el error específico de categorías inválidas
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { error?: string } } }
+        if (axiosError.response?.status === 400 && axiosError.response?.data?.error === "Una o más categorías no existen") {
+          setErrorMessage("Debe eliminar categorias invalidas o inexistentes para poder editar")
+          setShowErrorModal(true)
+        } else {
+          alert('Error al actualizar la meta. Por favor, intenta nuevamente.')
+        }
+      } else {
+        alert('Error al actualizar la meta. Por favor, intenta nuevamente.')
+      }
     } finally {
       setEditLoading(false)
     }
@@ -747,6 +761,33 @@ function GoalDetails() {
                 ) : (
                   'Guardar Cambios'
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de error específico */}
+      {showErrorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="w-full max-w-md p-6 bg-white shadow-xl rounded-2xl">
+            <div className="flex items-start gap-3">
+              <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-red-100 rounded-full">
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-gray-900">Error al editar meta</h3>
+                <p className="mt-2 text-sm text-gray-600">{errorMessage}</p>
+              </div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="px-4 py-2 text-sm font-medium text-white bg-[#f74116] rounded-lg hover:bg-[#f74116]/90 transition-colors"
+              >
+                Entendido
               </button>
             </div>
           </div>
