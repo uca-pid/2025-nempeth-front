@@ -435,6 +435,7 @@ function CreateGoal() {
         initialStartDate={startDate}
         initialEndDate={endDate}
         blockedRanges={blockedDateRanges}
+        minDate={new Date()}
       />
     </div>
   )

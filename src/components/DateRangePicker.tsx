@@ -13,6 +13,7 @@ interface DateRangePickerProps {
   blockedRanges?: BlockedDateRange[]
   initialStartDate?: string
   initialEndDate?: string
+  minDate?: Date
 }
 
 export default function DateRangePicker({
@@ -21,7 +22,8 @@ export default function DateRangePicker({
   onSelect,
   blockedRanges = [],
   initialStartDate,
-  initialEndDate
+  initialEndDate,
+  minDate
 }: DateRangePickerProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedStart, setSelectedStart] = useState<Date | null>(
@@ -80,6 +82,40 @@ export default function DateRangePicker({
     })
   }
 
+  // Obtener el índice del rango bloqueado para una fecha específica
+  const getBlockedRangeIndex = (date: Date): number | null => {
+    for (let i = 0; i < blockedRanges.length; i++) {
+      const range = blockedRanges[i]
+      const dateTime = date.getTime()
+      if (dateTime >= range.start.getTime() && dateTime <= range.end.getTime()) {
+        return i
+      }
+    }
+    return null
+  }
+
+  // Generar colores aleatorios para los rangos bloqueados
+  const generateRandomColors = (count: number): string[] => {
+    const bgColors = [
+      'bg-red-200',
+      'bg-blue-200', 
+      'bg-green-200',
+      'bg-yellow-200',
+      'bg-purple-200',
+      'bg-pink-200',
+      'bg-indigo-200',
+      'bg-orange-200',
+      'bg-teal-200',
+      'bg-cyan-200'
+    ]
+    
+    const result = []
+    for (let i = 0; i < count; i++) {
+      result.push(bgColors[i % bgColors.length])
+    }
+    return result
+  }
+
   // Verificar si hay fechas bloqueadas entre dos fechas
   const hasBlockedDatesBetween = (start: Date, end: Date): boolean => {
     const startTime = start.getTime()
@@ -124,6 +160,9 @@ export default function DateRangePicker({
   // Manejar click en una fecha
   const handleDateClick = (date: Date) => {
     if (isDateBlocked(date)) return
+
+    // Si hay minDate definido, no permitir fechas anteriores
+    if (minDate && date < minDate) return
 
     if (!selectedStart || (selectedStart && selectedEnd)) {
       // Primera selección o reiniciar
@@ -191,6 +230,7 @@ export default function DateRangePicker({
   if (!isOpen) return null
 
   const days = getDaysInMonth(currentMonth)
+  const blockedRangeColors = generateRandomColors(blockedRanges.length)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
@@ -262,6 +302,8 @@ export default function DateRangePicker({
               if (!date) return <div key={index} />
 
               const isBlocked = isDateBlocked(date)
+              const blockedRangeIndex = getBlockedRangeIndex(date)
+              const isBeforeMinDate = minDate ? date < minDate : false
               const inRange = isInSelectedRange(date)
               const edge = isRangeEdge(date)
               const currentMonth = isCurrentMonth(date)
@@ -273,23 +315,25 @@ export default function DateRangePicker({
                   onClick={() => handleDateClick(date)}
                   onMouseEnter={() => setHoverDate(date)}
                   onMouseLeave={() => setHoverDate(null)}
-                  disabled={isBlocked}
+                  disabled={isBlocked || isBeforeMinDate}
                   className={`
                     relative h-10 text-sm font-medium rounded-lg transition-all
                     ${!currentMonth ? 'text-gray-300' : ''}
-                    ${isBlocked 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed line-through' 
-                      : 'cursor-pointer'
+                    ${isBlocked && blockedRangeIndex !== null
+                      ? `${blockedRangeColors[blockedRangeIndex]} text-gray-700 cursor-not-allowed` 
+                      : isBeforeMinDate
+                        ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                        : 'cursor-pointer'
                     }
                     ${edge === 'start' || edge === 'end'
                       ? 'bg-[#f74116] text-white font-bold shadow-md'
-                      : inRange && !isBlocked
+                      : inRange && !isBlocked && !isBeforeMinDate
                         ? 'bg-[#f74116]/20 text-[#f74116]'
-                        : !isBlocked
+                        : !isBlocked && !isBeforeMinDate
                           ? 'hover:bg-gray-100 text-gray-700'
                           : ''
                     }
-                    ${today && !edge && !isBlocked ? 'ring-2 ring-[#f74116]/50' : ''}
+                    ${today && !edge ? 'ring-2 ring-[#f74116]/50' : ''}
                   `}
                 >
                   {date.getDate()}
@@ -353,10 +397,16 @@ export default function DateRangePicker({
                 <span className="text-xs text-gray-600">En rango seleccionado</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-6 h-6 bg-gray-100 rounded">
-                  <span className="text-xs text-gray-400 line-through">15</span>
+                <div className="flex items-center justify-center w-6 h-6 bg-red-200 border border-gray-300 rounded">
+                  <span className="text-xs text-gray-700">15</span>
                 </div>
-                <span className="text-xs text-gray-600">Fecha bloqueada</span>
+                <span className="text-xs text-gray-600">Fecha bloqueada (con color)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-6 h-6 rounded bg-gray-50">
+                  <span className="text-xs text-gray-400">15</span>
+                </div>
+                <span className="text-xs text-gray-600">Fecha pasada</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 border-2 border-[#f74116]/50 rounded flex items-center justify-center relative">
@@ -366,6 +416,13 @@ export default function DateRangePicker({
                 <span className="text-xs text-gray-600">Día actual</span>
               </div>
             </div>
+            {minDate && (
+              <div className="p-2 mt-3 border border-blue-200 rounded bg-blue-50">
+                <p className="text-xs text-blue-800">
+                  <strong>Nota:</strong> Solo se pueden seleccionar fechas desde {minDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })} en adelante.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Fechas Ocupadas */}
@@ -375,11 +432,7 @@ export default function DateRangePicker({
               <div className="space-y-2">
                 {blockedRanges.map((range, index) => (
                   <div key={index} className="flex items-start gap-2 p-2 bg-white border border-red-100 rounded">
-                    <div className="flex-shrink-0 mt-0.5">
-                      <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
+                    <div className={`flex-shrink-0 w-4 h-4 rounded ${blockedRangeColors[index]} border border-gray-300`}></div>
                     <div className="flex-1 min-w-0">
                       <p className="mb-1 text-xs font-semibold text-gray-900">
                         {range.label || 'Meta sin nombre'}
