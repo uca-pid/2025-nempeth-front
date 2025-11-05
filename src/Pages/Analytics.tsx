@@ -10,7 +10,6 @@ import {
   Tooltip,
   Legend,
   Filler,
-  Chart
 } from 'chart.js'
 import { Line, Doughnut } from 'react-chartjs-2'
 import { useAuth } from '../contexts/useAuth'
