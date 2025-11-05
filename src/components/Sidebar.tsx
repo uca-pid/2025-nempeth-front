@@ -52,12 +52,19 @@ const ChartBarIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const TargetIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
 const OWNER_NAVIGATION = [
   { name: 'Home', path: '/home', icon: HomeIcon },
   { name: 'Productos', path: '/products', icon: ShoppingBagIcon },
   { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
   { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
   { name: 'Analiticas', path: '/analytics', icon: ChartBarIcon },
+  { name: 'Metas', path: '/goals', icon: TargetIcon },
   { name: 'Mi Negocio', path: '/business', icon: BuildingStorefrontIcon },
   { name: 'Perfil', path: '/profile', icon: UserIcon },
 ]

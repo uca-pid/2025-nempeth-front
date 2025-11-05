@@ -9,7 +9,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 } from 'chart.js'
 import { Line, Doughnut } from 'react-chartjs-2'
 import { useAuth } from '../contexts/useAuth'
@@ -374,15 +374,15 @@ function Analytics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-      <div className="px-4 py-8 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <div className="px-4 py-6 pb-20 mx-auto sm:px-6 sm:py-8 sm:pb-24 max-w-7xl lg:px-8">
         
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
             <span className="h-2 w-2 rounded-full bg-[#f74116]" />
             Analíticas de Ventas
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl">
             Análisis detallado del rendimiento
           </h1>
           <p className="mt-2 text-gray-600">Métricas y estadísticas de tu negocio</p>
@@ -390,7 +390,7 @@ function Analytics() {
 
 
         {/* Layout principal - Todo en una vista */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 min-h-[600px] xl:h-[calc(100vh-12rem)]">
           
           {/* Columna izquierda - Gráfico de líneas (2/3 del ancho) */}
           <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 flex flex-col">
@@ -405,7 +405,7 @@ function Analytics() {
                 <p className="text-sm text-gray-600">Tendencias de ingresos y ganancias a lo largo del tiempo</p>
               </div>
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-[400px] xl:min-h-0">
               <Line 
                 data={combinedChartData} 
                 options={{
@@ -441,10 +441,10 @@ function Analytics() {
           </div>
 
           {/* Columna derecha - Gráficos de torta (1/3 del ancho) */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 xl:gap-6">
             
             {/* Controles unificados más compactos */}
-            <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-4 hover:shadow-lg transition-all duration-200">
+            <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 sm:p-4 hover:shadow-lg transition-all duration-200">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center">
                   <div className="flex items-center justify-center w-8 h-8 mr-3 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200">
@@ -459,7 +459,7 @@ function Analytics() {
                 </div>
                 
                 {/* Controles */}
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   {/* Filtro de categorías */}
                   <div className="relative flex-1">
                     <button
@@ -516,40 +516,41 @@ function Analytics() {
                     )}
                   </div>
 
-                  {/* Selector de mes */}
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                    className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
-                  >
-                    {months.map(month => (
-                      <option key={month.value} value={month.value}>
-                        {month.name}
-                      </option>
-                    ))}
-                  </select>
-                  
-                  {/* Selector de año */}
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
-                  >
-                    {years.map(year => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Selectores de mes y año */}
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                      className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
+                    >
+                      {months.map(month => (
+                        <option key={month.value} value={month.value}>
+                          {month.name}
+                        </option>
+                      ))}
+                    </select>
+                    
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                      className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
+                    >
+                      {years.map(year => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Gráficos de torta apilados más compactos */}
-            <div className="flex flex-col flex-1 gap-3">
+            <div className="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-2">
               
               {/* Gráfico de Ingresos */}
-              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200 flex-2">
+              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200">
                 <div className="flex items-center mb-2">
                   <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200">
                     <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -563,7 +564,7 @@ function Analytics() {
                 </div>
                 
                 {categoryData.length > 0 ? (
-                  <div className="h-60">
+                  <div className="h-48 sm:h-56 lg:h-60">
                     <Doughnut data={categoryChartData} options={{
                       responsive: true,
                       maintainAspectRatio: false,
@@ -622,7 +623,7 @@ function Analytics() {
               </div>
 
               {/* Gráfico de Ganancias */}
-              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200 flex-2">
+              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200">
                 <div className="flex items-center mb-2">
                   <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-lg bg-gradient-to-br from-green-100 to-green-200">
                     <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -636,7 +637,7 @@ function Analytics() {
                 </div>
                 
                 {profitCategoryData.length > 0 ? (
-                  <div className="h-60">
+                  <div className="h-48 sm:h-56 lg:h-60">
                     <Doughnut data={profitChartData} options={{
                       responsive: true,
                       maintainAspectRatio: false,
@@ -683,7 +684,7 @@ function Analytics() {
                     }} />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-40 text-gray-500">
+                  <div className="flex flex-col items-center justify-center h-32 text-gray-500">
                     <div className="flex items-center justify-center w-8 h-8 mb-2 bg-gray-100 rounded-full">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6" />

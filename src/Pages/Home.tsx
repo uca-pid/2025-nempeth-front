@@ -16,6 +16,7 @@ function Home() {
   const [totalSalesAmount, setTotalSalesAmount] = useState(0)
   const [salesPeriod, setSalesPeriod] = useState<'today' | 'week' | 'month' | 'all'>('month')
   const [filteredSalesCount, setFilteredSalesCount] = useState(0)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const businessId = user?.businessId
 
@@ -24,17 +25,20 @@ function Home() {
     const now = new Date()
     
     switch (period) {
-      case 'today':
+      case 'today': {
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         return sales.filter(sale => new Date(sale.occurredAt) >= today)
+      }
       
-      case 'week':
+      case 'week': {
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
         return sales.filter(sale => new Date(sale.occurredAt) >= weekAgo)
+      }
       
-      case 'month':
+      case 'month': {
         const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
         return sales.filter(sale => new Date(sale.occurredAt) >= monthAgo)
+      }
       
       case 'all':
       default:
@@ -162,7 +166,7 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="mb-8">
@@ -176,24 +180,24 @@ function Home() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-3">
           
           {/* Empleados */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 group">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="flex items-center justify-center w-12 h-12 transition-transform bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl group-hover:scale-105">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
               </div>
-              <div className="ml-4 flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Equipo</p>
+              <div className="flex-1 ml-4">
+                <p className="mb-1 text-sm font-medium text-gray-600">Equipo</p>
                 <p className="text-3xl font-bold text-gray-900">
                   {businessDetail?.stats.totalMembers || 0}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-gray-500">
                   miembro{(businessDetail?.stats.totalMembers || 0) !== 1 ? 's' : ''} activo{(businessDetail?.stats.totalMembers || 0) !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -204,18 +208,18 @@ function Home() {
           <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 group">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="flex items-center justify-center w-12 h-12 transition-transform bg-gradient-to-br from-green-100 to-green-200 rounded-xl group-hover:scale-105">
                   <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 </div>
               </div>
-              <div className="ml-4 flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Catálogo</p>
+              <div className="flex-1 ml-4">
+                <p className="mb-1 text-sm font-medium text-gray-600">Catálogo</p>
                 <p className="text-3xl font-bold text-gray-900">
                   {businessDetail?.stats.totalProducts || 0}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-gray-500">
                   producto{(businessDetail?.stats.totalProducts || 0) !== 1 ? 's' : ''} disponible{(businessDetail?.stats.totalProducts || 0) !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -224,34 +228,70 @@ function Home() {
 
           {/* Ventas con Filtro */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 group lg:col-span-1">
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#f74116]/10 to-[#f74116]/20 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform">
                   <svg className="w-6 h-6 text-[#f74116]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-600">Ventas</p>
                   <p className="text-xs text-[#f74116] font-medium">{getPeriodText(salesPeriod)}</p>
                 </div>
               </div>
               
               {/* Selector de período mejorado */}
-              <div className="relative">
-                <select
-                  value={salesPeriod}
-                  onChange={(e) => setSalesPeriod(e.target.value as 'today' | 'week' | 'month' | 'all')}
-                  className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] cursor-pointer hover:bg-gray-100 transition-colors min-w-[80px]"
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-[#f74116]/30 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] transition-all duration-200 w-full sm:w-auto min-w-[90px] sm:min-w-[110px]"
                 >
-                  <option value="today">Hoy</option>
-                  <option value="week">7 días</option>
-                  <option value="month">30 días</option>
-                  <option value="all">Total</option>
-                </select>
-                <svg className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                  <span className="truncate">{getPeriodText(salesPeriod)}</span>
+                  <svg 
+                    className={`w-3 h-3 text-gray-400 transition-transform duration-200 flex-shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isDropdownOpen && (
+                  <>
+                    {/* Overlay para cerrar al hacer click fuera */}
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setIsDropdownOpen(false)}
+                    />
+                    
+                    {/* Menú desplegable */}
+                    <div className="absolute right-0 z-20 py-1 mt-1 duration-200 bg-white border border-gray-200 rounded-lg shadow-lg sm:left-0 top-full w-36 sm:w-40 animate-in fade-in slide-in-from-top-2">
+                      {[
+                        { value: 'today', label: 'Hoy' },
+                        { value: 'week', label: '7 días' },
+                        { value: 'month', label: '30 días' },
+                        { value: 'all', label: 'Total' }
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setSalesPeriod(option.value as 'today' | 'week' | 'month' | 'all')
+                            setIsDropdownOpen(false)
+                          }}
+                          className={`w-full text-left px-3 py-2 text-xs hover:bg-[#f74116]/5 hover:text-[#f74116] transition-colors ${
+                            salesPeriod === option.value 
+                              ? 'bg-[#f74116]/10 text-[#f74116] font-medium' 
+                              : 'text-gray-700'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             
@@ -278,7 +318,7 @@ function Home() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">Acciones Rápidas</h2>
           <div className={`grid grid-cols-1 gap-4 ${user?.role === 'OWNER' ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
             <button 
               onClick={() => navigate('/create-order')}
@@ -287,18 +327,18 @@ function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center mb-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mr-3">
+                    <div className="flex items-center justify-center w-10 h-10 mr-3 rounded-lg bg-white/20">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </div>
-                    <span className="font-semibold text-lg">Nueva Venta</span>
+                    <span className="text-lg font-semibold">Nueva Venta</span>
                   </div>
-                  <p className="text-sm text-white/90 leading-relaxed">
+                  <p className="text-sm leading-relaxed text-white/90">
                     Registrar una venta y actualizar el inventario en tiempo real
                   </p>
                 </div>
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 transition-transform opacity-75 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
@@ -313,18 +353,18 @@ function Home() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center mb-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                      <div className="flex items-center justify-center w-10 h-10 mr-3 bg-green-100 rounded-lg">
                         <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                       </div>
-                      <span className="font-semibold text-lg text-gray-900">Productos</span>
+                      <span className="text-lg font-semibold text-gray-900">Productos</span>
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <p className="text-sm leading-relaxed text-gray-600">
                       Gestionar catálogo, precios y disponibilidad de productos
                     </p>
                   </div>
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -338,18 +378,18 @@ function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center mb-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <div className="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-lg">
                       <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
                     </div>
-                    <span className="font-semibold text-lg text-gray-900">Reportes</span>
+                    <span className="text-lg font-semibold text-gray-900">Reportes</span>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-sm leading-relaxed text-gray-600">
                     Analizar ventas, tendencias y métricas de rendimiento
                   </p>
                 </div>
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-400 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
@@ -362,28 +402,28 @@ function Home() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Actividad Reciente</h2>
-              <p className="text-sm text-gray-500 mt-1">Últimas ventas realizadas</p>
+              <p className="mt-1 text-sm text-gray-500">Últimas ventas realizadas</p>
             </div>
             <button 
               onClick={() => navigate('/sales-history')}
               className="inline-flex items-center text-[#f74116] hover:text-[#f74116]/80 text-sm font-medium transition-colors group"
             >
               <span>Ver historial completo</span>
-              <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
           
           {recentSales.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full">
                 <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">¡Todo listo para empezar!</h3>
-              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">¡Todo listo para empezar!</h3>
+              <p className="max-w-sm mx-auto mb-6 text-gray-600">
                 Cuando realices tu primera venta, aparecerá aquí junto con el resto de la actividad
               </p>
               <button 
@@ -399,7 +439,7 @@ function Home() {
           ) : (
             <div className="space-y-3">
               {recentSales.map((sale) => (
-                <div key={sale.id} className="group p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200">
+                <div key={sale.id} className="p-4 transition-all duration-200 border border-transparent group bg-gray-50/50 rounded-xl hover:bg-gray-50 hover:border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">

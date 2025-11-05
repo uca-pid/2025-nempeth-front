@@ -136,9 +136,7 @@ function CategoryManagementModal({
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl max-h-[95vh] overflow-hidden bg-gradient-to-b from-white via-[#fff1eb] to-white shadow-2xl rounded-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 sm:px-6 sm:py-4 bg-gray-50">
-          <div className="flex items-center justify-between px-4 py-4 sm:px-6 bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-800 sm:text-xl">Administrar categorías</h3>
-          </div>
+          <h3 className="text-lg font-semibold text-gray-800 sm:text-xl">Administrar categorías</h3>
           <button
             className="flex items-center justify-center w-8 h-8 text-xl text-gray-500 transition rounded-lg sm:text-2xl sm:w-9 sm:h-9 hover:bg-gray-200 hover:text-gray-700"
             onClick={onClose}
@@ -231,7 +229,7 @@ function CategoryManagementModal({
                 <p className="text-sm sm:text-base">No hay categorías creadas aún</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {categories.map((category) => {
                   const productCount = getProductCountByCategory ? getProductCountByCategory(category.id) : 0
                   const hasProducts = productCount > 0
@@ -309,7 +307,7 @@ function CategoryManagementModal({
           onClick={() => setShowIconPicker(false)}
         >
           <div
-            className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-2 sm:mx-4 bg-white border border-gray-200 shadow-2xl rounded-2xl max-h-[90vh] overflow-hidden"
+            className="w-full max-w-sm sm:max-w-md md:max-w-lg mx-2 sm:mx-4 bg-white border border-gray-200 shadow-2xl rounded-2xl max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -329,9 +327,9 @@ function CategoryManagementModal({
             <div className="p-3 sm:p-5">
                 <div className="p-3 sm:p-4">
                     {/* Contenedor con scroll controlado */}
-                    <div className="p-3 overflow-y-auto sm:p-4 max-h-60 sm:max-h-72 overscroll-contain">
+                    <div className="p-3 overflow-y-auto sm:p-4 max-h-60 sm:max-h-72 md:max-h-80 overscroll-contain">
                         {/* Grid fluida: llena filas con celdas mín. de 3rem */}
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(3rem,1fr))] gap-2 sm:gap-3 auto-rows-[2.5rem] sm:auto-rows-[3rem]">
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(3rem,1fr))] md:grid-cols-[repeat(auto-fill,minmax(3.5rem,1fr))] gap-2 sm:gap-3 auto-rows-[2.5rem] sm:auto-rows-[3rem] md:auto-rows-[3.5rem]">
                         {AVAILABLE_ICONS.map((icon) => {
                             const isActive = selectedIcon === icon
                             return (
