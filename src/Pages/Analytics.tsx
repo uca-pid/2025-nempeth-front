@@ -351,18 +351,18 @@ function Analytics() {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="mb-4 text-red-500">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center justify-center min-h-screen px-4">
+          <div className="w-full max-w-md text-center">
+            <div className="flex justify-center mb-3 text-red-500 sm:mb-4">
+              <svg className="w-12 h-12 sm:w-16 sm:h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">Error al cargar datos</h2>
-            <p className="text-gray-600">{error}</p>
+            <h2 className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl">Error al cargar datos</h2>
+            <p className="mb-4 text-sm text-gray-600 sm:text-base">{error}</p>
             <button 
               onClick={fetchAnalyticsData}
-              className="mt-4 px-4 py-2 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-[#f74116] text-white text-sm sm:text-base rounded-lg hover:bg-[#f74116]/90 transition-colors font-medium"
             >
               Reintentar
             </button>
@@ -374,38 +374,38 @@ function Analytics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
-      <div className="px-4 py-6 pb-20 mx-auto sm:px-6 sm:py-8 sm:pb-24 max-w-7xl lg:px-8">
+      <div className="px-3 py-4 pb-20 mx-auto sm:px-4 sm:py-6 sm:pb-24 md:px-6 md:py-8 max-w-7xl lg:px-8">
         
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-4 py-2 text-sm font-semibold text-[#f74116] mb-4">
-            <span className="h-2 w-2 rounded-full bg-[#f74116]" />
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#f74116]/10 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-[#f74116] mb-3 sm:mb-4">
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[#f74116]" />
             Analíticas de Ventas
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl">
+          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl lg:text-4xl">
             Análisis detallado del rendimiento
           </h1>
-          <p className="mt-2 text-gray-600">Métricas y estadísticas de tu negocio</p>
+          <p className="mt-1.5 sm:mt-2 text-sm sm:text-base text-gray-600">Métricas y estadísticas de tu negocio</p>
         </div>
 
 
-        {/* Layout principal - Todo en una vista */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 min-h-[600px] xl:h-[calc(100vh-12rem)]">
+        {/* Layout principal - Responsive */}
+        <div className="space-y-4 sm:space-y-6">
           
-          {/* Columna izquierda - Gráfico de líneas (2/3 del ancho) */}
-          <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-[#f74116]/10 p-6 hover:shadow-lg transition-all duration-200 flex flex-col">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#f74116]/10 to-[#f74116]/20 rounded-xl flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-[#f74116]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Gráfico de líneas - Ancho completo */}
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-[#f74116]/10 p-3 sm:p-4 md:p-6 hover:shadow-lg transition-all duration-200">
+            <div className="flex items-center mb-3 sm:mb-4 md:mb-6">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#f74116]/10 to-[#f74116]/20 rounded-lg sm:rounded-xl flex items-center justify-center mr-2.5 sm:mr-3 md:mr-4 flex-shrink-0">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#f74116]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Evolución Temporal</h2>
-                <p className="text-sm text-gray-600">Tendencias de ingresos y ganancias a lo largo del tiempo</p>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base font-bold text-gray-900 truncate sm:text-lg md:text-xl">Evolución Temporal</h2>
+                <p className="text-xs text-gray-600 sm:text-sm line-clamp-1">Tendencias de ingresos y ganancias a lo largo del tiempo</p>
               </div>
             </div>
-            <div className="flex-1 min-h-[400px] xl:min-h-0">
+            <div className="h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] xl:h-[450px]">
               <Line 
                 data={combinedChartData} 
                 options={{
@@ -417,22 +417,53 @@ function Analytics() {
                       position: 'top' as const,
                       labels: {
                         usePointStyle: true,
-                        padding: 20,
+                        padding: 10,
                         font: {
-                          size: 14,
+                          size: window.innerWidth < 640 ? 10 : window.innerWidth < 768 ? 11 : 12,
                           weight: 'bold' as const
                         }
                       }
+                    },
+                    tooltip: {
+                      enabled: true,
+                      titleFont: {
+                        size: window.innerWidth < 640 ? 11 : 12
+                      },
+                      bodyFont: {
+                        size: window.innerWidth < 640 ? 10 : 11
+                      },
+                      padding: window.innerWidth < 640 ? 8 : 10
                     }
                   },
                   elements: {
                     point: {
-                      radius: 6,
-                      hoverRadius: 8,
-                      borderWidth: 3
+                      radius: window.innerWidth < 640 ? 3 : window.innerWidth < 768 ? 4 : 4,
+                      hoverRadius: window.innerWidth < 640 ? 5 : window.innerWidth < 768 ? 6 : 6,
+                      borderWidth: 2
                     },
                     line: {
-                      borderWidth: 3
+                      borderWidth: window.innerWidth < 640 ? 2 : 2
+                    }
+                  },
+                  scales: {
+                    ...chartOptions.scales,
+                    y: {
+                      ...chartOptions.scales.y,
+                      ticks: {
+                        font: {
+                          size: window.innerWidth < 640 ? 9 : window.innerWidth < 768 ? 10 : 11
+                        }
+                      }
+                    },
+                    x: {
+                      ...chartOptions.scales.x,
+                      ticks: {
+                        font: {
+                          size: window.innerWidth < 640 ? 9 : window.innerWidth < 768 ? 10 : 11
+                        },
+                        maxRotation: window.innerWidth < 640 ? 45 : 0,
+                        minRotation: window.innerWidth < 640 ? 45 : 0
+                      }
                     }
                   }
                 }} 
@@ -440,39 +471,39 @@ function Analytics() {
             </div>
           </div>
 
-          {/* Columna derecha - Gráficos de torta (1/3 del ancho) */}
-          <div className="flex flex-col gap-4 xl:gap-6">
+          {/* Sección de análisis por categoría */}
+          <div className="space-y-3 sm:space-y-4">
             
-            {/* Controles unificados más compactos */}
+            {/* Controles unificados */}
             <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 sm:p-4 hover:shadow-lg transition-all duration-200">
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5 sm:gap-3">
                 <div className="flex items-center">
-                  <div className="flex items-center justify-center w-8 h-8 mr-3 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200">
-                    <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 mr-2.5 sm:mr-3 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex-shrink-0">
+                    <svg className="w-4 h-4 text-purple-600 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900">Análisis por Categoría</h3>
-                    <p className="text-xs text-gray-500">Controles para gráficos</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate sm:text-base">Análisis por Categoría</h3>
+                    <p className="text-xs text-gray-500 line-clamp-1">Controles para gráficos</p>
                   </div>
                 </div>
                 
                 {/* Controles */}
-                <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
                   {/* Filtro de categorías */}
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0 sm:max-w-xs">
                     <button
-                      className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
+                      className="w-full flex items-center justify-between gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116]"
                       type="button"
                       onClick={handleToggleFilterDropdown}
                     >
-                      <div className="flex items-center gap-2">
-                        <IoFilterCircle className="w-3 h-3" />
-                        <span className="font-medium">Filtrar categorías</span>
+                      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                        <IoFilterCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="font-medium truncate">Filtrar categorías</span>
                       </div>
                       {selectedCategoryFilters.length > 0 && (
-                        <span className="px-1.5 py-0.5 text-xs font-semibold text-white bg-[#f74116] rounded-full">
+                        <span className="px-1.5 sm:px-2 py-0.5 text-xs font-semibold text-white bg-[#f74116] rounded-full flex-shrink-0">
                           {selectedCategoryFilters.length}
                         </span>
                       )}
@@ -480,22 +511,22 @@ function Analytics() {
                     
                     {/* Dropdown menu */}
                     {showFilterDropdown && (
-                      <div className="absolute left-0 right-0 z-50 py-2 mt-2 bg-white border border-gray-200 shadow-lg top-full rounded-xl">
+                      <div className="absolute left-0 right-0 z-50 py-2 mt-2 bg-white border border-gray-200 shadow-lg top-full rounded-xl max-h-[60vh] overflow-hidden flex flex-col">
                         <div className="px-3 py-2 border-b border-gray-100">
                           <h4 className="text-xs font-semibold text-gray-800">Categorías</h4>
                         </div>
                         
-                        <div className="overflow-y-auto max-h-32">
+                        <div className="flex-1 overflow-y-auto">
                           {availableCategories.map(category => (
                             <button
                               key={category.categoryName}
-                              className={`w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-gray-50 transition-colors ${selectedCategoryFilters.includes(category.categoryName) ? 'bg-[#f74116]/10 text-[#f74116]' : 'text-gray-700'}`}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 transition-colors ${selectedCategoryFilters.includes(category.categoryName) ? 'bg-[#f74116]/10 text-[#f74116]' : 'text-gray-700'}`}
                               onClick={() => handleToggleCategoryFilter(category.categoryName)}
                               type="button"
                             >
-                              <span className="flex-1 text-xs font-medium">{category.categoryName}</span>
+                              <span className="flex-1 text-xs font-medium break-words sm:text-sm">{category.categoryName}</span>
                               {selectedCategoryFilters.includes(category.categoryName) && (
-                                <span className="text-[#f74116]">✓</span>
+                                <span className="text-[#f74116] flex-shrink-0">✓</span>
                               )}
                             </button>
                           ))}
@@ -504,7 +535,7 @@ function Analytics() {
                         {selectedCategoryFilters.length > 0 && (
                           <div className="px-3 py-2 border-t border-gray-100">
                             <button
-                              className="w-full text-xs font-medium text-red-600 hover:text-red-800"
+                              className="w-full text-xs font-medium text-red-600 sm:text-sm hover:text-red-800"
                               onClick={handleClearAllFilters}
                               type="button"
                             >
@@ -517,11 +548,11 @@ function Analytics() {
                   </div>
 
                   {/* Selectores de mes y año */}
-                  <div className="flex gap-2">
+                  <div className="flex w-full gap-2 sm:w-auto">
                     <select
                       value={selectedMonth}
                       onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                      className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
+                      className="flex-1 sm:flex-none sm:min-w-[120px] px-2.5 sm:px-3 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
                     >
                       {months.map(month => (
                         <option key={month.value} value={month.value}>
@@ -533,7 +564,7 @@ function Analytics() {
                     <select
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                      className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
+                      className="flex-1 sm:flex-none sm:min-w-[100px] px-2.5 sm:px-3 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#f74116]/20 focus:border-[#f74116] hover:bg-gray-100 transition-colors"
                     >
                       {years.map(year => (
                         <option key={year} value={year}>
@@ -546,35 +577,36 @@ function Analytics() {
               </div>
             </div>
 
-            {/* Gráficos de torta apilados más compactos */}
-            <div className="grid flex-1 grid-cols-1 gap-3 lg:grid-cols-2">
+            {/* Gráficos de torta lado a lado */}
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 sm:gap-4">
               
               {/* Gráfico de Ingresos */}
-              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200">
-                <div className="flex items-center mb-2">
-                  <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200">
-                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 sm:p-4 hover:shadow-lg transition-all duration-200">
+                <div className="flex items-center mb-2.5 sm:mb-3">
+                  <div className="flex items-center justify-center flex-shrink-0 mr-2 rounded-lg w-7 h-7 sm:w-8 sm:h-8 sm:mr-3 bg-gradient-to-br from-blue-100 to-blue-200">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900">Ingresos</h3>
-                    <p className="text-xs text-gray-500">${totalRevenue.toLocaleString()}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate sm:text-base">Ingresos</h3>
+                    <p className="text-xs text-gray-500 truncate sm:text-sm">${totalRevenue.toLocaleString()}</p>
                   </div>
                 </div>
                 
                 {categoryData.length > 0 ? (
-                  <div className="h-48 sm:h-56 lg:h-60">
+                  <div className="w-full aspect-square max-w-[280px] sm:max-w-[320px] md:max-w-[300px] lg:max-w-[350px] mx-auto">
                     <Doughnut data={categoryChartData} options={{
                       responsive: true,
-                      maintainAspectRatio: false,
+                      maintainAspectRatio: true,
+                      aspectRatio: 1,
                       plugins: {
                         legend: {
-                          position: 'left' as const,
+                          position: 'bottom' as const,
                           labels: {
-                            boxWidth: 8,
-                            padding: 6,
-                            font: { size: 12 },
+                            boxWidth: window.innerWidth < 640 ? 10 : 12,
+                            padding: window.innerWidth < 640 ? 8 : 10,
+                            font: { size: window.innerWidth < 640 ? 10 : 11 },
                             generateLabels: function(chart: any) {
                               const data = chart.data
                               if (data.labels.length && data.datasets.length) {
@@ -605,49 +637,57 @@ function Analytics() {
                               const percentage = ((context.parsed / total) * 100).toFixed(1)
                               return `${categoryName}: ${percentage}%`
                             }
-                          }
+                          },
+                          titleFont: {
+                            size: window.innerWidth < 640 ? 11 : 12
+                          },
+                          bodyFont: {
+                            size: window.innerWidth < 640 ? 10 : 11
+                          },
+                          padding: window.innerWidth < 640 ? 8 : 10
                         }
                       }
                     }} />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                    <div className="flex items-center justify-center w-8 h-8 mb-2 bg-gray-100 rounded-full">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex flex-col items-center justify-center h-40 text-gray-500 sm:h-48">
+                    <div className="flex items-center justify-center w-10 h-10 mb-2 bg-gray-100 rounded-full sm:w-12 sm:h-12 sm:mb-3">
+                      <svg className="w-5 h-5 text-gray-400 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6" />
                       </svg>
                     </div>
-                    <p className="text-xs font-medium text-gray-600">Sin datos</p>
+                    <p className="text-xs font-medium text-gray-600 sm:text-sm">Sin datos</p>
                   </div>
                 )}
               </div>
 
               {/* Gráfico de Ganancias */}
-              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 hover:shadow-lg transition-all duration-200">
-                <div className="flex items-center mb-2">
-                  <div className="flex items-center justify-center w-6 h-6 mr-2 rounded-lg bg-gradient-to-br from-green-100 to-green-200">
-                    <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white rounded-xl shadow-sm border border-[#f74116]/10 p-3 sm:p-4 hover:shadow-lg transition-all duration-200">
+                <div className="flex items-center mb-2.5 sm:mb-3">
+                  <div className="flex items-center justify-center flex-shrink-0 mr-2 rounded-lg w-7 h-7 sm:w-8 sm:h-8 sm:mr-3 bg-gradient-to-br from-green-100 to-green-200">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900">Ganancias</h3>
-                    <p className="text-xs text-gray-500">${totalProfit.toLocaleString()}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate sm:text-base">Ganancias</h3>
+                    <p className="text-xs text-gray-500 truncate sm:text-sm">${totalProfit.toLocaleString()}</p>
                   </div>
                 </div>
                 
                 {profitCategoryData.length > 0 ? (
-                  <div className="h-48 sm:h-56 lg:h-60">
+                  <div className="w-full aspect-square max-w-[280px] sm:max-w-[320px] md:max-w-[300px] lg:max-w-[350px] mx-auto">
                     <Doughnut data={profitChartData} options={{
                       responsive: true,
-                      maintainAspectRatio: false,
+                      maintainAspectRatio: true,
+                      aspectRatio: 1,
                       plugins: {
                         legend: {
-                          position: 'left' as const,
+                          position: 'bottom' as const,
                           labels: {
-                            boxWidth: 8,
-                            padding: 6,
-                            font: { size: 12 },
+                            boxWidth: window.innerWidth < 640 ? 10 : 12,
+                            padding: window.innerWidth < 640 ? 8 : 10,
+                            font: { size: window.innerWidth < 640 ? 10 : 11 },
                             generateLabels: function(chart: any) {
                               const data = chart.data
                               if (data.labels.length && data.datasets.length) {
@@ -678,19 +718,26 @@ function Analytics() {
                               const percentage = ((context.parsed / total) * 100).toFixed(1)
                               return `${categoryName}: ${percentage}%`
                             }
-                          }
+                          },
+                          titleFont: {
+                            size: window.innerWidth < 640 ? 11 : 12
+                          },
+                          bodyFont: {
+                            size: window.innerWidth < 640 ? 10 : 11
+                          },
+                          padding: window.innerWidth < 640 ? 8 : 10
                         }
                       }
                     }} />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                    <div className="flex items-center justify-center w-8 h-8 mb-2 bg-gray-100 rounded-full">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex flex-col items-center justify-center h-40 text-gray-500 sm:h-48">
+                    <div className="flex items-center justify-center w-10 h-10 mb-2 bg-gray-100 rounded-full sm:w-12 sm:h-12 sm:mb-3">
+                      <svg className="w-5 h-5 text-gray-400 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6" />
                       </svg>
                     </div>
-                    <p className="text-xs font-medium text-gray-600">Sin datos</p>
+                    <p className="text-xs font-medium text-gray-600 sm:text-sm">Sin datos</p>
                   </div>
                 )}
               </div>
