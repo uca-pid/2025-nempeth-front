@@ -15,6 +15,8 @@ import PendingApproval from './Pages/PendingApproval'
 import Goals from './Pages/Goals'
 import CreateGoal from './Pages/CreateGoal'
 import GoalDetails from './Pages/GoalDetails'
+import Ranking from './Pages/Ranking'
+import InternalRanking from './Pages/InternalRanking'
 import Layout from './components/Layout'
 import UnauthenticatedGuard from './guards/UnauthenticatedGuard'
 import OwnerGuard from './guards/OwnerGuard'
@@ -43,6 +45,12 @@ function AppRoutes() {
             <Authentication />
           </UnauthenticatedGuard>
         }
+      />
+
+      {/* Ruta pública del ranking - accesible sin autenticación */}
+      <Route
+        path="/ranking"
+        element={<Ranking />}
       />
 
       <Route
@@ -148,6 +156,17 @@ function AppRoutes() {
               <Analytics />
             </Layout>
           </OwnerGuard>
+        }
+      />
+
+      <Route
+        path="/internal-ranking"
+        element={
+          <OwnerOrActiveEmployeeGuard>
+            <Layout>
+              <InternalRanking />
+            </Layout>
+          </OwnerOrActiveEmployeeGuard>
         }
       />
 
