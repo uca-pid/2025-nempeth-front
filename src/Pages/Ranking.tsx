@@ -4,43 +4,53 @@ import { IoArrowBack, IoTrophy, IoFlame, IoStar } from 'react-icons/io5'
 import Lottie from 'lottie-react'
 import LoadingScreen from '../components/LoadingScreen'
 import beeAnimation from '../assets/HoneyBee.json'
-
-interface BusinessRanking {
-  id: string
-  businessName: string
-  sales: number
-  revenue: number
-  score: number
-  position: number
-}
-
-// Datos mock para el ranking
-const mockRankingData: BusinessRanking[] = [
-  { id: '1', businessName: 'La Colmena Dorada', sales: 450, revenue: 85000, score: 98.5, position: 1 },
-  { id: '2', businessName: 'El Panal Místico', sales: 425, revenue: 78000, score: 95.2, position: 2 },
-  { id: '3', businessName: 'Néctar & Miel Bar', sales: 400, revenue: 72000, score: 92.8, position: 3 },
-  { id: '4', businessName: 'Zumbido Urbano', sales: 380, revenue: 68000, score: 88.4, position: 4 },
-  { id: '5', businessName: 'La Abeja Reina', sales: 365, revenue: 64000, score: 85.7, position: 5 },
-  { id: '6', businessName: 'Polen & Sabor', sales: 340, revenue: 59000, score: 82.3, position: 6 },
-  { id: '7', businessName: 'El Enjambre Feliz', sales: 320, revenue: 55000, score: 79.5, position: 7 },
-  { id: '8', businessName: 'Dulce Panal', sales: 295, revenue: 51000, score: 76.2, position: 8 },
-  { id: '9', businessName: 'La Miel de Oro', sales: 270, revenue: 47000, score: 73.8, position: 9 },
-  { id: '10', businessName: 'Korven Express', sales: 250, revenue: 43000, score: 70.5, position: 10 },
-]
+import { useAuth } from '../contexts/useAuth'
+import { rankingService, type BusinessRankingResponse } from '../services/rankingService'
 
 export default function Ranking() {
   const navigate = useNavigate()
-  const [rankings, setRankings] = useState<BusinessRanking[]>([])
+  const { user, isLoading: authLoading } = useAuth()
+  const [rankings, setRankings] = useState<BusinessRankingResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const currentMonth = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
 
   useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      setRankings(mockRankingData)
-      setIsLoading(false)
-    }, 1000)
-  }, [])
+    const fetchRankings = async () => {
+      console.log('🔍 Ranking - Estado de autenticación:', { authLoading, user })
+      console.log('🔍 Ranking - BusinessId:', user?.businessId)
+      
+      // Esperar a que termine la autenticación
+      if (authLoading) {
+        console.log('⏳ Ranking - Esperando autenticación...')
+        return
+      }
+      
+      if (!user?.businessId) {
+        console.log('⚠️ Ranking - No hay businessId disponible')
+        setIsLoading(false)
+        setError('No se pudo obtener la información del negocio. Por favor, inicia sesión.')
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        setError(null)
+        console.log('📡 Ranking - Llamando al endpoint con businessId:', user.businessId)
+        const rankingsData = await rankingService.getBusinessRankings(user.businessId)
+        console.log('✅ Ranking - Datos recibidos:', rankingsData)
+        console.log('✅ Ranking - Cantidad de rankings:', rankingsData.length)
+        setRankings(rankingsData)
+      } catch (err) {
+        console.error('❌ Ranking - Error al cargar el ranking:', err)
+        setError('No se pudo cargar el ranking. Por favor, intenta nuevamente.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchRankings()
+  }, [user?.businessId, authLoading])
 
   const getMedalEmoji = (position: number) => {
     switch (position) {
@@ -94,8 +104,28 @@ export default function Ranking() {
     }
   }
 
+  console.log('🎨 Ranking - Renderizando con:', { isLoading, error, rankingsCount: rankings.length, rankings })
+
   if (isLoading) {
     return <LoadingScreen message="Cargando ranking..." />
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 flex items-center justify-center">
+        <div className="max-w-md p-6 text-center bg-white rounded-2xl shadow-lg">
+          <div className="w-16 h-16 mx-auto mb-4 text-4xl">⚠️</div>
+          <h2 className="mb-2 text-xl font-bold text-gray-900">Error al cargar el ranking</h2>
+          <p className="mb-4 text-gray-600">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-gradient-to-r from-rose-600 to-amber-600 text-white rounded-lg hover:from-rose-700 hover:to-amber-700 transition-all"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -164,10 +194,56 @@ export default function Ranking() {
 
       {/* Contenedor principal del ranking */}
       <div className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        {/* Cartel informativo sobre la puntuación */}
+        <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 shadow-md">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <span className="text-2xl">📊</span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>¿Cómo se calcula la puntuación?</span>
+                <IoStar className="text-amber-500" />
+              </h3>
+              <p className="text-gray-700 mb-3 leading-relaxed">
+                La puntuación del ranking se basa en el <strong>rendimiento general</strong> de tu negocio durante el mes, 
+                considerando factores como <strong>cantidad de ventas</strong>, <strong>ingresos generados</strong> y 
+                <strong> consistencia en el servicio</strong>.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-white/60 px-4 py-2 rounded-lg">
+                <span className="text-lg">💡</span>
+                <span>
+                  <strong>Tip:</strong> Mantén un alto nivel de ventas y satisfacción del cliente para mejorar tu posición.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mensaje cuando no hay rankings */}
+        {rankings.length === 0 && !isLoading && (
+          <div className="p-8 text-center bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg">
+            <div className="w-24 h-24 mx-auto mb-4">
+              <Lottie animationData={beeAnimation} loop />
+            </div>
+            <h3 className="text-2xl font-bold text-neutral-800 mb-2">
+              No hay rankings disponibles
+            </h3>
+            <p className="text-neutral-600">
+              Aún no hay datos de rankings este mes. ¡Sé el primero en aparecer!
+            </p>
+          </div>
+        )}
+
         <div className="space-y-4">
-          {rankings.map((business, index) => (
+          {rankings.map((business, index) => {
+            const isOwnBusiness = business.isOwnBusiness
+            
+            return (
             <div
-              key={business.id}
+              key={business.businessId}
               className={`
                 relative transform transition-all duration-500 hover:scale-[1.02]
                 ${getCardScale(business.position)}
@@ -194,8 +270,19 @@ export default function Ranking() {
                   relative z-10 overflow-hidden border-4 rounded-2xl bg-gradient-to-r
                   ${getPositionStyle(business.position)}
                   ${getBorderGlow(business.position)}
+                  ${isOwnBusiness ? 'ring-4 ring-blue-400 ring-offset-2' : ''}
                 `}
               >
+                {/* Indicador de negocio propio */}
+                {isOwnBusiness && (
+                  <div className="absolute top-2 right-2 z-20">
+                    <div className="px-3 py-1 text-xs font-bold text-white bg-blue-500 rounded-full shadow-lg animate-pulse flex items-center gap-1">
+                      <span>🌟</span>
+                      <span>Tu Negocio</span>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="p-6 bg-white/80 backdrop-blur-sm">
                   <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
                     {/* Posición y nombre */}
@@ -223,34 +310,19 @@ export default function Ranking() {
                             <IoStar className="text-2xl text-amber-500 animate-pulse" />
                           )}
                         </h3>
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-neutral-600">
-                          <span className="flex items-center gap-1">
-                            <span className="font-semibold">Puntuación:</span>
-                            <span className="px-2 py-1 text-xs font-bold text-white rounded-full bg-gradient-to-r from-rose-500 to-orange-500">
-                              {business.score.toFixed(1)}
-                            </span>
-                          </span>
-                        </div>
+                        
                       </div>
                     </div>
 
                     {/* Estadísticas */}
-                    <div className="grid grid-cols-2 gap-4 md:gap-6">
-                      <div className="text-center">
-                        <div className="flex items-center justify-center gap-1 mb-1">
-                          <IoFlame className="text-orange-500" />
-                          <p className="text-xs font-medium text-neutral-600">Ventas</p>
+                    <div className="flex items-center justify-center">
+                      <div className="px-6 py-4 text-center bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl shadow-md">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <IoStar className="text-amber-500" />
+                          <p className="text-sm font-semibold text-neutral-700">Puntuación</p>
                         </div>
-                        <p className="text-2xl font-bold text-neutral-800">{business.sales}</p>
-                      </div>
-
-                      <div className="text-center">
-                        <div className="flex items-center justify-center gap-1 mb-1">
-                          <span className="text-sm">💰</span>
-                          <p className="text-xs font-medium text-neutral-600">Ingresos</p>
-                        </div>
-                        <p className="text-2xl font-bold text-neutral-800">
-                          ${business.revenue.toLocaleString()}
+                        <p className="text-3xl font-bold text-transparent bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text">
+                          {business.score.toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -282,7 +354,8 @@ export default function Ranking() {
                 )}
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Footer motivacional */}

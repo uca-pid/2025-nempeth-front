@@ -2,79 +2,55 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/useAuth'
 import { IoTrophy, IoFlame, IoTrendingUp, IoArrowUp } from 'react-icons/io5'
 import LoadingScreen from '../components/LoadingScreen'
-
-interface EmployeeRanking {
-  id: string
-  name: string
-  lastName: string
-  sales: number
-  revenue: number
-  position: number
-}
-
-interface BusinessPosition {
-  businessName: string
-  currentPosition: number
-  currentSales: number
-  nextPositionSales: number
-  salesGap: number
-}
-
-// Datos mock para el ranking de empleados
-// NOTA: En producción, uno de estos empleados debería tener el userId del empleado actual
-const mockEmployeeRankings: EmployeeRanking[] = [
-  { id: '1', name: 'María', lastName: 'González', sales: 89, revenue: 156000, position: 1 },
-  { id: '2', name: 'Carlos', lastName: 'Rodríguez', sales: 76, revenue: 142000, position: 2 },
-  { id: '3', name: 'Ana', lastName: 'Martínez', sales: 68, revenue: 128000, position: 3 },
-  { id: 'current-user', name: 'Roberto', lastName: 'López', sales: 54, revenue: 98000, position: 4 }, // Simula ser el usuario actual
-  { id: '5', name: 'Laura', lastName: 'Fernández', sales: 47, revenue: 87000, position: 5 },
-  { id: '6', name: 'Diego', lastName: 'Sánchez', sales: 41, revenue: 76000, position: 6 },
-  { id: '7', name: 'Sofía', lastName: 'Torres', sales: 35, revenue: 64000, position: 7 },
-  { id: '8', name: 'Lucas', lastName: 'Ramírez', sales: 28, revenue: 52000, position: 8 },
-]
-
-// Datos mock para la posición del negocio
-const mockBusinessPosition: BusinessPosition = {
-  businessName: 'La Colmena Dorada',
-  currentPosition: 1,
-  currentSales: 450,
-  nextPositionSales: 0, // Está en primer lugar
-  salesGap: 0
-}
-
-// Versión alternativa si no está en primer lugar
-const mockBusinessPosition2: BusinessPosition = {
-  businessName: 'Mi Negocio',
-  currentPosition: 5,
-  currentSales: 365,
-  nextPositionSales: 380,
-  salesGap: 15
-}
+import { rankingService, type EmployeeRankingResponse, type BusinessRankingResponse } from '../services/rankingService'
 
 export default function InternalRanking() {
   const { user } = useAuth()
-  const [employeeRankings, setEmployeeRankings] = useState<EmployeeRanking[]>([])
-  const [businessPosition, setBusinessPosition] = useState<BusinessPosition | null>(null)
+  const [employeeRankings, setEmployeeRankings] = useState<EmployeeRankingResponse[]>([])
+  const [businessRankings, setBusinessRankings] = useState<BusinessRankingResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const currentMonth = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
 
-  const isOwner = user?.role === 'OWNER'
   const isEmployee = user?.role === 'USER'
 
   // Encontrar el empleado actual (para empleados, no para owners)
   const currentUserEmployee = isEmployee 
-    ? employeeRankings.find(emp => emp.id === 'current-user') // En producción: emp.id === user.id
+    ? employeeRankings.find(emp => emp.currentUser === true)
     : null
 
+  // Encontrar el negocio actual
+  const ownBusiness = businessRankings.find(business => business.isOwnBusiness === true)
+
   useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      setEmployeeRankings(mockEmployeeRankings)
-      // Alternar entre las dos posiciones para demostración
-      setBusinessPosition(mockBusinessPosition2)
-      setIsLoading(false)
-    }, 1000)
-  }, [])
+    const fetchRankings = async () => {
+      if (!user?.businessId) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // Cargar ambos rankings en paralelo
+        const [employeeRankingsData, businessRankingsData] = await Promise.all([
+          rankingService.getEmployeeRankings(user.businessId),
+          rankingService.getBusinessRankings(user.businessId)
+        ])
+        
+        setEmployeeRankings(employeeRankingsData)
+        setBusinessRankings(businessRankingsData)
+      } catch (err) {
+        console.error('Error al cargar los rankings:', err)
+        setError('No se pudo cargar los rankings. Por favor, intenta nuevamente.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchRankings()
+  }, [user?.businessId])
 
   const getMedalEmoji = (position: number) => {
     switch (position) {
@@ -102,42 +78,35 @@ export default function InternalRanking() {
     }
   }
 
-  const getBorderColor = (position: number) => {
-    switch (position) {
-      case 1:
-        return 'border-amber-400'
-      case 2:
-        return 'border-slate-300'
-      case 3:
-        return 'border-orange-400'
-      default:
-        return 'border-gray-200'
-    }
-  }
-
-  const getMotivationalMessage = (position: BusinessPosition) => {
-    if (position.currentPosition === 1) {
+  const getMotivationalMessage = (business: BusinessRankingResponse, nextBusiness?: BusinessRankingResponse) => {
+    const scoreGap = nextBusiness ? nextBusiness.score - business.score : 0
+    
+    if (business.position === 1) {
       return {
         title: '🎉 ¡Tu negocio está en el primer lugar!',
         message: 'Mantén este excelente trabajo y continúa liderando el ranking público. Cada venta cuenta para mantener la posición.',
         color: 'from-amber-500 to-yellow-600'
       }
-    } else if (position.currentPosition <= 3) {
+    } else if (business.position <= 3) {
       return {
-        title: `🏆 Tu negocio está en el puesto #${position.currentPosition}`,
-        message: `¡Vas muy bien! Solo necesitas ${position.salesGap} ventas más para alcanzar el puesto #${position.currentPosition - 1}. El podio está cerca, ¡sigue adelante!`,
+        title: `🏆 Tu negocio está en el puesto #${business.position}`,
+        message: scoreGap > 0 
+          ? `¡Vas muy bien! Solo necesitas ${scoreGap.toFixed(2)} puntos más para alcanzar el puesto #${business.position - 1}. El podio está cerca, ¡sigue adelante!`
+          : `¡Vas muy bien! Sigue esforzándote para alcanzar el puesto #${business.position - 1}. El podio está cerca, ¡sigue adelante!`,
         color: 'from-orange-500 to-amber-600'
       }
     } else {
       return {
-        title: `📊 Tu negocio está en el puesto #${position.currentPosition}`,
-        message: `Necesitas ${position.salesGap} ventas más para subir al puesto #${position.currentPosition - 1}. ¡Cada venta te acerca más al top 3 del ranking público!`,
+        title: `📊 Tu negocio está en el puesto #${business.position}`,
+        message: scoreGap > 0
+          ? `Necesitas ${scoreGap.toFixed(2)} puntos más para subir al puesto #${business.position - 1}. ¡Cada venta te acerca más al top 3 del ranking público!`
+          : `¡Sigue esforzándote para subir al puesto #${business.position - 1}. ¡Cada venta te acerca más al top 3 del ranking público!`,
         color: 'from-rose-500 to-orange-600'
       }
     }
   }
 
-  const getEmployeeMotivationalMessage = (employee: EmployeeRanking) => {
+  const getEmployeeMotivationalMessage = (employee: EmployeeRankingResponse) => {
     const position = employee.position
     const nextEmployee = employeeRankings.find(emp => emp.position === position - 1)
     const salesGap = nextEmployee ? nextEmployee.sales - employee.sales : 0
@@ -184,7 +153,30 @@ export default function InternalRanking() {
     return <LoadingScreen message="Cargando ranking..." />
   }
 
-  const motivationalData = businessPosition ? getMotivationalMessage(businessPosition) : null
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white flex items-center justify-center">
+        <div className="max-w-md p-6 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 text-4xl">⚠️</div>
+          <h2 className="mb-2 text-xl font-bold text-gray-900">Error al cargar el ranking</h2>
+          <p className="mb-4 text-gray-600">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-[#f74116] text-white rounded-lg hover:bg-[#f74116]/90 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Encontrar el siguiente negocio en el ranking (para calcular la brecha)
+  const nextBusiness = ownBusiness 
+    ? businessRankings.find(b => b.position === ownBusiness.position - 1)
+    : undefined
+
+  const motivationalData = ownBusiness ? getMotivationalMessage(ownBusiness, nextBusiness) : null
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-[#fff1eb] to-white">
@@ -205,7 +197,7 @@ export default function InternalRanking() {
         </div>
 
         {/* Posición del Negocio */}
-        {businessPosition && motivationalData && (
+        {ownBusiness && motivationalData && (
           <div className={`mb-8 bg-gradient-to-r ${motivationalData.color} rounded-2xl p-6 text-white shadow-lg`}>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex-1">
@@ -219,16 +211,16 @@ export default function InternalRanking() {
                   <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm">
                     <IoFlame className="w-5 h-5" />
                     <div>
-                      <p className="text-xs text-white/80">Ventas actuales</p>
-                      <p className="text-lg font-bold">{businessPosition.currentSales}</p>
+                      <p className="text-xs text-white/80">Puntuación actual</p>
+                      <p className="text-lg font-bold">{ownBusiness.score.toFixed(2)}</p>
                     </div>
                   </div>
-                  {businessPosition.currentPosition > 1 && (
+                  {ownBusiness.position > 1 && nextBusiness && nextBusiness.score > ownBusiness.score && (
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm">
                       <IoArrowUp className="w-5 h-5" />
                       <div>
                         <p className="text-xs text-white/80">Para siguiente puesto</p>
-                        <p className="text-lg font-bold">{businessPosition.salesGap} ventas</p>
+                        <p className="text-lg font-bold">{(nextBusiness.score - ownBusiness.score).toFixed(2)} pts</p>
                       </div>
                     </div>
                   )}
@@ -237,7 +229,7 @@ export default function InternalRanking() {
               <div className="flex items-center justify-center w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl">
                 <div className="text-center">
                   <p className="text-sm text-white/80">Posición</p>
-                  <p className="text-4xl font-bold">#{businessPosition.currentPosition}</p>
+                  <p className="text-4xl font-bold">#{ownBusiness.position}</p>
                 </div>
               </div>
             </div>
@@ -250,6 +242,19 @@ export default function InternalRanking() {
             <h2 className="text-xl font-bold text-gray-900">Ranking de Empleados</h2>
             <p className="mt-1 text-sm text-gray-500">Los mejores vendedores del mes</p>
           </div>
+
+          {/* Mensaje cuando no hay empleados */}
+          {employeeRankings.length === 0 && (
+            <div className="p-8 text-center bg-gray-50 rounded-xl">
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                No hay datos de ranking disponibles
+              </h3>
+              <p className="text-gray-600">
+                Aún no hay ventas registradas este mes para mostrar el ranking de empleados.
+              </p>
+            </div>
+          )}
 
           {/* Empleado del mes destacado */}
           {employeeRankings.length > 0 && (
@@ -320,11 +325,11 @@ export default function InternalRanking() {
           {/* Lista de empleados */}
           <div className="space-y-3">
             {employeeRankings.map((employee, index) => {
-              const isCurrentUser = isEmployee && employee.id === 'current-user' // En producción: employee.id === user.id
+              const isCurrentUser = isEmployee && employee.currentUser === true
               
               return (
                 <div
-                  key={employee.id}
+                  key={`${employee.name}-${employee.lastName}-${employee.position}`}
                   className={`
                     p-4 rounded-xl border-2 transition-all duration-200
                     ${isCurrentUser ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-400 ring-2 ring-blue-300 ring-offset-2' :
@@ -386,7 +391,7 @@ export default function InternalRanking() {
                         <p className="text-xs font-medium text-gray-600">Ingresos</p>
                       </div>
                       <p className="text-xl font-bold text-gray-900">
-                        ${(employee.revenue / 1000).toFixed(0)}k
+                        ${employee.revenue}
                       </p>
                     </div>
                   </div>
