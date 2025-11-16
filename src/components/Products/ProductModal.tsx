@@ -9,9 +9,10 @@ interface ProductModalProps {
   product?: Product | null
   error?: string | null
   categories: CategoryType[]
+  prefilledName?: string
 }
 
-function ProductModal({ isOpen, onClose, onSave, product, error, categories }: ProductModalProps) {
+function ProductModal({ isOpen, onClose, onSave, product, error, categories, prefilledName }: ProductModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -32,7 +33,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
       })
     } else {
       setFormData({
-        name: '',
+        name: prefilledName || '',
         description: '',
         price: 0,
         cost: 0,
@@ -40,7 +41,7 @@ function ProductModal({ isOpen, onClose, onSave, product, error, categories }: P
       })
     }
     setSaving(false) // Resetear estado de guardado
-  }, [product, isOpen, categories])
+  }, [product, isOpen, categories, prefilledName])
 
   // Prevenir scroll del fondo cuando el modal está abierto
   useEffect(() => {

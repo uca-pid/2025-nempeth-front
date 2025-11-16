@@ -8,6 +8,7 @@ import DescriptionModal from '../components/Products/DescriptionModal'
 import ProductCard from '../components/Products/ProductCard'
 import CategoryManagementModal from '../components/Products/CategoryManagementModal'
 import ProductModal from '../components/Products/ProductModal'
+import MealSuggestionsModal from '../components/Products/MealSuggestionsModal'
 import { IoFilterCircle, IoSearchOutline } from 'react-icons/io5'
 
 // Tipo para productos que vienen de la API con el objeto category anidado
@@ -93,6 +94,8 @@ function Products() {
   const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([])
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showMealSuggestionsModal, setShowMealSuggestionsModal] = useState(false)
+  const [prefilledProductName, setPrefilledProductName] = useState<string>('')
 
   const businessId = user?.businessId
 
@@ -209,6 +212,13 @@ function Products() {
   }
 
   const handleAddProduct = () => {
+    setEditingProduct(null)
+    setPrefilledProductName('')
+    setIsModalOpen(true)
+  }
+
+  const handleSelectMealSuggestion = (mealName: string) => {
+    setPrefilledProductName(mealName)
     setEditingProduct(null)
     setIsModalOpen(true)
   }
@@ -407,6 +417,16 @@ function Products() {
             <span className="text-xl font-bold">⚙️</span>
             {processing ? 'Procesando...' : 'Gestionar Categorías'}
           </button>
+
+          <button
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-600 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+            onClick={() => setShowMealSuggestionsModal(true)}
+            disabled={processing}
+            type="button"
+          >
+            <span className="text-xl font-bold">💡</span>
+            {processing ? 'Procesando...' : 'Sugerencias de Productos'}
+          </button>
         </div>
 
         {/* Filters Section */}
@@ -562,12 +582,14 @@ function Products() {
           onClose={() => {
             setIsModalOpen(false)
             setEditingProduct(null)
+            setPrefilledProductName('')
             setError(null)
           }}
           onSave={handleSaveProduct}
           product={editingProduct}
           error={error}
           categories={categories}
+          prefilledName={prefilledProductName}
         />
 
         <ConfirmDeleteModal
@@ -597,6 +619,12 @@ function Products() {
           onDeleteCategory={handleDeleteCategory}
           getProductCountByCategory={getProductCountByCategory}
           error={error}
+        />
+
+        <MealSuggestionsModal
+          isOpen={showMealSuggestionsModal}
+          onClose={() => setShowMealSuggestionsModal(false)}
+          onSelectMeal={handleSelectMealSuggestion}
         />
       </div>
     </div>
