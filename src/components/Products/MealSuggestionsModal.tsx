@@ -1,20 +1,11 @@
 import { useState, useEffect } from 'react'
 import { IoClose } from 'react-icons/io5'
+import { mealSuggestionsService, type MealData } from '../../services/mealSuggestionsService'
 
 interface MealSuggestionsModalProps {
   isOpen: boolean
   onClose: () => void
   onSelectMeal: (mealName: string) => void
-}
-
-interface MealData {
-  name: string
-}
-
-interface MealResponse {
-  success: boolean
-  count: number
-  data: MealData[]
 }
 
 function MealSuggestionsModal({ isOpen, onClose, onSelectMeal }: MealSuggestionsModalProps) {
@@ -32,22 +23,11 @@ function MealSuggestionsModal({ isOpen, onClose, onSelectMeal }: MealSuggestions
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('https://que-comemos-api.vercel.app/api/meals')
-      
-      if (!response.ok) {
-        throw new Error('Error al obtener las sugerencias')
-      }
-
-      const data: MealResponse = await response.json()
-      
-      if (data.success && data.data) {
-        setMeals(data.data)
-      } else {
-        throw new Error('Formato de respuesta inválido')
-      }
+      const data = await mealSuggestionsService.getMeals()
+      setMeals(data)
     } catch (err) {
       console.error('Error fetching meals:', err)
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setError(err instanceof Error ? err.message : 'Error al obtener las sugerencias')
     } finally {
       setLoading(false)
     }
