@@ -58,11 +58,18 @@ const TargetIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const TrophyIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+  </svg>
+)
+
 const OWNER_NAVIGATION = [
   { name: 'Home', path: '/home', icon: HomeIcon },
   { name: 'Productos', path: '/products', icon: ShoppingBagIcon },
   { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
   { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
+  { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
   { name: 'Analiticas', path: '/analytics', icon: ChartBarIcon },
   { name: 'Metas', path: '/goals', icon: TargetIcon },
   { name: 'Mi Negocio', path: '/business', icon: BuildingStorefrontIcon },
@@ -73,6 +80,7 @@ const EMPLOYEE_NAVIGATION = [
   { name: 'Home', path: '/home', icon: HomeIcon },
   { name: 'Crear Orden', path: '/orders/create', icon: DocumentTextIcon },
   { name: 'Historial de Ventas', path: '/sales-history', icon: ClipboardDocumentListIcon },
+  { name: 'Ranking', path: '/internal-ranking', icon: TrophyIcon },
   { name: 'Perfil', path: '/profile', icon: UserIcon },
   
 ]

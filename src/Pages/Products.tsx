@@ -8,6 +8,7 @@ import DescriptionModal from '../components/Products/DescriptionModal'
 import ProductCard from '../components/Products/ProductCard'
 import CategoryManagementModal from '../components/Products/CategoryManagementModal'
 import ProductModal from '../components/Products/ProductModal'
+import MealSuggestionsModal from '../components/Products/MealSuggestionsModal'
 import { IoFilterCircle, IoSearchOutline } from 'react-icons/io5'
 
 // Tipo para productos que vienen de la API con el objeto category anidado
@@ -93,6 +94,8 @@ function Products() {
   const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([])
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showMealSuggestionsModal, setShowMealSuggestionsModal] = useState(false)
+  const [prefilledProductName, setPrefilledProductName] = useState<string>('')
 
   const businessId = user?.businessId
 
@@ -209,6 +212,13 @@ function Products() {
   }
 
   const handleAddProduct = () => {
+    setEditingProduct(null)
+    setPrefilledProductName('')
+    setIsModalOpen(true)
+  }
+
+  const handleSelectMealSuggestion = (mealName: string) => {
+    setPrefilledProductName(mealName)
     setEditingProduct(null)
     setIsModalOpen(true)
   }
@@ -387,7 +397,7 @@ function Products() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-4 mb-8">
+        <div className="flex flex-wrap items-start gap-4 mb-8">
           <button
             className="inline-flex items-center gap-2 rounded-xl bg-[#f74116] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[#f74116]/90 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
             onClick={handleAddProduct}
@@ -407,6 +417,29 @@ function Products() {
             <span className="text-xl font-bold">⚙️</span>
             {processing ? 'Procesando...' : 'Gestionar Categorías'}
           </button>
+
+          <div className="flex flex-col gap-1.5">
+            <button
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-600 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+              onClick={() => setShowMealSuggestionsModal(true)}
+              disabled={processing}
+              type="button"
+            >
+              <span className="text-xl font-bold">🍽️</span>
+              {processing ? 'Procesando...' : 'Productos sugeridos'}
+            </button>
+            
+            {/* Powered by - debajo del botón */}
+            <div className="flex items-center gap-1.5 pl-2">
+              <span className="text-xs text-gray-500">Proporcionado por</span>
+              <img 
+                src="/QueComemos.svg" 
+                alt="Que Comemos" 
+                className="h-4"
+                style={{ maxHeight: '16px' }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Filters Section */}
@@ -562,12 +595,14 @@ function Products() {
           onClose={() => {
             setIsModalOpen(false)
             setEditingProduct(null)
+            setPrefilledProductName('')
             setError(null)
           }}
           onSave={handleSaveProduct}
           product={editingProduct}
           error={error}
           categories={categories}
+          prefilledName={prefilledProductName}
         />
 
         <ConfirmDeleteModal
@@ -597,6 +632,12 @@ function Products() {
           onDeleteCategory={handleDeleteCategory}
           getProductCountByCategory={getProductCountByCategory}
           error={error}
+        />
+
+        <MealSuggestionsModal
+          isOpen={showMealSuggestionsModal}
+          onClose={() => setShowMealSuggestionsModal(false)}
+          onSelectMeal={handleSelectMealSuggestion}
         />
       </div>
     </div>
