@@ -1,11 +1,50 @@
 import { useState, useEffect } from 'react'
 import { IoClose } from 'react-icons/io5'
 import { mealSuggestionsService, type MealData } from '../../services/mealSuggestionsService'
+import { searchUnsplashPhoto } from '../../services/unsplashService'
 
 interface MealSuggestionsModalProps {
   isOpen: boolean
   onClose: () => void
   onSelectMeal: (mealName: string) => void
+}
+
+// Componente para cada item de comida con su imagen
+function MealItem({ meal, onClick }: { meal: MealData; onClick: () => void }) {
+  const [imageUrl, setImageUrl] = useState<string>('https://via.placeholder.com/40x40?text=...')
+
+  useEffect(() => {
+    const loadImage = async () => {
+      const url = await searchUnsplashPhoto(meal.name)
+      setImageUrl(url || '/not_image.png')
+    }
+    loadImage()
+  }, [meal.name])
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-3 p-4 transition-all duration-200 border border-gray-200 rounded-lg hover:border-[#f74116]/50 hover:shadow-md hover:bg-[#f74116]/5 cursor-pointer"
+    >
+      <div className="flex-shrink-0 w-10 h-10 overflow-hidden rounded-lg">
+        <img 
+          src={imageUrl} 
+          alt={meal.name}
+          className="object-cover w-full h-full"
+        />
+      </div>
+      <div className="flex-1 text-left">
+        <p className="font-medium text-gray-900">{meal.name}</p>
+        <p className="text-sm text-gray-500">Click para crear producto</p>
+      </div>
+      <div className="flex-shrink-0 text-[#f74116]">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </button>
+  )
 }
 
 function MealSuggestionsModal({ isOpen, onClose, onSelectMeal }: MealSuggestionsModalProps) {
@@ -46,10 +85,10 @@ function MealSuggestionsModal({ isOpen, onClose, onSelectMeal }: MealSuggestions
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-xl font-bold text-gray-800">Sugerencias de Productos</h3>
+            <h3 className="text-xl font-bold text-gray-800">Productos de Que Comemos</h3>
             {!loading && !error && (
               <p className="mt-1 text-sm text-gray-500">
-                {meals.length} sugerencia{meals.length !== 1 ? 's' : ''} disponible{meals.length !== 1 ? 's' : ''}
+                {meals.length} producto{meals.length !== 1 ? 's' : ''} disponible{meals.length !== 1 ? 's' : ''}
               </p>
             )}
           </div>
@@ -100,39 +139,39 @@ function MealSuggestionsModal({ isOpen, onClose, onSelectMeal }: MealSuggestions
           ) : (
             <div className="space-y-3">
               {meals.map((meal, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => handleSelectMeal(meal.name)}
-                  className="w-full flex items-center gap-3 p-4 transition-all duration-200 border border-gray-200 rounded-lg hover:border-[#f74116]/50 hover:shadow-md hover:bg-[#f74116]/5 cursor-pointer"
-                >
-                  <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-[#f74116]/10 rounded-lg">
-                    <span className="text-xl">🍽️</span>
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-medium text-gray-900">{meal.name}</p>
-                    <p className="text-sm text-gray-500">Click para crear producto</p>
-                  </div>
-                  <div className="flex-shrink-0 text-[#f74116]">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
+                <MealItem 
+                  key={index} 
+                  meal={meal} 
+                  onClick={() => handleSelectMeal(meal.name)} 
+                />
               ))}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <button
-            type="button"
-            className="px-6 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300"
-            onClick={onClose}
-          >
-            Cerrar
-          </button>
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            {/* Powered by Que Comemos */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Proporcionado por</span>
+              <img 
+                src="/QueComemos.svg" 
+                alt="Que Comemos" 
+                className="h-6"
+                style={{ maxHeight: '24px' }}
+              />
+            </div>
+            
+            {/* Close button */}
+            <button
+              type="button"
+              className="px-6 py-2 text-sm font-semibold text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300"
+              onClick={onClose}
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       </div>
     </div>

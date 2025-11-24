@@ -397,7 +397,7 @@ function Products() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-4 mb-8">
+        <div className="flex flex-wrap items-start gap-4 mb-8">
           <button
             className="inline-flex items-center gap-2 rounded-xl bg-[#f74116] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[#f74116]/90 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
             onClick={handleAddProduct}
@@ -418,15 +418,28 @@ function Products() {
             {processing ? 'Procesando...' : 'Gestionar Categorías'}
           </button>
 
-          <button
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-600 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
-            onClick={() => setShowMealSuggestionsModal(true)}
-            disabled={processing}
-            type="button"
-          >
-            <span className="text-xl font-bold">💡</span>
-            {processing ? 'Procesando...' : 'Sugerencias de Productos'}
-          </button>
+          <div className="flex flex-col gap-1.5">
+            <button
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-600 hover:shadow-lg transform hover:scale-[1.02] duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+              onClick={() => setShowMealSuggestionsModal(true)}
+              disabled={processing}
+              type="button"
+            >
+              <span className="text-xl font-bold">🍽️</span>
+              {processing ? 'Procesando...' : 'Productos sugeridos'}
+            </button>
+            
+            {/* Powered by - debajo del botón */}
+            <div className="flex items-center gap-1.5 pl-2">
+              <span className="text-xs text-gray-500">Proporcionado por</span>
+              <img 
+                src="/QueComemos.svg" 
+                alt="Que Comemos" 
+                className="h-4"
+                style={{ maxHeight: '16px' }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Filters Section */}
