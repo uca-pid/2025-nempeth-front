@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import korvenLogo from '../assets/Korven_logo.png'
 import { AuthService } from '../services/loginService'
 import { IoEye, IoEyeOff, IoTrophy } from 'react-icons/io5'
@@ -9,7 +8,6 @@ import PasswordValidationList from '../components/PasswordValidationList'
 
 export default function Authentication() {
   const { login, isLoading } = useAuth()
-  const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
