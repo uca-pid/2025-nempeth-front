@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import korvenLogo from '../assets/Korven_logo.png'
 import { AuthService } from '../services/loginService'
-import { IoEye, IoEyeOff, IoTrophy } from 'react-icons/io5'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
 import PasswordValidationList from '../components/PasswordValidationList'
