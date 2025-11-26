@@ -1,15 +1,13 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import korvenLogo from '../assets/Korven_logo.png'
 import { AuthService } from '../services/loginService'
-import { IoEye, IoEyeOff, IoTrophy } from 'react-icons/io5'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
 import { useAuth } from '../contexts/useAuth'
 import Modal from '../components/Modal'
 import PasswordValidationList from '../components/PasswordValidationList'
 
 export default function Authentication() {
   const { login, isLoading } = useAuth()
-  const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -210,16 +208,6 @@ return (
   <div className="flex flex-col w-screen min-h-screen p-0 m-0 md:h-screen md:flex-row md:overflow-hidden">
     {/* Left */}
     <div className="relative flex items-center justify-center flex-1 overflow-hidden md:basis-3/5 bg-gradient-to-br from-rose-600 via-orange-500 to-amber-500 min-h-[40vh] md:min-h-0">
-      {/* Botón de ranking - posicionado arriba a la derecha */}
-      <button
-        onClick={() => navigate('/ranking')}
-        className="absolute z-20 flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg top-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 hover:scale-105 active:scale-95 group"
-        aria-label="Ver ranking de negocios"
-      >
-        <IoTrophy className="text-lg transition group-hover:text-yellow-300" />
-        <span className="hidden sm:inline">Ranking</span>
-      </button>
-
       {/* radial glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(253,118,0,0.12)_0%,transparent_70%)]" />
       <div className="relative z-10 flex flex-col items-center justify-center h-full max-w-full px-6 pt-6 pb-4 text-white sm:px-8 md:pt-12 md:pb-6">
