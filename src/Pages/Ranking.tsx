@@ -118,10 +118,10 @@ export default function Ranking() {
           <h2 className="mb-2 text-xl font-bold text-gray-900">Error al cargar el ranking</h2>
           <p className="mb-4 text-gray-600">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => navigate('/authentication')}
             className="px-6 py-2 bg-gradient-to-r from-rose-600 to-amber-600 text-white rounded-lg hover:from-rose-700 hover:to-amber-700 transition-all"
           >
-            Reintentar
+            Iniciar sesión
           </button>
         </div>
       </div>
